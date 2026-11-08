@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Город подписчиков — найди свой дом</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:#1d1830;color:#fff;min-height:100vh}
+header{padding:22px 18px 10px;text-align:center}
+h1{margin:0;font-family:Georgia,"DejaVu Serif",serif;color:#f2c86a;font-size:26px;letter-spacing:.5px}
+.sub{opacity:.75;font-size:14px;margin-top:6px}
+.search{position:sticky;top:0;z-index:5;padding:10px 14px;background:#1d1830}
+input{width:100%;font-size:18px;padding:14px 16px;border-radius:14px;border:2px solid #c9a24e;background:#fbf3df;color:#5a2c0e;outline:none}
+#list{padding:4px 14px 20px}
+.item{display:flex;align-items:center;gap:12px;padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.07);cursor:pointer}
+.item b{color:#fbf3df}.item span{opacity:.6;font-size:13px;margin-left:auto}
+#card{display:none;padding:0 14px 30px;text-align:center}
+#card img{width:100%;max-width:480px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
+.chip{background:#fbf3df;color:#5a2c0e;border-radius:20px;padding:7px 14px;font-weight:700;font-size:14px}
+.btn{display:inline-block;margin:6px;padding:12px 18px;border-radius:12px;background:#e8433a;color:#fff;text-decoration:none;font-weight:700;border:0;font-size:15px}
+.btn.alt{background:#3a3354}
+.empty{text-align:center;opacity:.8;padding:24px 10px;line-height:1.5}
+</style></head><body>
+<header><h1>ГОРОД ПОДПИСЧИКОВ</h1><div class="sub">Найди свой дом по нику из Instagram</div></header>
+<div class="search"><input id="q" placeholder="@твой_ник" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+<div id="list"></div>
+<div id="card"><img id="img" alt=""><div class="chips" id="chips"></div>
+<a class="btn" id="dl" download>⬇️ Сохранить картинку</a><button class="btn alt" id="back">← Искать другой</button></div>
+<script>
+const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand()}
+let IDX=[];const $=id=>document.getElementById(id);
+const norm=t=>{t=(t||'').trim().toLowerCase();const m=t.match(/instagram\.com\/([a-z0-9._]+)/);if(m)t=m[1];return t.replace(/^@+/,'').replace(/[\s/]+$/,'').replace(/\s+/g,'')};
+fetch('data/index.json').then(r=>r.json()).then(a=>{IDX=a;$('list').innerHTML=`<div class="empty">В городе уже <b>${a.length}</b> домов.<br>Начни вводить свой ник 👆</div>`;const p=new URLSearchParams(location.search).get('n');if(p){$('q').value=p;show(p)}});
+function show(n){const x=IDX.find(e=>e[0].toLowerCase()===norm(n));if(!x)return;$('list').style.display='none';$('card').style.display='block';
+  const src='cards/'+encodeURIComponent(x[0])+'.jpg?v=2';$('img').src=src;$('dl').href=src;$('dl').setAttribute('download','dom_'+x[0]+'.jpg');
+  $('chips').innerHTML=(x[2]||[]).map(c=>`<span class="chip">${c}</span>`).join('');window.scrollTo(0,0)}
+$('back').onclick=()=>{$('card').style.display='none';$('list').style.display='block';$('q').focus()};
+$('q').addEventListener('input',()=>{const n=norm($('q').value);$('card').style.display='none';$('list').style.display='block';
+  if(n.length<2){$('list').innerHTML='<div class="empty">Начни вводить свой ник 👆</div>';return}
+  const exact=IDX.filter(e=>e[0].toLowerCase()===n),pre=IDX.filter(e=>e[0].toLowerCase().startsWith(n)&&e[0].toLowerCase()!==n),inc=IDX.filter(e=>!e[0].toLowerCase().startsWith(n)&&e[0].toLowerCase().includes(n));
+  const r=[...exact,...pre,...inc].slice(0,30);
+  $('list').innerHTML=r.length?r.map(e=>`<div class="item" data-n="${e[0]}"><b>@${e[0]}</b><span>дом №${e[1]}</span></div>`).join(''):`<div class="empty">Ника <b>@${n.replace(/[<>&"]/g,'')}</b> пока нет в городе.<br><br>Чтобы получить дом: подпишись на <b>@gorod.podpischikov001</b>, поставь лайк и напиши в комментарии, какой дом хочешь.</div>`;
+  document.querySelectorAll('.item').forEach(el=>el.onclick=()=>show(el.dataset.n))});
+</script></body></html>
