@@ -31,7 +31,7 @@ let IDX=[];const $=id=>document.getElementById(id);
 const norm=t=>{t=(t||'').trim().toLowerCase();const m=t.match(/instagram\.com\/([a-z0-9._]+)/);if(m)t=m[1];return t.replace(/^@+/,'').replace(/[\s/]+$/,'').replace(/\s+/g,'')};
 fetch('data/index.json').then(r=>r.json()).then(a=>{IDX=a;$('list').innerHTML=`<div class="empty">В городе уже <b>${a.length}</b> домов.<br>Начни вводить свой ник 👆</div>`;const p=new URLSearchParams(location.search).get('n');if(p){$('q').value=p;show(p)}});
 function show(n){const x=IDX.find(e=>e[0].toLowerCase()===norm(n));if(!x)return;$('list').style.display='none';$('card').style.display='block';
-  const src='cards/'+encodeURIComponent(x[0])+'.jpg?v=2';$('img').src=src;$('dl').href=src;$('dl').setAttribute('download','dom_'+x[0]+'.jpg');
+  const src='cards/'+encodeURIComponent(x[0])+'.jpg?v=3';$('img').src=src;$('dl').href=src;$('dl').setAttribute('download','dom_'+x[0]+'.jpg');
   $('chips').innerHTML=(x[2]||[]).map(c=>`<span class="chip">${c}</span>`).join('');window.scrollTo(0,0)}
 $('back').onclick=()=>{$('card').style.display='none';$('list').style.display='block';$('q').focus()};
 $('q').addEventListener('input',()=>{const n=norm($('q').value);$('card').style.display='none';$('list').style.display='block';
