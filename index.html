@@ -1,43 +1,71 @@
 <!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Город подписчиков — найди свой дом</title>
+<meta property="og:title" content="Город подписчиков"><meta property="og:description" content="Найди свой дом по нику из Instagram">
+<meta property="og:image" content="https://ishkintembur001-maker.github.io/gorod-podpischikov/promo.jpg">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,"Segoe UI",Roboto,sans-serif;background:#1d1830;color:#fff;min-height:100vh}
-header{padding:22px 18px 10px;text-align:center}
-h1{margin:0;font-family:Georgia,"DejaVu Serif",serif;color:#f2c86a;font-size:26px;letter-spacing:.5px}
-.sub{opacity:.75;font-size:14px;margin-top:6px}
+a{color:inherit}
+header{padding:24px 18px 8px;text-align:center;background:radial-gradient(120% 90% at 50% 0%,#3b2e5e 0%,#1d1830 70%)}
+h1{margin:0;font-family:Georgia,"DejaVu Serif",serif;color:#f2c86a;font-size:28px;letter-spacing:.5px}
+.sub{opacity:.8;font-size:14px;margin-top:6px}
+.stat{display:inline-block;margin-top:12px;padding:8px 16px;border-radius:20px;background:#fbf3df;color:#7a3b12;font-weight:800;font-size:15px}
+.links{display:flex;gap:8px;justify-content:center;margin:14px 0 4px;flex-wrap:wrap}
+.lk{padding:10px 14px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none}
+.ig{background:linear-gradient(45deg,#f09433,#dc2743,#bc1888)}.tgb{background:#2aabee}
 .search{position:sticky;top:0;z-index:5;padding:10px 14px;background:#1d1830}
 input{width:100%;font-size:18px;padding:14px 16px;border-radius:14px;border:2px solid #c9a24e;background:#fbf3df;color:#5a2c0e;outline:none}
-#list{padding:4px 14px 20px}
-.item{display:flex;align-items:center;gap:12px;padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.07);cursor:pointer}
-.item b{color:#fbf3df}.item span{opacity:.6;font-size:13px;margin-left:auto}
+#list{padding:4px 14px 10px}
+.item{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.07);cursor:pointer}
+.item b{color:#fbf3df;word-break:break-all}.item span{opacity:.6;font-size:13px;margin-left:auto;white-space:nowrap}
 #card{display:none;padding:0 14px 30px;text-align:center}
 #card img{width:100%;max-width:480px;border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0}
 .chip{background:#fbf3df;color:#5a2c0e;border-radius:20px;padding:7px 14px;font-weight:700;font-size:14px}
-.btn{display:inline-block;margin:6px;padding:12px 18px;border-radius:12px;background:#e8433a;color:#fff;text-decoration:none;font-weight:700;border:0;font-size:15px}
+.btn{display:inline-block;margin:6px;padding:12px 18px;border-radius:12px;background:#e8433a;color:#fff;text-decoration:none;font-weight:700;border:0;font-size:15px;cursor:pointer}
 .btn.alt{background:#3a3354}
-.empty{text-align:center;opacity:.8;padding:24px 10px;line-height:1.5}
+.empty{text-align:center;opacity:.85;padding:18px 10px;line-height:1.5}
+section{padding:6px 14px 4px}
+h2{font-size:18px;margin:14px 0 8px;color:#f2c86a}
+.tabs{display:flex;gap:6px;margin-bottom:8px}.tab{flex:1;padding:10px 4px;border-radius:12px;background:#2c2545;text-align:center;font-weight:700;font-size:14px;cursor:pointer}.tab.on{background:#c9a24e;color:#2a1a08}
+.grid{display:flex;flex-wrap:wrap;gap:6px}.nk{padding:7px 11px;border-radius:16px;background:rgba(255,255,255,.08);font-size:13px;cursor:pointer}
+.cond{margin:18px 14px 30px;padding:16px;border-radius:16px;background:#fbf3df;color:#3a2410}
+.cond b{color:#b2271e}.cond div{margin:6px 0;font-weight:600}
 </style></head><body>
-<header><h1>ГОРОД ПОДПИСЧИКОВ</h1><div class="sub">Найди свой дом по нику из Instagram</div></header>
-<div class="search"><input id="q" placeholder="@твой_ник" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+<header><h1>ГОРОД ПОДПИСЧИКОВ</h1><div class="sub">Каждый подписчик получает свой дом</div>
+<div class="stat" id="stat">Загружаем город…</div>
+<div class="links"><a class="lk ig" href="https://www.instagram.com/gorod.podpischikov001/" target="_blank">📸 Instagram</a><a class="lk tgb" href="https://t.me/gorod_podpischikov_bot" target="_blank">✈️ Бот в Telegram</a></div></header>
+<div class="search"><input id="q" placeholder="🔍 Введи ник: @твой_ник" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
 <div id="list"></div>
 <div id="card"><img id="img" alt=""><div class="chips" id="chips"></div>
-<a class="btn" id="dl" download>⬇️ Сохранить картинку</a><button class="btn alt" id="back">← Искать другой</button></div>
+<a class="btn" id="dl" download>⬇️ Сохранить</a><button class="btn alt" id="share">🔗 Поделиться</button><button class="btn alt" id="back">← Искать другой</button></div>
+<div id="home">
+<section><h2>Городские службы</h2><div class="tabs"><div class="tab on" data-r="полицейский">👮 Полиция</div><div class="tab" data-r="работник больницы">🏥 Больница</div><div class="tab" data-r="футболист ФК ASKER">⚽ ФК ASKER</div></div><div class="grid" id="roles"></div></section>
+<section><h2>Новые жители</h2><div class="grid" id="newest"></div></section>
+<div class="cond"><div style="font-size:17px;font-weight:800;margin-bottom:8px">Хочешь дом в городе?</div><div>✅ Подпишись на <b>@gorod.podpischikov001</b></div><div>❤️ Поставь лайк</div><div>💬 Напиши в комментарии, какой дом хочешь</div><div>🔁 Сделай репост и отправь друзьям</div></div>
+</div>
 <script>
-const tg=window.Telegram&&Telegram.WebApp;if(tg){tg.ready();tg.expand()}
-let IDX=[];const $=id=>document.getElementById(id);
+const tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.initData){tg.ready();tg.expand()}
+let IDX=[];const $=id=>document.getElementById(id);const V='?v=4';
+const esc=s=>String(s).replace(/[<>&"]/g,'');
 const norm=t=>{t=(t||'').trim().toLowerCase();const m=t.match(/instagram\.com\/([a-z0-9._]+)/);if(m)t=m[1];return t.replace(/^@+/,'').replace(/[\s/]+$/,'').replace(/\s+/g,'')};
-fetch('data/index.json').then(r=>r.json()).then(a=>{IDX=a;$('list').innerHTML=`<div class="empty">В городе уже <b>${a.length}</b> домов.<br>Начни вводить свой ник 👆</div>`;const p=new URLSearchParams(location.search).get('n');if(p){$('q').value=p;show(p)}});
-function show(n){const x=IDX.find(e=>e[0].toLowerCase()===norm(n));if(!x)return;$('list').style.display='none';$('card').style.display='block';
-  const src='cards/'+encodeURIComponent(x[0])+'.jpg?v=3';$('img').src=src;$('dl').href=src;$('dl').setAttribute('download','dom_'+x[0]+'.jpg');
-  $('chips').innerHTML=(x[2]||[]).map(c=>`<span class="chip">${c}</span>`).join('');window.scrollTo(0,0)}
-$('back').onclick=()=>{$('card').style.display='none';$('list').style.display='block';$('q').focus()};
-$('q').addEventListener('input',()=>{const n=norm($('q').value);$('card').style.display='none';$('list').style.display='block';
-  if(n.length<2){$('list').innerHTML='<div class="empty">Начни вводить свой ник 👆</div>';return}
+const nkHtml=a=>a.map(e=>`<span class="nk" data-n="${esc(e[0])}">@${esc(e[0])}</span>`).join('');
+const bind=()=>document.querySelectorAll('[data-n]').forEach(el=>el.onclick=()=>show(el.dataset.n));
+function roles(r){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.r===r));$('roles').innerHTML=nkHtml(IDX.filter(e=>(e[2]||[]).includes(r)));bind()}
+fetch('data/index.json'+V).then(r=>r.json()).then(a=>{IDX=a;$('stat').textContent=`🏠 В городе уже ${a.length} домов`;
+  $('list').innerHTML='';roles('полицейский');$('newest').innerHTML=nkHtml([...a].sort((x,y)=>y[1]-x[1]).slice(0,24));bind();
+  const p=new URLSearchParams(location.search).get('n');if(p){$('q').value=p;show(p)}});
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>roles(t.dataset.r));
+function show(n){const x=IDX.find(e=>e[0].toLowerCase()===norm(n));if(!x)return;$('list').style.display='none';$('home').style.display='none';$('card').style.display='block';
+  const src='cards/'+encodeURIComponent(x[0])+'.jpg'+V;$('img').src=src;$('img').alt='Дом @'+x[0];$('dl').href=src;$('dl').setAttribute('download','dom_'+x[0]+'.jpg');
+  $('chips').innerHTML=`<span class="chip">🏠 дом №${x[1]}</span>`+(x[2]||[]).map(c=>`<span class="chip">${esc(c)}</span>`).join('');
+  history.replaceState(null,'','?n='+encodeURIComponent(x[0]));window.scrollTo(0,0)}
+$('share').onclick=async()=>{const u=location.href;try{if(navigator.share)await navigator.share({title:'Мой дом в Городе подписчиков',url:u});else{await navigator.clipboard.writeText(u);$('share').textContent='✅ Ссылка скопирована'}}catch(e){}};
+$('back').onclick=()=>{$('card').style.display='none';$('list').style.display='block';$('home').style.display='block';history.replaceState(null,'',location.pathname);$('q').value='';$('q').focus()};
+$('q').addEventListener('input',()=>{const n=norm($('q').value);$('card').style.display='none';$('list').style.display='block';$('home').style.display=n.length<2?'block':'none';
+  if(n.length<2){$('list').innerHTML='';return}
   const exact=IDX.filter(e=>e[0].toLowerCase()===n),pre=IDX.filter(e=>e[0].toLowerCase().startsWith(n)&&e[0].toLowerCase()!==n),inc=IDX.filter(e=>!e[0].toLowerCase().startsWith(n)&&e[0].toLowerCase().includes(n));
   const r=[...exact,...pre,...inc].slice(0,30);
-  $('list').innerHTML=r.length?r.map(e=>`<div class="item" data-n="${e[0]}"><b>@${e[0]}</b><span>дом №${e[1]}</span></div>`).join(''):`<div class="empty">Ника <b>@${n.replace(/[<>&"]/g,'')}</b> пока нет в городе.<br><br>Чтобы получить дом: подпишись на <b>@gorod.podpischikov001</b>, поставь лайк и напиши в комментарии, какой дом хочешь.</div>`;
-  document.querySelectorAll('.item').forEach(el=>el.onclick=()=>show(el.dataset.n))});
+  $('list').innerHTML=r.length?r.map(e=>`<div class="item" data-n="${esc(e[0])}"><b>@${esc(e[0])}</b><span>дом №${e[1]}</span></div>`).join(''):`<div class="empty">Ника <b>@${esc(n)}</b> пока нет в городе.<br><br>Чтобы получить дом: подпишись на <b>@gorod.podpischikov001</b>, поставь лайк и напиши в комментарии, какой дом хочешь.</div>`;bind()});
 </script></body></html>
