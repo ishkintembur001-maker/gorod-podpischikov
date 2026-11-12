@@ -1,4 +1,4 @@
-const SITE='https://ishkintembur001-maker.github.io/gorod-podpischikov';
+const SITE='https://gorod-podpischikov.pages.dev';
 const IG='https://www.instagram.com/gorod.podpischikov001/';
 let IDX=null,IDX_T=0;
 async function index(){if(IDX&&Date.now()-IDX_T<600000)return IDX;const r=await fetch(SITE+'/data/index.json',{cf:{cacheTtl:300}});const a=await r.json();IDX=new Map(a.map(x=>[x[0].toLowerCase(),x]));IDX_T=Date.now();return IDX}
