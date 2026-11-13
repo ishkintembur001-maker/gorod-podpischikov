@@ -157,8 +157,11 @@ async function bot(env,u){
   const m=u.message;if(!m)return new Response('ok');const chat=m.chat.id;
   if(m.successful_payment){await grant(env,m.successful_payment,m.from);return J({method:'sendMessage',chat_id:chat,text:'✅ Спасибо! Покупка уже в игре. Открой игру, чтобы увидеть.',reply_markup:kb()})}
   if(!m.text)return new Response('ok');const text=m.text.trim();const owner=await kv(env,'owner');
-  if(text==='/owner'&&!owner){await kv(env,'owner',m.from.id);return J({method:'sendMessage',chat_id:chat,text:'Ты владелец бота. Команды: /stats, /unlink ник, /give ник монеты'})}
+  if(text==='/owner'&&!owner){await kv(env,'owner',m.from.id);return J({method:'sendMessage',chat_id:chat,text:'Ты владелец бота. Команды: /stats, /unlink ник, /give ник монеты, /post текст'})}
   if(owner&&String(m.from.id)===owner){
+    if(/^\/post(@\w+)?(\s|$)/.test(text)){const body=text.replace(/^\/post(@\w+)?\s*/,'').trim();if(!body)return J({method:'sendMessage',chat_id:chat,text:'Напиши так: /post текст сообщения. В личке бота — уйдёт в группу @gorod_podpischikov. Внутри группы — опубликуется там.'});
+      const to=m.chat.type==='private'?'@gorod_podpischikov':chat;const r=await fetch('https://api.telegram.org/bot'+await token(env)+'/sendMessage',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat_id:to,text:body,parse_mode:'HTML',disable_web_page_preview:true,reply_markup:{inline_keyboard:[[{text:'🎮 Играть',url:'https://t.me/gorod_podpischikov_bot?start=play'}],[{text:'📸 Instagram',url:'https://instagram.com/gorod.podpischikov001'}]]}})}).then(r=>r.json()).catch(e=>({ok:false,description:String(e)}));
+      return J({method:'sendMessage',chat_id:m.from.id,text:r.ok?'✅ Опубликовано в '+to:'❌ Не получилось: '+(r.description||'ошибка')+'\nПроверь, что бот — админ группы с правом публикации.'})}
     if(text==='/stats'){const a=await env.DB.prepare('SELECT COUNT(*) c FROM players').first(),o=await env.DB.prepare('SELECT COUNT(*) c FROM players WHERE seen>?').bind(now()-86400).first(),s=await env.DB.prepare('SELECT COALESCE(SUM(stars),0) s,COUNT(*) c FROM pays WHERE refunded=0').first();
       return J({method:'sendMessage',chat_id:chat,text:`👥 Игроков: ${a.c}\n🟢 За сутки: ${o.c}\n⭐ Продаж: ${s.c} на ${s.s} звёзд`})}
     let r;if((r=text.match(/^\/unlink\s+@?(\S+)/))){await env.DB.prepare('UPDATE players SET nick=NULL WHERE nick=?').bind(norm(r[1])).run();return J({method:'sendMessage',chat_id:chat,text:'Ник @'+norm(r[1])+' отвязан'})}
