@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Смена</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b1446;--sky:#2b2266;--sky2:#372c7d;--win:#ffc65c;--tile:#ff6b4a;--mint:#5ee6b0;--moon:#e9e4ff;--dim:#a79fd6}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);font-family:Nunito,-apple-system,sans-serif;color:var(--moon);touch-action:none;-webkit-user-select:none;user-select:none}
+#gl{position:fixed;inset:0;width:100%;height:100%}button{font-family:inherit;cursor:pointer}.hidden{display:none!important}
+.hud{position:fixed;left:0;right:0;top:0;z-index:3;display:flex;gap:6px;align-items:center;padding:8px 10px;background:linear-gradient(rgba(18,13,51,.92),rgba(18,13,51,0))}
+.hud .p{background:var(--sky);border-radius:14px;padding:6px 10px;font-weight:900;font-size:14px;white-space:nowrap}.hud .p.t{background:var(--tile);color:#fff}.hud .p.c{background:var(--win);color:#3b2300}
+.hud .ttl{flex:1;font-family:Unbounded,sans-serif;font-size:12px;color:var(--win);line-height:1.2;overflow:hidden}.hud .ttl small{display:block;color:var(--dim);font-family:Nunito;font-weight:800;font-size:11px}
+#tip{position:fixed;left:50%;top:56px;transform:translateX(-50%);z-index:3;background:rgba(43,34,102,.92);padding:7px 12px;border-radius:14px;font-size:13px;font-weight:800;text-align:center;max-width:92vw}
+#pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:6;font-family:Unbounded,sans-serif;font-size:26px;font-weight:800;color:var(--win);text-shadow:0 3px 10px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:all .4s}#pop.on{opacity:1;top:34%}
+.btns{position:fixed;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:4;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.big{border:0;border-radius:50%;width:84px;height:84px;font-size:15px;font-weight:900;color:#3b2300;background:radial-gradient(circle at 35% 30%,#ffe9a8,#ffc65c 60%,#d9962a);box-shadow:0 6px 0 #9a6a1a,0 10px 20px rgba(0,0,0,.4)}.big.r{background:radial-gradient(circle at 35% 30%,#ffb8a8,#ff6b4a 60%,#c0392b);color:#fff;box-shadow:0 6px 0 #8a2a1a}.big.m{width:66px;height:66px;font-size:13px;background:radial-gradient(circle at 35% 30%,#c8ffe8,#5ee6b0 60%,#2f9e74);box-shadow:0 5px 0 #1f6e50}
+.big:active{transform:translateY(4px)}
+#joy{position:fixed;left:18px;bottom:calc(22px + env(safe-area-inset-bottom));width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.4);z-index:4;touch-action:none}#knob{position:absolute;left:38px;top:38px;width:54px;height:54px;border-radius:50%;background:#fff;pointer-events:none}
+/* касса */
+#cash{position:fixed;left:0;right:0;bottom:0;z-index:4;background:#120d33;border-radius:22px 22px 0 0;padding:10px 10px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.5)}
+#cash .row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#cash .lab{font-size:12px;color:var(--dim);font-weight:800;margin-top:4px}
+#cash .order{display:flex;justify-content:space-between;align-items:center;background:var(--sky);border-radius:14px;padding:8px 12px;font-weight:900}#cash .order b{font-family:Unbounded,sans-serif;color:var(--win);font-size:16px}
+.k{flex:1;min-width:70px;border:0;border-radius:12px;padding:10px 4px;font-weight:900;font-size:13px;background:var(--sky2);color:var(--moon)}.k small{display:block;color:var(--win);font-size:11px}.k:active{transform:scale(.95)}
+.k.go{background:var(--mint);color:#06301f}.k.no{background:var(--tile);color:#fff}.k.bill{background:#2f6e4a;color:#fff}
+.tray{min-height:30px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:rgba(255,255,255,.06);border-radius:12px;padding:5px 8px;font-weight:800;font-size:13px}.tray i{font-style:normal;background:var(--sky);border-radius:9px;padding:3px 7px}
+/* экраны */
+.scr{position:fixed;inset:0;z-index:8;background:rgba(18,13,51,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;gap:10px}
+.scr h1{font-family:Unbounded,sans-serif;font-size:22px;color:var(--win);margin:0}.scr p{margin:0;color:var(--moon);font-weight:700;max-width:360px;line-height:1.35}
+.scr .perk{background:var(--sky);border-radius:14px;padding:8px 12px;font-size:13px;font-weight:800;text-align:left;max-width:360px;width:100%}.scr .perk.lock{opacity:.5}
+.scr .bar{width:280px;height:12px;background:var(--sky);border-radius:8px;overflow:hidden}.scr .bar i{display:block;height:100%;background:var(--mint)}
+.scr button{border:0;border-radius:16px;padding:14px 20px;font-weight:900;font-size:16px;min-width:220px}.go1{background:var(--win);color:#3b2300;box-shadow:0 5px 0 #b9852a}.go2{background:var(--sky2);color:var(--moon)}
+#count{font-family:Unbounded,sans-serif;font-size:90px;color:var(--win)}
+</style></head><body>
+<canvas id="gl"></canvas>
+<div class="hud"><div class="ttl" id="ttl"></div><span class="p t" id="time">90</span><span class="p c" id="score">0</span><span class="p" id="combo">×1</span></div>
+<div id="tip" class="hidden"></div><div id="pop"></div>
+<div id="intro" class="scr"><div style="font-size:60px" id="ico"></div><h1 id="ititle"></h1><p id="idesc"></p><div id="perks" style="display:flex;flex-direction:column;gap:6px;align-items:center;width:100%"></div><button class="go1" id="start">▶ Начать смену</button><button class="go2" id="back1">⬅ Назад</button></div>
+<div id="cnt" class="scr hidden"><div id="count">3</div></div>
+<div id="end" class="scr hidden"></div>
+<script type="importmap">{"imports":{"three":"./three.js"}}</script><script type="module" src="work.js"></script></body></html>
