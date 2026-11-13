@@ -1,7 +1,7 @@
 // 3D-дом игрока: three.js. window.H3D.make(el) → {set(h,now), dispose()}
 import * as THREE from './three.min.js';
 const ROOF={'синяя':0x3a6fd8,'зелёная':0x3f9a4a,'розовая':0xe07aa8,'чёрная':0x26262b,'жёлтая':0xe9c03a,'оранжевая':0xe8822a,'фиолетовая':0x8a5cc4,'серая':0x8a8f96,'коричневая':0x7a4a2a,'золотая':0xe0b030};
-const EMO={cats:'🐱',dogs:'🐶',chickens:'🐔',rabbit:'🐰',parrot:'🦜',horse:'🐴',panda:'🐼',lion:'🦁',tiger:'🐯',bike:'🚲',scooter:'🛵',moto:'🏍'};
+const EMO={fox:'🦊',owl:'🦉',penguin:'🐧',turtle:'🐢',goat:'🐐',unicorn:'🦄',flamingo:'🦩',cats:'🐱',dogs:'🐶',chickens:'🐔',rabbit:'🐰',parrot:'🦜',horse:'🐴',panda:'🐼',lion:'🦁',tiger:'🐯',bike:'🚲',scooter:'🛵',moto:'🏍'};
 const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.8,...o});
 const texCache={};function emojiTex(e){if(texCache[e])return texCache[e];const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.font='100px "Apple Color Emoji","Noto Color Emoji","Segoe UI Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(e,64,70);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return texCache[e]=t}
 function box(g,w,h,d,mat,x,y,z,sh=true){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=sh;m.receiveShadow=true;g.add(m);return m}
@@ -27,7 +27,7 @@ class House{constructor(el){this.el=el;const r=this.r=new THREE.WebGLRenderer({a
   this.night=n;this.sun.intensity=n?.25:dusk?1.3:2.2;this.hemi.intensity=n?.35:1.1;this.s.fog.color.set(bot);this.winMat&&(this.winMat.emissiveIntensity=n||dusk?1.4:0)}
  clear(){this.anim=[];this.g.clear()}
  set(h,now){this.clear();const g=this.g,it=new Set(h.items||[]),L=Math.max(1,h.lvl||1),fl=L<=4?1:L<=9?2:3,W=7.2+Math.min(L,15)*.32,D=6.4,FH=2.8,hz=-2.5;
-  const skin=h.skin||'',chips=(h.chips||[]).join(' ');let rc=0xc9372c;for(const k in ROOF)if(chips.includes(k+' крыша'))rc=ROOF[k];if(skin==='noir')rc=0x1d1d22;if(skin==='sakura')rc=0xe889b5;if(it.has('gold'))rc=0xe0b030;
+  const skin=h.skin||'',chips=(h.chips||[]).join(' ');let rc=0xc9372c;for(const k in ROOF)if(chips.includes(k+' крыша'))rc=ROOF[k];if(skin==='noir')rc=0x1d1d22;if(skin==='sakura')rc=0xe889b5;if(skin==='palace')rc=0x1fa38a;if(skin==='goldh')rc=0xe0b030;if(skin==='future')rc=0x3a4aff;if(skin==='ice')rc=0x9fe4ff;if(skin==='candy')rc=0xff6fb5;if(it.has('gold'))rc=0xe0b030;
   const wallC=skin==='noir'?0x2b2b30:skin==='sakura'?0xfbe3ee:skin==='mansion'?0xfafafa:0xf3ead8,trim=skin==='noir'?0xc9a24e:0x8a5a32;const wall=M(wallC),tr=M(trim);
   this.winMat=new THREE.MeshStandardMaterial({color:0x9fd3f0,emissive:0xffc860,emissiveIntensity:0,roughness:.2,metalness:.3});
   for(let f=0;f<fl;f++){const y=.3+f*FH;box(g,W,FH,D,wall,0,y+FH/2,hz);box(g,W+.3,.25,D+.3,tr,0,y+FH,hz);const n=Math.max(3,Math.round(W/2.1));for(let k=0;k<n;k++){const x=-W/2+(k+.5)*W/n;if(f===0&&Math.abs(x)<.9)continue;const w=box(g,1,1.1,.12,this.winMat,x,y+FH*.55,hz+D/2+.03,false);box(g,1.2,.12,.2,tr,x,y+FH*.55-.62,hz+D/2+.08,false)}
@@ -63,6 +63,15 @@ class House{constructor(el){this.el=el;const r=this.r=new THREE.WebGLRenderer({a
   const veh=['jeep','car'].find(k=>it.has(k));if(veh){const c=this.car.clone();c.children[0].material=M(veh==='jeep'?0x2b2b2b:0xe8433a);c.position.set(4.5,0,7);c.rotation.y=Math.PI/2;c.scale.setScalar(veh==='jeep'?1.15:1);g.add(c)}
   if(it.has('balloons')){const cols=[0xe8433a,0xf2c230,0x3a8fd8,0x3ab36a,0xd94f8a];for(let k=0;k<7;k++){const b=sph(g,.45,M(cols[k%5],{roughness:.4}),Math.cos(k)*1,top+4+k%3*.6,hz+Math.sin(k)*1,1);b.scale.y=1.2;const y0=b.position.y;this.anim.push(t=>b.position.y=y0+Math.sin(t*1.5+k)*.2)}}
   const pets=[...it].filter(k=>EMO[k]);pets.forEach((k,i)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:emojiTex(EMO[k])}));sp.scale.setScalar(1.6);const cx=-6+i*2.2,cz=3+(i%2)*2;sp.position.set(cx,.9,cz);g.add(sp);this.anim.push(t=>{sp.position.x=cx+Math.sin(t*.5+i)*1.3;sp.position.z=cz+Math.cos(t*.4+i*2)*.8;sp.position.y=.85+Math.abs(Math.sin(t*4+i))*.15})});
+  {const FX={fx_snow:'❄️',fx_fly:'✨',fx_love:'💕',fx_money:'💸',fx_bfly:'🦋',fx_star:'🌠',fx_petal:'🌸',fx_fire:'🎇'};
+   [...it].filter(k=>FX[k]).forEach((k,j)=>{const mat=new THREE.SpriteMaterial({map:emojiTex(FX[k]),transparent:true});for(let i=0;i<14;i++){const sp=new THREE.Sprite(mat);sp.scale.setScalar(.7);g.add(sp);const x0=(Math.random()-.5)*18,z0=(Math.random()-.5)*16,o=Math.random()*10,sp2=.6+Math.random()*.6;
+     const fall=k!=='fx_fly'&&k!=='fx_bfly';this.anim.push(t=>{const u=(t*sp2+o)%10;sp.position.set(x0+Math.sin(t+o)*(fall?.5:1.5),fall?14-u*1.4:2+Math.sin(t*1.3+o)*1.5+o*.3,z0+Math.cos(t*.8+o)*(fall?.4:1.2))})}})}
+  {const ST={pond:'🐟',statue:'🗿',hammock:'🏝',firepit:'🔥',mailbox:'📮',windmill:'🌬',sport:'🏎',truck:'🛻',tractor:'🚜',boat:'🚤',bbcourt:'🏀',gym:'🏋️',goal:'🥅',tennis:'🎾',boxing:'🥊',skate:'🛹',xmas:'🎄',snowman:'⛄',gifts:'🎁',pumpkin:'🎃',disco:'🪩',limo:'🚘',castle:'🏰',diamond:'💎',dolphin:'🐬',rocket:'🚀',plane:'🛩'};
+   const BIG={castle:3.2,rocket:3,plane:2.8,windmill:2.6,xmas:2.4,limo:2.2,sport:2,statue:2,diamond:2};
+   [...it].filter(k=>ST[k]).forEach((k,i)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:emojiTex(ST[k])}));const sc=BIG[k]||1.7;sp.scale.setScalar(sc);const side=i%2?1:-1,row=i>>1;sp.position.set(side*(8.6-(row%3)*0.2),sc/2,-6+row*2.6);g.add(sp);if(k==='disco'||k==='diamond')this.anim.push(t=>sp.material.rotation=Math.sin(t*2)*.2)});
+   const FLY={ufo:['🛸',3,0],dragon:['🐉',3.4,1],eagle:['🦅',1.8,2],rainbow:['🌈',7,3]};
+   [...it].filter(k=>FLY[k]).forEach(k=>{const [e,sc,ph]=FLY[k];const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:emojiTex(e)}));sp.scale.setScalar(sc);g.add(sp);
+     if(k==='rainbow'){sp.position.set(0,15,-4);return}this.anim.push(t=>{const a=t*(.5+ph*.1)+ph*2;sp.position.set(Math.cos(a)*(6+ph),12+ph+Math.sin(t*2+ph)*.6,Math.sin(a)*(5+ph)-1)})})}
   if((h.fw||0)>now){const P=[];for(let k=0;k<40;k++){const m=sph(g,.12,new THREE.MeshBasicMaterial({color:[0xff4fd8,0xffd34d,0x4fc3ff,0x7dff8a][k%4]}),0,0,0,0);P.push(m)}this.anim.push(t=>P.forEach((m,i)=>{const b=Math.floor(t/1.6+i%3*.33),p=(t/1.6+i%3*.33)%1,a=i*2.4,cx=Math.sin(b*7+i%3)*6,cy=14+(b*3%4);m.position.set(cx+Math.cos(a)*p*4,cy+Math.sin(a)*p*4-p*p*2,-6);m.scale.setScalar(1-p)}))}
   this.smokeP=[];for(const sp of [this.smoke,this.smoke2].filter(Boolean)){for(let k=0;k<5;k++){const m=sph(g,.35,new THREE.MeshStandardMaterial({color:0xdddddd,transparent:true,opacity:.6}),sp[0],sp[1],sp[2],1);this.smokeP.push({m,sp,k})}}this.smoke=this.smoke2=null;
   this.night=null;this.sky(new Date(Date.now()+3*3600e3).getUTCHours())}
