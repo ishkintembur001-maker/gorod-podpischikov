@@ -358,8 +358,10 @@ addEventListener('message',e=>{const d=e.data||{};if(d.t!=='pl')return;document.
  for(const [n,o] of OTH)if(!seen.has(n)){scene.remove(o.g);OTH.delete(n)}});
 function mpTick(t,dt){for(const [n,o] of OTH){const g=o.g,dx=o.tx-g.position.x,dz=o.tz-g.position.z,L=Math.hypot(dx,dz),U=g.userData;if(L>40){g.position.x=o.tx;g.position.z=o.tz}else if(L>.3){const k=Math.min(1,dt*14/L);g.position.x+=dx*k;g.position.z+=dz*k;g.rotation.y=Math.atan2(dx,dz);U.legs.forEach((l,i)=>l.rotation.x=Math.sin(t*12+i*Math.PI)*.7);U.arms.forEach((a,i)=>a.rotation.x=-Math.sin(t*12+i*Math.PI)*.5)}else{U.legs.forEach(l=>l.rotation.x*=.8);U.arms.forEach(a=>a.rotation.x*=.8)}U.ring.material.opacity=.4+.3*Math.sin(t*3)}
  for(const g of [ME,...[...OTH.values()].map(o=>o.g)])if(g.userData.emo&&performance.now()-g.userData.emoT>4000){g.remove(g.userData.emo);g.userData.emo=null}else if(g.userData.emo)g.userData.emo.position.y=6.4+Math.sin(t*5)*.2}
+// пост-эффекты: свечение окон, огней и монет
+let COMP=null,BLOOM=null;Promise.all([import('./pp/postprocessing/EffectComposer.js'),import('./pp/postprocessing/RenderPass.js'),import('./pp/postprocessing/UnrealBloomPass.js'),import('./pp/postprocessing/OutputPass.js')]).then(([a,b,c,d])=>{if(LOWQ)return;const c0=new a.EffectComposer(renderer);c0.setPixelRatio(renderer.getPixelRatio());c0.setSize(innerWidth,innerHeight);c0.addPass(new b.RenderPass(scene,camera));BLOOM=new c.UnrealBloomPass(new THREE.Vector2(innerWidth/2,innerHeight/2),.45,.55,.82);c0.addPass(BLOOM);c0.addPass(new d.OutputPass());COMP=c0;addEventListener('resize',()=>COMP&&COMP.setSize(innerWidth,innerHeight))}).catch(()=>{});
 // адаптивное качество
-let FR=0,FPT=performance.now(),LOWQ=false;function perf(now){FR++;if(now-FPT>2500){const fps=FR*1000/(now-FPT);FR=0;FPT=now;if(fps<28&&!LOWQ){LOWQ=true;renderer.setPixelRatio(1);renderer.shadowMap.enabled=false;scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}}}
+let FR=0,FPT=performance.now(),LOWQ=false;function perf(now){FR++;if(now-FPT>2500){const fps=FR*1000/(now-FPT);FR=0;FPT=now;if(fps<28&&!LOWQ){LOWQ=true;renderer.setPixelRatio(1);renderer.shadowMap.enabled=false;COMP=null;scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}}}
 document.getElementById('fs').onclick=()=>parent.postMessage({t:'fs'},'*');
 const t0=performance.now();let last=t0;const camP=new THREE.Vector3(ME.position.x,30,ME.position.z+34);
 function loop(now){requestAnimationFrame(loop);const t=(now-t0)/1000,dt=Math.min(.05,(now-last)/1000);last=now;
@@ -377,5 +379,5 @@ function loop(now){requestAnimationFrame(loop);const t=(now-t0)/1000,dt=Math.min
  const fl=Math.sin(t*14)>0;police.lights[0].material.emissiveIntensity=fl?2:0.1;police.lights[1].material.emissiveIntensity=fl?0.1:2;CR.forEach(c=>c.jib.rotation.y=c.s*t*0.25);for(const p of SPARK)p.s.visible=false;
  for(const c of COINS){if(c.got)continue;c.m.rotation.z=t*3;c.m.position.y=2+Math.sin(t*3+c.i)*.4;if(Math.hypot(ME.position.x-c.x,ME.position.z-c.z)<3.2){c.got=1;scene.remove(c.m);scene.remove(c.gl);parent.postMessage({t:'coin',id:c.i},'*');parent.postMessage({t:'hap'},'*')}}
  let n=null;for(const z of ZONES){if(Math.hypot(ME.position.x-z[2],ME.position.z-z[3])<z[4]){n=z;break}}if(n!==NEAR){NEAR=n;act.style.display=n&&n[0]!=='plaza'?'block':'none';if(n)act.textContent=({home:'🏠 Зайти домой',vip:'👑 VIP-район',emb:'🌊 Набережная',plaza:''})[n[0]]||('▶ Работать: '+n[1].replace(/^\S+ /,''))}
- mpTick(t,dt);perf(now);renderer.render(scene,camera)}
+ mpTick(t,dt);perf(now);if(COMP){const nk=nightK();BLOOM.strength=.32+nk*.7;BLOOM.threshold=.86-nk*.2;COMP.render()}else renderer.render(scene,camera)}
 document.getElementById('load').remove();requestAnimationFrame(loop);
