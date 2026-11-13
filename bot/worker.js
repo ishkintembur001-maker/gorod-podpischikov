@@ -34,13 +34,13 @@ const GOALS=['🌊 Аквапарк','🦁 Зоопарк','✈️ Аэропо�
 // ===== ЖИЗНЬ (Симс-механики в Городе подписчиков) =====
 const NEEDS=['food','sleep','fun','soc','hyg'],DECAY={food:6,sleep:4,fun:5,soc:4,hyg:4};
 const FURN={fridge:['🧊','Холодильник',0,0,{food:35}],bed:['🛏','Кровать',0,0,{sleep:45}],shower:['🚿','Душ',0,0,{hyg:45}],tv:['📺','Телевизор',0,0,{fun:30}],phone:['📱','Телефон: позвонить подписчикам',0,0,{soc:25}],table:['🍽','Обеденный стол',0,0,{food:15,soc:5}],plant:['🪴','Цветок',0,0,{}],
- sofa:['🛋','Диван',800,0,{fun:20,sleep:10}],stove:['🍳','Плита',1200,0,{food:45}],bath:['🛁','Ванна',1500,0,{hyg:60}],pc:['💻','Компьютер: листать Instagram',2000,0,{fun:35,soc:15}],console:['🎮','Приставка',2500,0,{fun:50}],guitar:['🎸','Гитара',1500,0,{fun:35}],books:['📚','Книжный шкаф',1000,0,{fun:20}],lamp:['💡','Торшер',400,0,{}],rug:['🟫','Ковёр',500,0,{}],aquarium:['🐠','Аквариум',2200,0,{fun:25}],
+ sofa:['🛋','Диван',800,0,{fun:20,sleep:10}],stove:['🍳','Плита',1200,0,{food:45}],bath:['🛁','Ванна',1500,0,{hyg:60}],pc:['💻','Компьютер: листать Instagram',0,0,{fun:35,soc:15}],console:['🎮','Приставка',2500,0,{fun:50}],guitar:['🎸','Гитара',1500,0,{fun:35}],books:['📚','Книжный шкаф',1000,0,{fun:20}],lamp:['💡','Торшер',400,0,{}],rug:['🟫','Ковёр',500,0,{}],aquarium:['🐠','Аквариум',2200,0,{fun:25}],
  kingbed:['👑','Королевская кровать',0,150,{sleep:80}],jacuzzi:['♨️','Джакузи',0,150,{hyg:70,fun:20}],cinema:['🎬','Домашний кинотеатр',0,200,{fun:70,soc:10}],chef:['👨‍🍳','Кухня шефа',0,150,{food:80}],piano:['🎹','Рояль',0,200,{fun:55}],fireplace:['🔥','Камин',0,120,{fun:20,sleep:15}]};
 for(const k in FURN)if(FURN[k][3])STARS['f_'+k]=[FURN[k][0],'Мебель: '+FURN[k][1],FURN[k][3]];
-const STARTF=[['bed',6,-5,0],['fridge',-10.5,-7,0],['table',-6,-3.5,0],['shower',10.3,6.3,3.14],['tv',-6,7.2,3.14],['phone',-2,2.5,0],['plant',-11,7,0]];
+const STARTF=[['bed',6,-5,0],['fridge',-10.5,-7,0],['table',-6,-3.5,0],['shower',10.3,6.3,3.14],['tv',-6,7.2,3.14],['phone',-2,2.5,0],['plant',-11,7,0],['pc',10,-7.2,0]];
 const LOOKV={g:['m','f'],sk:['#f2d3b8','#e0b08a','#c68e63','#8d5a3b','#5c3a24'],hc:['#2b1a10','#5a3a1e','#c48a3a','#e8d08a','#111111','#a33a2a','#6a4fd0'],hs:[0,1,2,3,4],sh:['#e8433a','#3a8bff','#2bb24c','#ffc65c','#ffffff','#222222','#ff6fb5','#6a4fd0'],pa:['#2b3a55','#1c1c1c','#6b4a2b','#3a5a2a','#c0c0c0','#8a2a2a'],ac:['','cap','glasses','crown','headphones','tubeteika']};
 function lifeOf(p){let L;try{L=p.life?JSON.parse(p.life):null}catch(e){}if(!L)L={n:{food:80,sleep:80,fun:70,soc:60,hyg:80},t:now(),look:{g:'m',sk:'#e0b08a',hc:'#2b1a10',hs:0,sh:'#e8433a',pa:'#2b3a55',ac:''},own:STARTF.map(f=>f[0]),furn:STARTF,wall:'#f3e3c8',floor:'#b98a5a',cd:{}};
- const h=(now()-L.t)/3600;if(h>0){for(const k of NEEDS)L.n[k]=Math.max(0,Math.round((L.n[k]-DECAY[k]*h)*10)/10);L.t=now()}return L}
+ if(!L.own.includes('pc')){L.own.push('pc');if(!L.furn.some(q=>q[0]==='pc'))L.furn.push(['pc',10,-7.2,0])}const h=(now()-L.t)/3600;if(h>0){for(const k of NEEDS)L.n[k]=Math.max(0,Math.round((L.n[k]-DECAY[k]*h)*10)/10);L.t=now()}return L}
 function mood(L){return Math.round(NEEDS.reduce((a,k)=>a+L.n[k],0)/NEEDS.length)}
 function moodK(L){const m=mood(L);return m>=70?1.25:m>=40?1:0.8}
 function needUp(p,add){const L=lifeOf(p);for(const k in add)L.n[k]=Math.max(0,Math.min(100,L.n[k]+add[k]));p.life=JSON.stringify(L);return L}
