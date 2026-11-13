@@ -1,5 +1,6 @@
 // 3D-дом игрока: three.js. window.H3D.make(el) → {set(h,now), dispose()}
-import * as THREE from './three.min.js';
+import * as THREE from './world/three.js';
+import {pet,petPlay,item,hasItem,animItem,flyer,flap,fxMesh,hasFx} from './props3d.js';
 const ROOF={'синяя':0x3a6fd8,'зелёная':0x3f9a4a,'розовая':0xe07aa8,'чёрная':0x26262b,'жёлтая':0xe9c03a,'оранжевая':0xe8822a,'фиолетовая':0x8a5cc4,'серая':0x8a8f96,'коричневая':0x7a4a2a,'золотая':0xe0b030};
 const EMO={fox:'🦊',owl:'🦉',penguin:'🐧',turtle:'🐢',goat:'🐐',unicorn:'🦄',flamingo:'🦩',cats:'🐱',dogs:'🐶',chickens:'🐔',rabbit:'🐰',parrot:'🦜',horse:'🐴',panda:'🐼',lion:'🦁',tiger:'🐯',bike:'🚲',scooter:'🛵',moto:'🏍'};
 const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.8,...o});
@@ -62,16 +63,22 @@ class House{constructor(el){this.el=el;const r=this.r=new THREE.WebGLRenderer({a
   if(it.has('yacht')){const w=new THREE.Mesh(new THREE.PlaneGeometry(30,5),new THREE.MeshStandardMaterial({color:0x3e9fe0,roughness:.1}));w.rotation.x=-Math.PI/2;w.position.set(0,.04,19);g.add(w);const y=new THREE.Group();box(y,3,.7,1.2,M(0xffffff),0,.4,0);box(y,1.4,.6,1,M(0x9ad0ff),.2,1,0);y.position.set(0,0,19);g.add(y);this.anim.push(t=>{y.position.x=Math.sin(t*.25)*10;y.rotation.z=Math.sin(t*1.5)*.04})}
   const veh=['jeep','car'].find(k=>it.has(k));if(veh){const c=this.car.clone();c.children[0].material=M(veh==='jeep'?0x2b2b2b:0xe8433a);c.position.set(4.5,0,7);c.rotation.y=Math.PI/2;c.scale.setScalar(veh==='jeep'?1.15:1);g.add(c)}
   if(it.has('balloons')){const cols=[0xe8433a,0xf2c230,0x3a8fd8,0x3ab36a,0xd94f8a];for(let k=0;k<7;k++){const b=sph(g,.45,M(cols[k%5],{roughness:.4}),Math.cos(k)*1,top+4+k%3*.6,hz+Math.sin(k)*1,1);b.scale.y=1.2;const y0=b.position.y;this.anim.push(t=>b.position.y=y0+Math.sin(t*1.5+k)*.2)}}
-  const pets=[...it].filter(k=>EMO[k]);pets.forEach((k,i)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:emojiTex(EMO[k])}));sp.scale.setScalar(1.6);const cx=-6+i*2.2,cz=3+(i%2)*2;sp.position.set(cx,.9,cz);g.add(sp);this.anim.push(t=>{sp.position.x=cx+Math.sin(t*.5+i)*1.3;sp.position.z=cz+Math.cos(t*.4+i*2)*.8;sp.position.y=.85+Math.abs(Math.sin(t*4+i))*.15})});
-  {const FX={fx_snow:'❄️',fx_fly:'✨',fx_love:'💕',fx_money:'💸',fx_bfly:'🦋',fx_star:'🌠',fx_petal:'🌸',fx_fire:'🎇'};
-   [...it].filter(k=>FX[k]).forEach((k,j)=>{const mat=new THREE.SpriteMaterial({map:emojiTex(FX[k]),transparent:true});for(let i=0;i<14;i++){const sp=new THREE.Sprite(mat);sp.scale.setScalar(.7);g.add(sp);const x0=(Math.random()-.5)*18,z0=(Math.random()-.5)*16,o=Math.random()*10,sp2=.6+Math.random()*.6;
-     const fall=k!=='fx_fly'&&k!=='fx_bfly';this.anim.push(t=>{const u=(t*sp2+o)%10;sp.position.set(x0+Math.sin(t+o)*(fall?.5:1.5),fall?14-u*1.4:2+Math.sin(t*1.3+o)*1.5+o*.3,z0+Math.cos(t*.8+o)*(fall?.4:1.2))})}})}
-  {const ST={pond:'🐟',statue:'🗿',hammock:'🏝',firepit:'🔥',mailbox:'📮',windmill:'🌬',sport:'🏎',truck:'🛻',tractor:'🚜',boat:'🚤',bbcourt:'🏀',gym:'🏋️',goal:'🥅',tennis:'🎾',boxing:'🥊',skate:'🛹',xmas:'🎄',snowman:'⛄',gifts:'🎁',pumpkin:'🎃',disco:'🪩',limo:'🚘',castle:'🏰',diamond:'💎',dolphin:'🐬',rocket:'🚀',plane:'🛩'};
-   const BIG={castle:3.2,rocket:3,plane:2.8,windmill:2.6,xmas:2.4,limo:2.2,sport:2,statue:2,diamond:2};
-   [...it].filter(k=>ST[k]).forEach((k,i)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:emojiTex(ST[k])}));const sc=BIG[k]||1.7;sp.scale.setScalar(sc);const side=i%2?1:-1,row=i>>1;sp.position.set(side*(8.6-(row%3)*0.2),sc/2,-6+row*2.6);g.add(sp);if(k==='disco'||k==='diamond')this.anim.push(t=>sp.material.rotation=Math.sin(t*2)*.2)});
-   const FLY={ufo:['🛸',3,0],dragon:['🐉',3.4,1],eagle:['🦅',1.8,2],rainbow:['🌈',7,3]};
-   [...it].filter(k=>FLY[k]).forEach(k=>{const [e,sc,ph]=FLY[k];const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:emojiTex(e)}));sp.scale.setScalar(sc);g.add(sp);
-     if(k==='rainbow'){sp.position.set(0,15,-4);return}this.anim.push(t=>{const a=t*(.5+ph*.1)+ph*2;sp.position.set(Math.cos(a)*(6+ph),12+ph+Math.sin(t*2+ph)*.6,Math.sin(a)*(5+ph)-1)})})}
+  {const VEH=['bike','scooter','moto'];let vi=0;const lastT={v:null};
+   [...it].filter(k=>VEH.includes(k)).forEach(k=>{const v=item(k);v.position.set(6.8-vi*1.4,0,8.2);v.rotation.y=-.3;vi++;g.add(v)});
+   const pets=[...it].filter(k=>EMO[k]&&!VEH.includes(k));
+   pets.forEach((k,i)=>{const p=pet(k,this);const cx=-5+i*2.4,cz=3.5+(i%2)*2;p.position.set(cx,0,cz);g.add(p);let tx=cx,tz=cz,wait=Math.random()*3,last=null;
+    this.anim.push(t=>{const dt=last==null?0:Math.min(.05,t-last);last=t;const U=p.userData;if(U.mix)U.mix.update(dt);
+     const dx=tx-p.position.x,dz=tz-p.position.z,L=Math.hypot(dx,dz);
+     if(L>.15){const sp=(k==='horse'||k==='unicorn'?1.4:1)*dt;p.position.x+=dx/L*Math.min(L,sp);p.position.z+=dz/L*Math.min(L,sp);let ry=Math.atan2(dx,dz),c=p.rotation.y;while(ry-c>Math.PI)ry-=6.283;while(c-ry>Math.PI)ry+=6.283;p.rotation.y=c+(ry-c)*Math.min(1,dt*5);petPlay(p,'walk');if(!U.mix)p.position.y=Math.abs(Math.sin(t*8))*.08}
+     else{wait-=dt;if(!U.mix)p.position.y=0;petPlay(p,Math.sin(i*7+Math.floor(t/6))>.3?'eat':'idle');if(wait<=0){wait=2+Math.random()*4;tx=Math.max(-7,Math.min(7,cx+(Math.random()-.5)*5));tz=Math.max(1.5,Math.min(7.5,cz+(Math.random()-.5)*3))}}})});
+  }
+  {[...it].filter(k=>hasFx(k)).forEach(k=>{for(let i=0;i<14;i++){const sp=fxMesh(k);g.add(sp);const x0=(Math.random()-.5)*18,z0=(Math.random()-.5)*16,o=Math.random()*10,sp2=.6+Math.random()*.6;
+     const fall=k!=='fx_fly'&&k!=='fx_bfly';this.anim.push(t=>{const u=(t*sp2+o)%10;sp.position.set(x0+Math.sin(t+o)*(fall?.5:1.5),fall?14-u*1.4:2+Math.sin(t*1.3+o)*1.5+o*.3,z0+Math.cos(t*.8+o)*(fall?.4:1.2));sp.rotation.set(t*1.3+o,t*.9+o,0);if(k==='fx_bfly')sp.scale.x=.4+Math.abs(Math.sin(t*12+o))})}})}
+  {const ST=['pond','statue','hammock','firepit','mailbox','windmill','sport','truck','tractor','boat','bbcourt','gym','goal','tennis','boxing','skate','xmas','snowman','gifts','pumpkin','disco','limo','castle','diamond','dolphin','rocket','plane'];
+   [...it].filter(k=>ST.includes(k)&&hasItem(k)).forEach((k,i)=>{const o=item(k);const side=i%2?1:-1,row=i>>1;o.position.set(side*(7.9-(row%3)*0.2),0,-6+row*2.6);o.rotation.y=side>0?-Math.PI/2:Math.PI/2;if(['castle','rocket','windmill','plane'].includes(k))o.scale.setScalar(.8);g.add(o);this.anim.push(t=>animItem(o,t))});
+   const FLY={ufo:0,dragon:1,eagle:2,rainbow:3};
+   [...it].filter(k=>k in FLY).forEach(k=>{const ph=FLY[k],o=flyer(k);g.add(o);
+     if(k==='rainbow'){o.position.set(0,9,-6);return}this.anim.push(t=>{const a=t*(.5+ph*.1)+ph*2;o.position.set(Math.cos(a)*(6+ph),12+ph+Math.sin(t*2+ph)*.6,Math.sin(a)*(5+ph)-1);o.rotation.y=-a;flap(o,t)})})}
   if((h.fw||0)>now){const P=[];for(let k=0;k<40;k++){const m=sph(g,.12,new THREE.MeshBasicMaterial({color:[0xff4fd8,0xffd34d,0x4fc3ff,0x7dff8a][k%4]}),0,0,0,0);P.push(m)}this.anim.push(t=>P.forEach((m,i)=>{const b=Math.floor(t/1.6+i%3*.33),p=(t/1.6+i%3*.33)%1,a=i*2.4,cx=Math.sin(b*7+i%3)*6,cy=14+(b*3%4);m.position.set(cx+Math.cos(a)*p*4,cy+Math.sin(a)*p*4-p*p*2,-6);m.scale.setScalar(1-p)}))}
   this.smokeP=[];for(const sp of [this.smoke,this.smoke2].filter(Boolean)){for(let k=0;k<5;k++){const m=sph(g,.35,new THREE.MeshStandardMaterial({color:0xdddddd,transparent:true,opacity:.6}),sp[0],sp[1],sp[2],1);this.smokeP.push({m,sp,k})}}this.smoke=this.smoke2=null;
   this.night=null;this.sky(new Date(Date.now()+3*3600e3).getUTCHours())}
