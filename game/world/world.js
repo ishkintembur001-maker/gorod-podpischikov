@@ -26,7 +26,7 @@ export function buildWorld(residents){
   const streets=[];
   for(let b=0;b<=Math.ceil(rows/2);b++){const z=oz+rowZ(b*2)-ST/2;streets.push({x:ox+W0/2,z,w:W0+ST*2,d:ST})}
   for(let g=0;g<=COLS/GROUP;g++){const x=ox+colX(g*GROUP)-ST/2;streets.push({x,z:oz+H0/2,w:ST,d:H0+ST*2})}
-  for(const s of streets){const tex=T.paving.clone();tex.needsUpdate=true;tex.repeat.set(s.w/8,s.d/8);const m=new THREE.Mesh(new THREE.PlaneGeometry(s.w,s.d),new THREE.MeshLambertMaterial({map:tex}));m.rotation.x=-Math.PI/2;m.position.set(s.x,0.03,s.z);m.receiveShadow=true;scene.add(m)}
+  WORLD.streets=streets;for(const s of streets){const tex=T.paving.clone();tex.needsUpdate=true;tex.repeat.set(s.w/8,s.d/8);const m=new THREE.Mesh(new THREE.PlaneGeometry(s.w,s.d),new THREE.MeshLambertMaterial({map:tex}));m.rotation.x=-Math.PI/2;m.position.set(s.x,0.03,s.z);m.receiveShadow=true;scene.add(m)}
   {const tex=T.plaza.clone();tex.needsUpdate=true;const w=px1-px0+ST,d=pz1-pz0+ST;tex.repeat.set(w/9,d/9);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshLambertMaterial({map:tex}));m.rotation.x=-Math.PI/2;m.position.set((px0+px1)/2,0.06,(pz0+pz1)/2);m.receiveShadow=true;scene.add(m)}
   // river on the left
   const rvx=ox-46,rvw=30;{const tex=T.water;tex.repeat.set(4,140);const m=new THREE.Mesh(new THREE.PlaneGeometry(rvw,4000),M.water);m.rotation.x=-Math.PI/2;m.position.set(rvx,0.05,0);scene.add(m);WORLD.river={x:rvx,w:rvw,mesh:m};

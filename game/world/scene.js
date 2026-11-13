@@ -341,7 +341,7 @@ document.querySelectorAll('#taxi button').forEach(b=>b.onclick=()=>{const z=ZONE
 document.getElementById('taxib').onclick=()=>document.getElementById('taxi').classList.toggle('open');
 addEventListener('message',e=>{const d=e.data||{};if(d.t==='found'){FOUND=new Set(d.found)}});
 // время суток (Москва)
-function nightK(){const h=(new Date().getUTCHours()+3)%24+new Date().getUTCMinutes()/60;if(h>=7.5&&h<=18.5)return 0;if(h>=21||h<5.5)return 1;return h<12?(7.5-h)/2:(h-18.5)/2.5}
+function nightK(){if(/day=1/.test(location.search))return 0;const h=(new Date().getUTCHours()+3)%24+new Date().getUTCMinutes()/60;if(h>=7.5&&h<=18.5)return 0;if(h>=21||h<5.5)return 1;return h<12?(7.5-h)/2:(h-18.5)/2.5}
 addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});camera.aspect=innerWidth/innerHeight;camera.fov=50;camera.updateProjectionMatrix();
 
 // ===== мультиплеер =====
@@ -361,8 +361,39 @@ function mpTick(t,dt){for(const [n,o] of OTH){const g=o.g,dx=o.tx-g.position.x,d
  for(const g of [ME,...[...OTH.values()].map(o=>o.g)])if(g.userData.emo&&performance.now()-g.userData.emoT>4000){g.remove(g.userData.emo);g.userData.emo=null}else if(g.userData.emo)g.userData.emo.position.y=6.4+Math.sin(t*5)*.2}
 // пост-эффекты: свечение окон, огней и монет
 let COMP=null,BLOOM=null;Promise.all([import('./pp/postprocessing/EffectComposer.js'),import('./pp/postprocessing/RenderPass.js'),import('./pp/postprocessing/UnrealBloomPass.js'),import('./pp/postprocessing/OutputPass.js')]).then(([a,b,c,d])=>{if(LOWQ)return;const c0=new a.EffectComposer(renderer);c0.setPixelRatio(renderer.getPixelRatio());c0.setSize(innerWidth,innerHeight);c0.addPass(new b.RenderPass(scene,camera));BLOOM=new c.UnrealBloomPass(new THREE.Vector2(innerWidth/2,innerHeight/2),.45,.55,.82);c0.addPass(BLOOM);c0.addPass(new d.OutputPass());COMP=c0;addEventListener('resize',()=>COMP&&COMP.setSize(innerWidth,innerHeight))}).catch(()=>{});
+
+// ===== жители-боты: гуляют, работают, растут (одинаково у всех игроков — привязка ко времени) =====
+const BOTN=['aruzhan_07','timur.kg','alikhan_2010','amina.ss','ruslan__05','aigerim.k','nurlan_777','madina_x','daniyar.bek','zarina_09','islam.dag','malika_star','bekzat_k1','kamila.rose','emir_2011','aliya.nur','sultan__kz','asel.moon','arsen_99','laylo_uz','adil.07','saida_kz','rustam.boss','dinara_q','aibek__01','yasmina.s','murat.kg05','sabina_lov','eldar__x','aisha.07','nurik_real','gulnaz.a','marat_2008','zhanel.k','omar__05','leyla_dg','bakha.kz','asylbek_7','feruza.uz','danik_007','alina_kg','tamerlan__','zhasmin.s','kanat_01','ainura.z','said_dag','meruert.m','ilyas.kz','nazira__','artur_k07'];
+const BJ=[['hospital','🏥',['Санитар','Медбрат','Врач','Хирург','Главврач']],['football','⚽',['Запасной','Игрок основы','Лидер атаки','Капитан','Легенда']],['park','🎢',['Кассир-стажёр','Кассир','Ст. кассир','Управляющий','Директор']],['shop','🛍',['Стажёр','Кассир','Ст. кассир','Админ','Директор ТЦ']],['police','👮',['Стажёр','Сотрудник','Опытный','Старший','Начальник']]];
+function bh(n,k=0){let h=2166136261^k;for(const c of n){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0)/4294967296}
+const BOT_DAY0=Date.UTC(2026,10,14);
+const BLOOKS={sk:['#f2d3b8','#e0b08a','#c68e63','#8d5a3b'],hc:['#2b1a10','#5a3a1e','#c48a3a','#111111','#a33a2a'],sh:['#e8433a','#3a8bff','#2bb24c','#ffc65c','#ffffff','#6a4fd0','#ff6fb5','#222222'],pa:['#2b3a55','#1c1c1c','#6b4a2b','#3a5a2a','#c0c0c0'],ac:['','','','cap','glasses','headphones','tubeteika']};
+const pk=(a,u)=>a[Math.floor(u*a.length)%a.length];
+const BOTS=[];
+{const S=WORLD.streets||[];const H=S.filter(s=>s.w>s.d),V=S.filter(s=>s.d>=s.w);const xs=V.map(s=>s.x).sort((a,b)=>a-b),zs=H.map(s=>s.z).sort((a,b)=>a-b);
+ if(xs.length>1&&zs.length>1)BOTN.forEach((n,i)=>{const u=k=>bh(n,k);const day=Math.floor((Date.now()-BOT_DAY0)/864e5);const HUBS=[[P.cx,P.cz],[HS.x,HS.z],[PS.x,PS.z],[MALL.x,MALL.z],[PK.x,PK.z],[FB.x,FB.z],[VP.x,VP.z],[P.cx+40,P.cz+40],[P.cx-40,P.cz-30]].concat(MY?[[MY.x,MY.z]]:[]);const hb=HUBS[Math.floor(u(1)*HUBS.length)];let c=xs.reduce((bi,x,k)=>Math.abs(x-hb[0])<Math.abs(xs[bi]-hb[0])?k:bi,0),r=zs.reduce((bi,z,k)=>Math.abs(z-hb[1])<Math.abs(zs[bi]-hb[1])?k:bi,0);c=Math.max(0,Math.min(xs.length-1,c+Math.round((u(2)-.5)*2)));const pts=[[xs[c],zs[r]]];
+  // маршрут на сегодня: случайная прогулка по перекрёсткам, затем обратно — замкнутая петля
+  let seed=bh(n,100+day);const rnd=()=>{seed=(seed*9301+49297)%233280/233280||bh(n,seed*1e6);return seed};
+  for(let k=0;k<10;k++){const d=Math.floor(rnd()*4);if(d===0&&c<xs.length-1)c++;else if(d===1&&c>0)c--;else if(d===2&&r<zs.length-1)r++;else if(r>0)r--;const p=[xs[c],zs[r]];const q=pts[pts.length-1];if(p[0]!==q[0]||p[1]!==q[1])pts.push(p)}
+  const loop=pts.concat(pts.slice(0,-1).reverse());const seg=[];let L=0;for(let k=1;k<loop.length;k++){const a=loop[k-1],b=loop[k],l=Math.hypot(b[0]-a[0],b[1]-a[1]);seg.push([a,b,L,l]);L+=l}
+  const job=BJ[Math.floor(u(3)*BJ.length)],lvl=Math.min(15,1+Math.floor(u(4)*5+day*(.25+u(5)*.5))),ti=Math.min(4,Math.floor(lvl/3.2));
+  const look={g:u(6)<.5?'m':'f',sk:pk(BLOOKS.sk,u(7)),hc:pk(BLOOKS.hc,u(8)),hs:Math.floor(u(9)*2),sh:pk(BLOOKS.sh,u(10)),pa:pk(BLOOKS.pa,u(11)),ac:pk(BLOOKS.ac,u(12))};
+  const side=(u(13)-.5)*2.4;
+  BOTS.push({n,job,lvl,title:job[2][ti],look,seg,L,sp:2.6+u(14)*1.6,off:u(15)*L,side,g:null,act:'',u})})}
+function botPos(b,ts){if(!b.L)return null;let d=(ts*b.sp+b.off)%b.L;for(const [a,c,s0,l] of b.seg){if(d<=s0+l){const k=(d-s0)/l,x=a[0]+(c[0]-a[0])*k,z=a[1]+(c[1]-a[1])*k;const dx=c[0]-a[0],dz=c[1]-a[1],ll=Math.hypot(dx,dz)||1;return {x:x+(-dz/ll)*b.side,z:z+(dx/ll)*b.side,ry:Math.atan2(dx,dz)}}}return null}
+function botLabel(b){const c=document.createElement('canvas');c.width=512;c.height=120;const x=c.getContext('2d');x.font='bold 40px -apple-system,sans-serif';const t1='@'+b.n,t2=b.job[1]+' '+b.title+' · ур. '+b.lvl;const w=Math.min(500,Math.max(x.measureText(t1).width,x.measureText(t2).width*0.8)+44);x.fillStyle='rgba(30,20,70,.85)';x.beginPath();x.roundRect(256-w/2,6,w,108,30);x.fill();x.fillStyle='#fff';x.textAlign='center';x.fillText(t1,256,50);x.font='bold 30px -apple-system,sans-serif';x.fillStyle='#ffc65c';x.fillText(t2,256,95);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.renderOrder=9;s.scale.set(7,1.65,1);return s}
+let botT=0;window.__bots=()=>BOTS.length+' vis:'+BOTS.filter(b=>b.g).length+' streets:'+(WORLD.streets||[]).length;
+function botTick(t,dt){const ts=Date.now()/1000,night=nightK()>.6,px=ME.position.x,pz=ME.position.z;botT-=dt;const check=botT<=0;if(check)botT=.5;
+ for(const b of BOTS){const p=botPos(b,ts);if(!p)continue;const awake=!night||b.u(20+Math.floor(ts/3600))<.35;const near=awake&&Math.hypot(p.x-px,p.z-pz)<110;
+  if(check){if(near&&!b.g&&BOTS.filter(q=>q.g).length<16){b.g=makeHero(b.look,false);b.g.userData.nick=b.n;b.g.userData.bot=b;const l=botLabel(b);l.position.y=4.3;b.g.add(l);b.g.position.set(p.x,0,p.z);scene.add(b.g)}
+   else if(!near&&b.g){scene.remove(b.g);hdispose(b.g);b.g=null}}
+  if(b.g){const g=b.g,stop=Math.sin(ts*.07+b.u(30)*50)>.93;if(stop){walk(g,t,false);if(Math.sin(ts*.5+b.u(31)*9)>.97&&g.userData.anim!=='Victory'){hplay(g,'Victory',{once:true});showEmo(g,pk(['👋','😂','🔥','🎉','😎'],b.u(32+Math.floor(ts/30))))}}else{g.position.set(p.x,0,p.z);g.rotation.y=p.ry;hwalk(g,t,true)}}}}
+function walk(g,t,on){hwalk(g,t,on)}
+// тап по боту — карточка жителя
+addEventListener('message',e=>{});
+
 // тап по игроку — общение
-{const gl=document.getElementById('gl');let sx=0,sy=0;gl.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY});gl.addEventListener('pointerup',e=>{if(Math.hypot(e.clientX-sx,e.clientY-sy)>8)return;const rc=new THREE.Raycaster(),v=new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);rc.setFromCamera(v,camera);const gs=[...OTH.values()].map(o=>o.g);const hit=rc.intersectObjects(gs,true)[0];if(hit){let o=hit.object;while(o&&!o.userData.nick)o=o.parent;if(o){parent.postMessage({t:'tapP',n:o.userData.nick},'*');parent.postMessage({t:'hap'},'*')}}})}
+{const gl=document.getElementById('gl');let sx=0,sy=0;gl.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY});gl.addEventListener('pointerup',e=>{if(Math.hypot(e.clientX-sx,e.clientY-sy)>8)return;const rc=new THREE.Raycaster(),v=new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);rc.setFromCamera(v,camera);const gs=[...OTH.values()].map(o=>o.g).concat(BOTS.filter(b=>b.g).map(b=>b.g));const hit=rc.intersectObjects(gs,true)[0];if(hit){let o=hit.object;while(o&&!o.userData.nick)o=o.parent;if(o){if(o.userData.bot){const b=o.userData.bot;showEmo(o,'👋');hplay(o,'Victory',{once:true});const c=document.getElementById('botc');c.innerHTML=`<b>@${b.n}</b><br>${b.job[1]} ${b.title} · уровень ${b.lvl}<br><small>Житель города · помахал тебе в ответ 👋</small>`;c.style.display='block';clearTimeout(c._t);c._t=setTimeout(()=>c.style.display='none',3500)}else parent.postMessage({t:'tapP',n:o.userData.nick},'*');parent.postMessage({t:'hap'},'*')}}})}
 addEventListener('message',e=>{if((e.data||{}).t==='emo'){showEmo(ME,e.data.e);SENDE=e.data.e;sendPos();return}if((e.data||{}).t==='look'){const p=ME.position.clone(),r=ME.rotation.y;const kids=ME.children.filter(c=>c.isSprite);scene.remove(ME);ME=makeHero(myLook());ME.position.copy(p);ME.rotation.y=r;kids.forEach(k=>ME.add(k));scene.add(ME);window.__p=ME.position}});
 // адаптивное качество
 let FR=0,FPT=performance.now(),LOWQ=false;function perf(now){FR++;if(now-FPT>2500){const fps=FR*1000/(now-FPT);FR=0;FPT=now;if(fps<28&&!LOWQ&&!QS.get('hq')){LOWQ=true;renderer.setPixelRatio(1);renderer.shadowMap.enabled=false;COMP=null;scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}}}
@@ -383,5 +414,5 @@ function loop(now){requestAnimationFrame(loop);const t=(now-t0)/1000,dt=Math.min
  const fl=Math.sin(t*14)>0;police.lights[0].material.emissiveIntensity=fl?2:0.1;police.lights[1].material.emissiveIntensity=fl?0.1:2;CR.forEach(c=>c.jib.rotation.y=c.s*t*0.25);for(const p of SPARK)p.s.visible=false;
  for(const c of COINS){if(c.got)continue;c.m.rotation.z=t*3;c.m.position.y=2+Math.sin(t*3+c.i)*.4;if(Math.hypot(ME.position.x-c.x,ME.position.z-c.z)<3.2){c.got=1;scene.remove(c.m);scene.remove(c.gl);parent.postMessage({t:'coin',id:c.i},'*');parent.postMessage({t:'hap'},'*')}}
  let n=null;for(const z of ZONES){if(Math.hypot(ME.position.x-z[2],ME.position.z-z[3])<z[4]){n=z;break}}if(n!==NEAR){NEAR=n;act.style.display=n&&n[0]!=='plaza'?'block':'none';if(n)act.textContent=({home:'🏠 Зайти домой',vip:'👑 VIP-район',emb:'🌊 Набережная',plaza:''})[n[0]]||('▶ Работать: '+n[1].replace(/^\S+ /,''))}
- mpTick(t,dt);tickHeroes(dt);perf(now);if(COMP){const nk=nightK();BLOOM.strength=.22+nk*.33;BLOOM.threshold=.92-nk*.07;BLOOM.radius=.35;COMP.render()}else renderer.render(scene,camera)}
+ mpTick(t,dt);botTick(t,dt);tickHeroes(dt);perf(now);if(COMP){const nk=nightK();BLOOM.strength=.22+nk*.33;BLOOM.threshold=.92-nk*.07;BLOOM.radius=.35;COMP.render()}else renderer.render(scene,camera)}
 document.getElementById('load').remove();requestAnimationFrame(loop);
