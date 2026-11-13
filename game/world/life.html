@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Мой дом</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b1446;--sky:#2b2266;--sky2:#372c7d;--win:#ffc65c;--tile:#ff6b4a;--mint:#5ee6b0;--moon:#e9e4ff;--dim:#a79fd6}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);font-family:Nunito,-apple-system,sans-serif;color:var(--moon);touch-action:none;-webkit-user-select:none;user-select:none}
+#gl{position:fixed;inset:0;width:100%;height:100%}
+button{font-family:inherit;cursor:pointer}.hidden{display:none!important}
+.bar{position:fixed;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(safe-area-inset-top)) 10px 8px;display:flex;align-items:flex-start;gap:8px;background:linear-gradient(rgba(18,13,51,.92),rgba(18,13,51,0))}
+#needs{display:flex;gap:6px;flex:1}.nd{display:flex;flex-direction:column;align-items:center;gap:2px}.nd small{font-size:9px;color:var(--dim);font-weight:700}
+.rg{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--v)*1%),rgba(255,255,255,.12) 0);position:relative}.rg:before{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--sky)}.rg span{position:relative;font-size:19px}
+#mood{display:flex;flex-direction:column;align-items:flex-end;background:var(--sky);border-radius:14px;padding:6px 10px}#mood b{font-family:Unbounded,sans-serif;font-size:14px;color:var(--win)}#mood small{font-size:10px;color:var(--mint)}
+.tools{position:fixed;left:10px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:3;display:flex;gap:8px}
+.tb{border:0;border-radius:16px;padding:12px 14px;font-size:14px;font-weight:900;color:var(--moon);background:rgba(43,34,102,.92);box-shadow:0 4px 0 #120d33}
+.tb.go{background:var(--win);color:#3b2300;box-shadow:0 4px 0 #b9852a}.tb.x{background:var(--tile);color:#fff;box-shadow:0 4px 0 #b8402a}
+.zm{position:fixed;right:10px;top:calc(76px + env(safe-area-inset-top));z-index:3;display:flex;flex-direction:column;gap:6px}.zm .tb{padding:8px 13px}
+#om{position:fixed;z-index:5;width:200px;background:var(--sky);border-radius:16px;padding:12px;box-shadow:0 12px 30px rgba(0,0,0,.5);border-top:1px solid rgba(233,228,255,.18)}#om b{display:block;font-size:14px}#om small{display:block;color:var(--mint);font-weight:800;margin:4px 0 8px}
+#om button,#bsel button,#lk .ft button{border:0;border-radius:12px;padding:10px 12px;font-weight:900;background:var(--win);color:#3b2300;width:100%}#om button:disabled{opacity:.5}
+/* ремонт */
+body.bm .tools,body.bm .bar #mood{display:none}
+#bm{display:none}body.bm #bm{display:block}
+#bsel{position:fixed;left:10px;right:10px;top:calc(70px + env(safe-area-inset-top));z-index:4;display:flex;gap:6px;align-items:center;background:var(--sky);border-radius:16px;padding:8px}#bsel span{flex:1;font-weight:900;font-size:13px}#bsel button{width:auto}
+#dr{position:fixed;left:0;right:0;bottom:0;z-index:4;max-height:40vh;overflow:auto;background:#120d33;border-radius:22px 22px 0 0;padding:12px 12px calc(70px + env(safe-area-inset-bottom))}
+#dr h3{font-family:Unbounded,sans-serif;font-size:13px;color:var(--win);margin:12px 0 6px}.row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.fi{flex:0 0 96px;border:0;border-radius:14px;background:var(--sky);color:var(--moon);padding:8px 6px;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px}.fi em{font-style:normal;font-size:28px}.fi small{color:var(--mint);font-size:10px}.fi b{color:var(--win);font-size:11px}.fi.st{outline:2px solid var(--win)}
+.sw{display:flex;align-items:center;gap:6px;margin:4px 0}.sw span{width:48px;font-size:12px;color:var(--dim);font-weight:800}.sw i{width:28px;height:28px;border-radius:9px;border:2px solid rgba(255,255,255,.25)}
+#bdone{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:5}
+/* образ */
+#lk{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#120d33;border-radius:22px 22px 0 0;max-height:55vh;display:flex;flex-direction:column}
+#lkb{overflow:auto;padding:12px}.lr{margin-bottom:10px}.lr>span{display:block;font-size:12px;color:var(--dim);font-weight:800;margin-bottom:5px}.lr div{display:flex;flex-wrap:wrap;gap:6px}
+.lr i{width:30px;height:30px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.2)}.lr i.on{border-color:var(--win)}
+.lr button{border:0;border-radius:11px;padding:7px 10px;font-size:12px;font-weight:800;background:var(--sky);color:var(--moon)}.lr button.on{background:var(--win);color:#3b2300}
+#lk .ft{display:flex;gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}#lk .ft button.n{background:var(--sky2);color:var(--moon)}
+#load{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ink);font-family:Unbounded,sans-serif;font-size:16px;color:var(--win)}#load div{font-size:56px;margin-bottom:8px}
+</style></head><body>
+<div id="load"><div>🏡</div>Открываем дверь…</div>
+<canvas id="gl"></canvas>
+<div class="bar"><div id="needs"></div><div id="mood"></div></div>
+<div class="zm"><button class="tb" id="zi">＋</button><button class="tb" id="zo">－</button></div>
+<div class="tools"><button class="tb x" id="exit">⬅ В город</button><button class="tb" id="lookb">👕 Образ</button><button class="tb go" id="build">🛠 Ремонт</button></div>
+<div id="om" class="hidden"></div>
+<div id="bm"><div id="bsel" class="hidden"><span id="bname"></span><button id="rot">⟳ Повернуть</button><button id="stow">📦 Убрать</button></div><div id="dr"></div><button class="tb go" id="bdone">✓ Готово</button></div>
+<div id="lk" class="hidden"><div id="lkb"></div><div class="ft"><button class="n" id="lkx">Отмена</button><button id="lksave">Сохранить образ</button></div></div>
+<script type="importmap">{"imports":{"three":"./three.js"}}</script><script type="module" src="life.js"></script></body></html>
