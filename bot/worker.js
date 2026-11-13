@@ -151,9 +151,10 @@ async function grant(env,sp,from){const [tgid,item]=sp.invoice_payload.split(':'
   if(item==='fw')await feed(env,'🎆 Над домом @'+p.nick+' салют!');if(item.startsWith('d_')||item.startsWith('skin_'))await feed(env,s[0]+' У @'+p.nick+' теперь '+s[1].toLowerCase())}
 
 // ===== БОТ =====
-const kb=()=>({inline_keyboard:[[{text:'🎮 Играть',web_app:{url:GAME}}],[{text:'🏙 Найти дом',web_app:{url:SITE+'/'}}],[{text:'📲 Наша страница в Instagram',url:IG}]]});
+const kb=()=>({inline_keyboard:[[{text:'🎮 Играть',web_app:{url:GAME}}],[{text:'🔎 Найти себя по нику',callback_data:'find'},{text:'🏙 Карта города',web_app:{url:SITE+'/'}}],[{text:'📲 Наша страница в Instagram',url:IG}]]});
 async function bot(env,u){
   if(u.pre_checkout_query)return J({method:'answerPreCheckoutQuery',pre_checkout_query_id:u.pre_checkout_query.id,ok:true});
+  if(u.callback_query&&u.callback_query.data==='find'){const q=u.callback_query;await fetch('https://api.telegram.org/bot'+await token(env)+'/answerCallbackQuery',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({callback_query_id:q.id})});return J({method:'sendMessage',chat_id:q.message.chat.id,parse_mode:'HTML',text:'🔎 Напиши свой ник из Instagram одним сообщением, например <b>@temburhan</b> — покажу твой дом и его номер в Городе подписчиков.'})}
   const m=u.message;if(!m)return new Response('ok');const chat=m.chat.id;
   if(m.successful_payment){await grant(env,m.successful_payment,m.from);return J({method:'sendMessage',chat_id:chat,text:'✅ Спасибо! Покупка уже в игре. Открой игру, чтобы увидеть.',reply_markup:kb()})}
   if(!m.text)return new Response('ok');const text=m.text.trim();const owner=await kv(env,'owner');
@@ -170,7 +171,7 @@ async function bot(env,u){
   if(text==='/paysupport')return J({method:'sendMessage',chat_id:chat,text:'Проблема с оплатой или нужен возврат? Напиши сюда одним сообщением: что купил и когда. Мы ответим и вернём звёзды, если покупка не сработала или была сделана по ошибке.'});
   {const mm=text.match(/^\/start r(\d+)/);if(mm&&+mm[1]!==m.from.id)await kv(env,'ref'+m.from.id,mm[1])}
   if(/^\/(start|help|game)/.test(text))return J({method:'sendMessage',chat_id:chat,parse_mode:'HTML',reply_markup:kb(),
-    text:'🏡 <b>Город подписчиков</b>\n\n🎮 <b>Играть</b> — заходи за своего жителя, собирай доход, работай в полиции, больнице или ФК ASKER, улучшай дом и попадай в топ недели. Лучшие игроки появятся в видео!\n\n🔎 Или напиши свой ник из Instagram — покажу твой дом.'});
+    text:'🏡 <b>Город подписчиков</b>\n\n🎮 <b>Играть</b> — заходи за своего жителя, собирай доход, работай в полиции, больнице или ФК ASKER, улучшай дом и попадай в топ недели. Лучшие игроки появятся в видео!\n\n🔎 <b>Найти себя:</b> просто напиши свой ник из Instagram — покажу твой дом, его номер и что в нём есть.'});
   const n=norm(text);if(!n||n.length<2)return J({method:'sendMessage',chat_id:chat,text:'Напиши ник из Instagram, например: @gorod.podpischikov001',reply_markup:kb()});
   const idx=await index();const x=idx.get(n);
   if(x)return J({method:'sendPhoto',chat_id:chat,photo:SITE+'/cards/'+encodeURIComponent(x[0])+'.jpg?v=4',caption:`🏡 <b>@${x[0]}</b> — дом №${x[1]}\n\n✅ ${(x[2]||[]).join(' · ')}\n\n🎮 Нажми «Играть», чтобы развивать свой дом!`,parse_mode:'HTML',reply_markup:kb()});
@@ -180,7 +181,7 @@ async function bot(env,u){
 const SETUP=`<!doctype html><html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Подключение</title><body style="font-family:sans-serif;background:#1d1830;color:#fff;padding:24px;max-width:520px;margin:auto"><h2>Подключить игру к @gorod_podpischikov_bot</h2><p>Вставь токен из BotFather и нажми «Подключить». Токен сохранится только в закрытой базе игры: он нужен, чтобы бот выставлял счета в звёздах.</p><form method="POST"><input name="token" placeholder="1234567890:AA..." autocomplete="off" required style="width:100%;font-size:16px;padding:12px;border-radius:10px;border:0;margin:12px 0"><button style="font-size:17px;padding:12px 20px;border-radius:10px;border:0;background:#e8433a;color:#fff;font-weight:700">Подключить</button></form></body></html>`;
 async function setup(env,req){const f=await req.formData();const t=(f.get('token')||'').trim();if(!/^\d+:[\w-]{30,}$/.test(t))return H('Неверный формат токена');
   const me=await fetch('https://api.telegram.org/bot'+t+'/getMe').then(r=>r.json());if(!me.ok)return H('Токен не подходит');await kv(env,'token',t);TOK=t;
-  const o=[];o.push(['webhook',await tg(env,'setWebhook',{url:new URL(req.url).origin+'/',allowed_updates:['message','pre_checkout_query'],drop_pending_updates:true})]);
+  const o=[];o.push(['webhook',await tg(env,'setWebhook',{url:new URL(req.url).origin+'/',allowed_updates:['message','pre_checkout_query','callback_query'],drop_pending_updates:true})]);
   o.push(['commands',await tg(env,'setMyCommands',{commands:[{command:'start',description:'Играть и найти свой дом'},{command:'terms',description:'Правила покупок'},{command:'paysupport',description:'Помощь с оплатой'}]})]);
   o.push(['menu',await tg(env,'setChatMenuButton',{menu_button:{type:'web_app',text:'🎮 Играть',web_app:{url:GAME}}})]);
   const ok=o.every(x=>x[1].ok);return H(`<body style="font-family:sans-serif;background:#1d1830;color:#fff;padding:24px"><h2>${ok?'✅ Игра подключена!':'⚠️ Что-то не так'}</h2><pre>${o.map(x=>x[0]+': '+(x[1].ok?'ok':x[1].description)).join('\n')}</pre><p>Теперь открой @${me.result.username} и отправь команду <b>/owner</b> — так бот запомнит, что ты владелец.</p></body>`)}
