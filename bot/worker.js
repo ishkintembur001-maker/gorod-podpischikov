@@ -5,6 +5,8 @@ const H=(h)=>new Response(h,{headers:{'content-type':'text/html; charset=utf-8'}
 const now=()=>Math.floor(Date.now()/1000),day=()=>new Date(Date.now()+3*3600e3).toISOString().slice(0,10),week=()=>Math.floor((Date.now()/1000+3*3600-4*86400)/604800);
 let IDX=null,IDX_T=0,TOK=null;
 async function index(){if(IDX&&Date.now()-IDX_T<600000)return IDX;const r=await fetch(SITE+'/data/index.json',{cf:{cacheTtl:300}});const a=await r.json();IDX=new Map(a.map(x=>[x[0].toLowerCase(),x]));IDX_T=Date.now();return IDX}
+let SQ=null,SQI=null;function sq(n){return n.replace(/[._\s]+/g,'')}
+async function findNick(n){const idx=await index();let x=idx.get(n);if(x)return {x};if(SQI!==idx){SQ=new Map();for(const [k,v] of idx){const q=sq(k);SQ.set(q,(SQ.get(q)||[]).concat([v]))}SQI=idx}const m=SQ.get(sq(n))||[];if(m.length===1)return {x:m[0]};return {many:m}}
 function norm(t){t=(t||'').trim().toLowerCase();const m=t.match(/instagram\.com\/([a-z0-9._]+)/);if(m)t=m[1];return t.replace(/^@+/,'').replace(/[\s/]+$/,'').replace(/\s+/g,'')}
 async function kv(env,k,v){if(v===undefined){const r=await env.DB.prepare('SELECT v FROM kv WHERE k=?').bind(k).first();return r&&r.v}await env.DB.prepare('INSERT OR REPLACE INTO kv(k,v) VALUES(?,?)').bind(k,String(v)).run()}
 async function token(env){if(!TOK)TOK=await kv(env,'token');return TOK}
@@ -84,7 +86,7 @@ async function api(env,req,path){
   if(path==='/api/house'){const n=norm(b.nick);const p=await env.DB.prepare('SELECT nick,lvl,items,likes FROM players WHERE nick=?').bind(n).first();const x=(await index()).get(n);if(!x)return J({err:'Такого жителя нет'});return J({nick:x[0],num:x[1],chips:x[2],lvl:p?p.lvl:1,items:p?JSON.parse(p.items):[],likes:p?p.likes:0,player:!!p})}
   if(!u)return J({err:'auth'},401);
   await lifeCol(env);let p=await env.DB.prepare('SELECT * FROM players WHERE tg=?').bind(u.id).first();if(p&&!p.life)p.life=JSON.stringify(lifeOf(p));
-  if(path==='/api/claim'){if(p)return J({err:'Ник уже привязан: @'+p.nick});const n=norm(b.nick);const x=(await index()).get(n);if(!x)return J({err:'Ника @'+n+' нет в городе. Подпишись на @gorod.podpischikov001 и напиши в комментарии, какой дом хочешь.'});
+  if(path==='/api/claim'){if(p)return J({err:'Ник уже привязан: @'+p.nick});const n0=norm(b.nick);const fx=await findNick(n0);const x=fx.x;if(fx.many&&fx.many.length)return J({err:'Уточни ник: '+fx.many.map(v=>'@'+v[0]).join(', ')});const n=x?String(x[0]).toLowerCase():n0;if(!x)return J({err:'Ника @'+n+' нет в городе. Подпишись на @gorod.podpischikov001 и напиши в комментарии, какой дом хочешь.'});
     const t=await env.DB.prepare('SELECT tg FROM players WHERE nick=?').bind(n).first();if(t)return J({err:'Этот дом уже занят. Если это твой ник — напиши в бот /help'});
     await env.DB.prepare('INSERT INTO players(tg,nick,name,col,seen,created,wk) VALUES(?,?,?,?,?,?,?)').bind(u.id,n,u.first_name||'',now(),now(),now(),week()).run();await feed(env,'🏠 @'+n+' заселился в свой дом');
     const rf=String(b.ref||'').replace(/^r/,'')||await kv(env,'ref'+u.id);if(rf&&+rf!==u.id){const q=await env.DB.prepare('SELECT * FROM players WHERE tg=?').bind(+rf).first();if(q){await earn(env,q,1000);bump(q,'invite');await save(env,q);await env.DB.prepare('UPDATE players SET coins=coins+500 WHERE tg=?').bind(u.id).run();await feed(env,'🤝 @'+q.nick+' пригласил @'+n+' — оба получили бонус')}}
@@ -173,7 +175,7 @@ async function bot(env,u){
   if(/^\/(start|help|game)/.test(text))return J({method:'sendMessage',chat_id:chat,parse_mode:'HTML',reply_markup:kb(),
     text:'🏡 <b>Город подписчиков</b>\n\n🎮 <b>Играть</b> — заходи за своего жителя, собирай доход, работай в полиции, больнице или ФК ASKER, улучшай дом и попадай в топ недели. Лучшие игроки появятся в видео!\n\n🔎 <b>Найти себя:</b> просто напиши свой ник из Instagram — покажу твой дом, его номер и что в нём есть.'});
   const n=norm(text);if(!n||n.length<2)return J({method:'sendMessage',chat_id:chat,text:'Напиши ник из Instagram, например: @gorod.podpischikov001',reply_markup:kb()});
-  const idx=await index();const x=idx.get(n);
+  const idx=await index();const x=(await findNick(n)).x;
   if(x)return J({method:'sendPhoto',chat_id:chat,photo:SITE+'/cards/'+encodeURIComponent(x[0])+'.jpg?v=4',caption:`🏡 <b>@${x[0]}</b> — дом №${x[1]}\n\n✅ ${(x[2]||[]).join(' · ')}\n\n🎮 Нажми «Играть», чтобы развивать свой дом!`,parse_mode:'HTML',reply_markup:kb()});
   const sug=[];for(const [k,v] of idx){if(k.startsWith(n)||k.includes(n))sug.push('@'+v[0]);if(sug.length>=6)break}
   return J({method:'sendMessage',chat_id:chat,text:sug.length?'Точного совпадения нет. Может быть:\n'+sug.join('\n'):'Ника @'+n+' пока нет в городе. Подпишись на @gorod.podpischikov001, поставь лайк и напиши в комментарии, какой дом хочешь!',reply_markup:kb()})}
