@@ -366,7 +366,7 @@ let COMP=null,BLOOM=null;Promise.all([import('./pp/postprocessing/EffectComposer
 addEventListener('message',e=>{if((e.data||{}).t==='emo'){showEmo(ME,e.data.e);SENDE=e.data.e;sendPos();return}if((e.data||{}).t==='look'){const p=ME.position.clone(),r=ME.rotation.y;const kids=ME.children.filter(c=>c.isSprite);scene.remove(ME);ME=makeHero(myLook());ME.position.copy(p);ME.rotation.y=r;kids.forEach(k=>ME.add(k));scene.add(ME);window.__p=ME.position}});
 // адаптивное качество
 let FR=0,FPT=performance.now(),LOWQ=false;function perf(now){FR++;if(now-FPT>2500){const fps=FR*1000/(now-FPT);FR=0;FPT=now;if(fps<28&&!LOWQ&&!QS.get('hq')){LOWQ=true;renderer.setPixelRatio(1);renderer.shadowMap.enabled=false;COMP=null;scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}}}
-document.getElementById('fs').onclick=()=>parent.postMessage({t:'fs'},'*');
+document.getElementById('fs').onclick=()=>parent.postMessage({t:'back'},'*');
 const t0=performance.now();let last=t0;const camP=new THREE.Vector3(ME.position.x,30,ME.position.z+34);
 function loop(now){requestAnimationFrame(loop);const t=(now-t0)/1000,dt=Math.min(.05,(now-last)/1000);last=now;
  const L_=Math.hypot(joy.x,joy.y),U=ME.userData;if(L_>.1){const sp=16*Math.min(1,L_),ca=Math.cos(camAng),sa=Math.sin(camAng);const dx=joy.x*ca+joy.y*sa,dz=-joy.x*sa+joy.y*ca;ME.position.x+=dx*sp*dt;ME.position.z+=dz*sp*dt;ME.rotation.y=Math.atan2(dx,dz);hwalk(ME,t,true)}else hwalk(ME,t,false);
