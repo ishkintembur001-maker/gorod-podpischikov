@@ -1,6 +1,6 @@
 // «Мой дом изнутри» — жизнь жителя Города подписчиков
 import * as THREE from './three.js';
-import { makeHero, walk } from './hero.js';
+import { makeHero, walk, play, tickHeroes, dispose } from './hero.js';
 const P = parent, $ = id => document.getElementById(id);
 const ME = () => P.ME, LIFE = () => P.ME && P.ME.life;
 let CAT = null;
@@ -14,7 +14,7 @@ R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.1; R.outp
 const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b1446');
 const cam = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, .5, 400);
 addEventListener('resize', () => { R.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix() });
-const hour = (new Date().getUTCHours() + 3) % 24, NIGHT = hour >= 20 || hour < 6;
+const hour = (new Date().getUTCHours() + 3) % 24, NIGHT = (hour >= 20 || hour < 6) && !/day=1/.test(location.search);
 scene.add(new THREE.HemisphereLight(NIGHT ? '#8a86d8' : '#fff4e0', '#3a2a50', NIGHT ? .55 : .9));
 const sun = new THREE.DirectionalLight(NIGHT ? '#9fb0ff' : '#fff1d6', NIGHT ? .5 : 1.6);
 sun.position.set(-14, 26, 18); sun.castShadow = true; sun.shadow.mapSize.set(1536, 1536);
@@ -108,7 +108,7 @@ function spot(g) { const d = (g.userData.d || 1) / 2 + 1.1, r = g.rotation.y; re
 
 // ---------- житель ----------
 let hero = makeHero(LIFE() && LIFE().look); hero.position.set(-3, 0, 4); hero.rotation.order = 'YXZ'; scene.add(hero);
-function rebuildHero(look) { const p = hero.position.clone(), r = hero.rotation.y; scene.remove(hero); hero = makeHero(look); hero.rotation.order = 'YXZ'; hero.position.copy(p); hero.rotation.y = r; scene.add(hero) }
+function rebuildHero(look) { const p = hero.position.clone(), r = hero.rotation.y; scene.remove(hero); dispose(hero); hero = makeHero(look); hero.rotation.order = 'YXZ'; hero.position.copy(p); hero.rotation.y = r; scene.add(hero) }
 let doing = null, bubble = null, path = [], busy = false;
 hero.rotation.order = 'YXZ';
 function say(e) { if (bubble) hero.remove(bubble); const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.beginPath(); x.arc(64, 58, 52, 0, 7); x.fill(); x.beginPath(); x.moveTo(50, 100); x.lineTo(64, 126); x.lineTo(78, 100); x.fill(); x.font = '64px "Noto Color Emoji",serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(e, 64, 62); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; bubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); bubble.scale.set(1.6, 1.6, 1); bubble.position.y = 4.1; bubble.renderOrder = 9; hero.add(bubble) }
@@ -160,36 +160,36 @@ function glide(p, y = 0, rotY = null, rx = 0, ms = 500) {
 }
 // позы
 let POSE = 'stand';
-function pose(p) { POSE = p; const U = hero.userData; U.ring.visible = p === 'stand'; U.head.rotation.x = 0; if (p === 'sit') { U.legs.forEach(l => l.rotation.x = -1.45) } if (p === 'stand' || p === 'lie') { U.legs.forEach(l => l.rotation.x = 0); U.arms.forEach(a => { a.rotation.x = 0; a.rotation.z = 0 }) } }
+function pose(p) { POSE = p; const U = hero.userData; U.ring.visible = p === 'stand'; U.head.rotation.x = 0; if (U.acts) { play(hero, p === 'sit' ? 'SitDown' : 'Idle', { once: p === 'sit' }); } if (p === 'sit') { U.legs.forEach(l => l.rotation.x = -1.45) } if (p === 'stand' || p === 'lie') { U.legs.forEach(l => l.rotation.x = 0); U.arms.forEach(a => { a.rotation.x = 0; a.rotation.z = 0 }) } }
 const L2W = (g, x, z) => { const r = g.rotation.y; return new THREE.Vector3(g.position.x + x * Math.cos(r) + z * Math.sin(r), 0, g.position.z - x * Math.sin(r) + z * Math.cos(r)) };
-const HIP = 1.05 * 1.25;
+const HIPB = 1.05 * 1.25; const seatOf = () => (hero.userData.acts ? hero.userData.seatH : HIPB);
 let PROP = null;
 function hold(e) { if (PROP) { hero.remove(PROP); PROP = null } if (!e) return; const c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d'); x.font = '76px "Noto Color Emoji",serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(e, 48, 52); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; PROP = new THREE.Sprite(new THREE.SpriteMaterial({ map: t })); PROP.scale.set(.7, .7, 1); PROP.position.set(.35, 2.15, .55); hero.add(PROP) }
 // куда идти и что делать с каждым предметом
 function plan(g) {
   const k = g.userData.k, r = g.rotation.y, F = (x, z) => L2W(g, x, z);
-  const seat = (x, z, top, face) => ({ app: F(x, z + (face === 0 ? 1.4 : -1.4) * 1), at: F(x, z), y: top - HIP + .05, rot: r + face, pose: 'sit' });
+  const seat = (x, z, top, face) => ({ app: F(x, z + (face === 0 ? 1.4 : -1.4) * 1), at: F(x, z), y: top - seatOf() + .05, rot: r + face, pose: 'sit' });
   const sofa = OBJ.get('sofa');
   switch (k) {
     case 'sofa': return { ...seat(0, .25, .9, 0), anim: 'relax' };
-    case 'tv': if (sofa) { const sp = plan(sofa); return { ...sp, face: g.position, anim: 'watch' } } return { app: F(0, 4), at: F(0, 3.2), y: -.75, rot: r + Math.PI, pose: 'sit', anim: 'watch' };
-    case 'cinema': return { app: F(-1.2, 4.6), at: F(-1.2, 3.05), y: .85 - HIP + .1, rot: r + Math.PI, pose: 'sit', anim: 'watch', prop: '🍿' };
-    case 'pc': return { app: F(0, 2.3), at: F(0, 1.15), y: 1 - HIP + .05, rot: r + Math.PI, pose: 'sit', anim: 'type' };
-    case 'piano': return { app: F(0, 3.2), at: F(0, 2.05), y: .6 - HIP + .1, rot: r + Math.PI, pose: 'sit', anim: 'type' };
-    case 'console': return { app: F(0, 3.4), at: F(0, 2.6), y: -.75, rot: r + Math.PI, pose: 'sit', anim: 'game', prop: '🎮' };
-    case 'table': return { app: F(-1, 2.9), at: F(-1, 1.5), y: .95 - HIP + .05, rot: r + Math.PI, pose: 'sit', anim: 'eat', prop: '🍕' };
+    case 'tv': if (sofa) { const sp = plan(sofa); return { ...sp, face: g.position, anim: 'watch' } } return { app: F(0, 4), at: F(0, 3.2), y: -seatOf() + .55, rot: r + Math.PI, pose: 'sit', anim: 'watch' };
+    case 'cinema': return { app: F(-1.2, 4.6), at: F(-1.2, 3.05), y: .85 - seatOf() + .1, rot: r + Math.PI, pose: 'sit', anim: 'watch', prop: '🍿' };
+    case 'pc': return { app: F(0, 2.3), at: F(0, 1.15), y: 1 - seatOf() + .05, rot: r + Math.PI, pose: 'sit', anim: 'type' };
+    case 'piano': return { app: F(0, 3.2), at: F(0, 2.05), y: .6 - seatOf() + .1, rot: r + Math.PI, pose: 'sit', anim: 'type' };
+    case 'console': return { app: F(0, 3.4), at: F(0, 2.6), y: -seatOf() + .55, rot: r + Math.PI, pose: 'sit', anim: 'game', prop: '🎮' };
+    case 'table': return { app: F(-1, 2.9), at: F(-1, 1.5), y: .95 - seatOf() + .05, rot: r + Math.PI, pose: 'sit', anim: 'eat', prop: '🍕' };
     case 'bed': case 'kingbed': return { app: F(2.6, .6), at: F(0, 1.6), y: 1.4, rot: r, rx: -Math.PI / 2, pose: 'lie', anim: 'sleep' };
     case 'bath': return { app: F(2, 0), at: F(0, 1.75), y: .75, rot: r, rx: -Math.PI / 2, pose: 'lie', anim: 'bath' };
-    case 'jacuzzi': return { app: F(0, 3), at: F(0, .3), y: .55 - HIP + .1, rot: r + Math.PI, pose: 'sit', anim: 'bath' };
+    case 'jacuzzi': return { app: F(0, 3), at: F(0, .3), y: .55 - seatOf() + .1, rot: r + Math.PI, pose: 'sit', anim: 'bath' };
     case 'shower': return { app: F(-.55, 2.3), via: F(-.55, 1.0), at: F(-.3, -.1), y: .2, rot: r, pose: 'stand', anim: 'shower' };
     case 'fridge': case 'stove': case 'chef': return { app: F(0, (g.userData.d || 1.4) / 2 + 1.1), at: F(0, (g.userData.d || 1.4) / 2 + 1.1), y: 0, rot: r + Math.PI, pose: 'stand', anim: k === 'fridge' ? 'fridge' : 'cook', then: OBJ.get('table') ? 'table' : null, prop: k === 'fridge' ? '🥪' : '🍲' };
     case 'phone': return { app: F(.9, .9), at: F(.9, .9), y: 0, rot: r - Math.PI / 4 + Math.PI, pose: 'stand', anim: 'phone', prop: '📱' };
-    case 'guitar': return { app: F(.2, 1.6), at: F(.2, 1.4), y: -.75, rot: r, pose: 'sit', anim: 'guitar', prop: '🎸' };
+    case 'guitar': return { app: F(.2, 1.6), at: F(.2, 1.4), y: -seatOf() + .55, rot: r, pose: 'sit', anim: 'guitar', prop: '🎸' };
     case 'books': return { app: F(0, 1.7), at: F(0, 1.6), y: 0, rot: r, pose: 'stand', anim: 'read', prop: '📖' };
     default: { const d = (g.userData.d || 1) / 2 + 1.1; return { app: F(0, d), at: F(0, d), y: 0, rot: r + Math.PI, pose: 'stand', anim: 'look' } }
   }
 }
-async function standUp(p) { pose('stand'); hold(null); if (p && p.via) await glide(p.via, 0, null, 0, 400); await glide(p ? p.app : hero.position, 0, null, 0, 450) }
+async function standUp(p) { if (hero.userData.acts) play(hero, 'Idle'); pose('stand'); hold(null); if (p && p.via) await glide(p.via, 0, null, 0, 400); await glide(p ? p.app : hero.position, 0, null, 0, 450) }
 async function act(g) {
   if (busy) return; busy = true; $('om').classList.add('hidden');
   const k = g.userData.k, p = plan(g);
@@ -219,6 +219,7 @@ function hud() {
 }
 
 // ---------- камера и ввод ----------
+const FK = () => dist <= 28 ? .95 : (innerWidth < innerHeight ? .5 : .2);
 let ang = .5, dist = innerWidth < innerHeight ? 48 : 38, BUILD = false, sel = null, drag = false;
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function setPtr(e) { ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, cam) }
@@ -294,7 +295,9 @@ function loop(now) {
   requestAnimationFrame(loop); const t = (now - t0) / 1000, dt = Math.min(.05, (now - last) / 1000); last = now;
   if (path.length && !doing) { const p0 = path[0], d = p0.clone().sub(hero.position); d.y = 0; const Ld = d.length(); if (Ld > .12) { hero.position.addScaledVector(d.normalize(), Math.min(Ld, 6.5 * dt)); let ry = Math.atan2(d.x, d.z), cur = hero.rotation.y; while (ry - cur > Math.PI) ry -= Math.PI * 2; while (cur - ry > Math.PI) ry += Math.PI * 2; hero.rotation.y = cur + (ry - cur) * Math.min(1, dt * 12); walk(hero, t, true) } else { path.shift(); if (!path.length) { walk(hero, t, false); path.done && path.done(true) } } }
   else if (POSE === 'stand' && !doing) walk(hero, t, false);
-  if (doing) { const U = hero.userData, A = doing.anim;
+  tickHeroes(dt);
+  if (doing && hero.userData.acts) { const A = doing.anim; if (['cook', 'fridge'].includes(A) && hero.userData.anim !== 'PickUp') play(hero, 'PickUp'); if (A === 'shower' ) drops(t); }
+  else if (doing) { const U = hero.userData, A = doing.anim;
     if (A === 'eat') { U.arms[1].rotation.x = -1.6 - Math.max(0, Math.sin(t * 4)) * .9; U.arms[0].rotation.x = -.9 }
     else if (A === 'type') U.arms.forEach((a, i) => a.rotation.x = -1.3 + Math.sin(t * 16 + i * 2) * .12);
     else if (A === 'game') U.arms.forEach((a, i) => a.rotation.x = -1.2 + Math.sin(t * 11 + i) * .15);
@@ -311,7 +314,7 @@ function loop(now) {
   if (bubble) bubble.position.y = 4.1 + Math.sin(t * 4) * .1;
   hero.userData.ring.material.opacity = .5 + .3 * Math.sin(t * 4);
   for (const g of furn.children) g.traverse(o => { if (o.name === 'screen') o.material.color.setHSL((t * .05 + g.position.x * .01) % 1, .6, .55); if (o.name === 'flame') o.scale.y = .8 + Math.sin(t * 12) * .25; if (o.name === 'fish') o.position.x = Math.sin(t * .8 + o.position.y * 3) * 1; if (o.name === 'water') o.position.y = .95 + Math.sin(t * 3) * .03 });
-  const tx = BUILD && sel ? sel.position.x * .3 : hero.position.x * (innerWidth < innerHeight ? .5 : .2), tz = BUILD && sel ? sel.position.z * .3 : hero.position.z * .2 + 1.5;
+  const tx = BUILD && sel ? sel.position.x * .3 : hero.position.x * FK(), tz = BUILD && sel ? sel.position.z * .3 : hero.position.z * Math.max(.2, FK()) + 1.5 * (1 - FK());
   cam.position.set(tx + Math.sin(ang) * dist * .75, dist * .82, tz + Math.cos(ang) * dist * .75); cam.lookAt(tx, 1, tz);
   R.render(scene, cam);
 }
@@ -320,4 +323,4 @@ function loop(now) {
   buildHouse(); placeAll(); rebuildGrid(); hud(); $('load').remove(); requestAnimationFrame(loop);
   setInterval(hud, 30000);
 })();
-window.hud = hud; window.__act = k => OBJ.get(k) && act(OBJ.get(k));
+window.hud = hud; window.__hero = () => hero; window.__st = () => (doing ? doing.anim : '') + '|' + POSE; window.__act = k => OBJ.get(k) && act(OBJ.get(k));
