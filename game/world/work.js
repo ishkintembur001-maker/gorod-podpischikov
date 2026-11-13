@@ -21,8 +21,9 @@ const B = (w, h, d, m, x, y, z, p) => mk(new THREE.BoxGeometry(w, h, d), m, x, y
 const C = (rt, rb, h, m, x, y, z, p, s = 18) => mk(new THREE.CylinderGeometry(rt, rb, h, s), m, x, y, z, p);
 function tex(fn, w = 256, h = 128) { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t }
 function bubble(text, bg = '#ffffff', fg = '#1b1446', w = 2.4) { const t = tex((x, W, H) => { x.fillStyle = bg; x.beginPath(); x.roundRect(4, 4, W - 8, H - 30, 34); x.fill(); x.beginPath(); x.moveTo(W / 2 - 14, H - 27); x.lineTo(W / 2, H - 4); x.lineTo(W / 2 + 14, H - 27); x.fill(); x.fillStyle = fg; x.font = 'bold 54px "Noto Color Emoji",Nunito,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(text, W / 2, (H - 26) / 2 + 2) }, 256, 128); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); s.renderOrder = 9; s.scale.set(w, w / 2, 1); return s }
-const LK = { sk: ['#f2d3b8', '#e0b08a', '#c68e63', '#8d5a3b'], hc: ['#2b1a10', '#5a3a1e', '#c48a3a', '#111111', '#a33a2a'], sh: ['#e8433a', '#3a8bff', '#2bb24c', '#ffc65c', '#ffffff', '#6a4fd0', '#ff6fb5'], pa: ['#2b3a55', '#1c1c1c', '#6b4a2b', '#3a5a2a'] };
+const LK = { sk: ['#f2d3b8', '#e0b08a', '#c68e63', '#8d5a3b'], hc: ['#2b1a10', '#5a3a1e', '#c48a3a', '#111111', '#a33a2a'], sh: ['#e8433a', '#3a8bff', '#ffc65c', '#ffffff', '#6a4fd0', '#ff6fb5', '#8a5a3a'], pa: ['#2b3a55', '#1c1c1c', '#6b4a2b', '#3a5a2a'] };
 const pick = a => a[Math.random() * a.length | 0];
+function youTag(g) { const t = tex((x, W, H) => { x.fillStyle = '#ffc65c'; x.beginPath(); x.roundRect(30, 6, W - 60, 74, 37); x.fill(); x.beginPath(); x.moveTo(W / 2 - 26, 78); x.lineTo(W / 2, 122); x.lineTo(W / 2 + 26, 78); x.fill(); x.fillStyle = '#3b2300'; x.font = 'bold 50px Unbounded,Nunito,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('ТЫ', W / 2, 45) }, 256, 128); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); s.renderOrder = 11; s.scale.set(2.6, 1.3, 1); s.position.y = 5.4; s.userData.you = 1; g.add(s); const r = g.userData.ring; if (r) { r.scale.setScalar(1.5); r.material.color.set('#ffc65c'); r.material.opacity = 1 } return s }
 const rndLook = (o = {}) => ({ g: Math.random() < .5 ? 'm' : 'f', sk: pick(LK.sk), hc: pick(LK.hc), hs: Math.random() * 2 | 0, sh: pick(LK.sh), pa: pick(LK.pa), ac: '', ...o });
 const myLook = (o = {}) => ({ ...((ME().life || {}).look || {}), ...o });
 
@@ -48,7 +49,7 @@ const I = INFO[JOB];
 // =================================================================== БОЛЬНИЦА
 function Hospital() {
   const rk = RK().r, BEDS = rk >= 2 ? [-10, -6, -2, 2, 6, 10] : [-6, -2, 2, 6], HW = 12.5, HD = 8.5;
-  if (innerWidth < innerHeight) { cam.fov = 55; cam.updateProjectionMatrix(); cam.position.set(22, 28, 1); cam.lookAt(-3.5, 0, 0) } else { cam.position.set(0, 21, 19); cam.lookAt(0, 0, 0.5) }
+  if (innerWidth < innerHeight) { cam.fov = 55; cam.updateProjectionMatrix(); cam.position.set(19, 27, 1); cam.lookAt(-1.2, 0, 0) } else { cam.position.set(0, 21, 19); cam.lookAt(0, 0, 0.5) }
   B(HW * 2, .3, HD * 2, '#e9eef2', 0, -.15, 0); B(HW * 2, 4.5, .3, '#bfe0e8', 0, 2.25, -HD); B(.3, 4.5, HD * 2, '#bfe0e8', -HW, 2.25, 0); B(.3, 1, HD * 2, '#bfe0e8', HW, .5, 0); B(HW * 2, 1, .3, '#bfe0e8', 0, .5, HD);
   B(HW * 2, .25, .32, '#2bb24c', 0, 1.4, -HD + .02);
   const cross = tex((x, W, H) => { x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.fillStyle = '#e8433a'; x.fillRect(W / 2 - 18, 14, 36, H - 28); x.fillRect(W / 2 - 50, H / 2 - 18, 100, 36) }, 128, 128);
@@ -61,9 +62,9 @@ function Hospital() {
   const SLOTS = MEDS.map((m, i) => { const z = (i - (MEDS.length - 1) / 2) * 1.5; const g = new THREE.Group(); g.position.set(.5, 0, z); cab.add(g); B(.1, 1.1, 1.2, m[3], 0, 1.9, 0, g); const b = bubble(m[1], '#fff', '#000', 1.4); b.position.set(.3, 3.2, 0); g.add(b); g.userData.tap = () => takeMed(m, g); return g });
   // койки
   const beds = BEDS.map(x => { const g = new THREE.Group(); g.position.set(x, 0, -HD + 2.8); scene.add(g); B(2.4, .5, 4.2, '#9aa8b8', 0, .55, 0, g); B(2.2, .3, 3.9, '#ffffff', 0, .95, .1, g); B(2.25, .15, 2.2, '#bfe0ff', 0, 1.15, .9, g); B(1.6, .25, .7, '#ffffff', 0, 1.2, -1.5, g); B(2.4, 1.4, .15, '#9aa8b8', 0, 1.2, -2.05, g); g.userData = { bed: true, p: null, tap: () => toPatient(g) }; return g });
-  const me = makeHero(myLook({ sh: '#5ee6b0', pa: '#5ee6b0' })); me.rotation.order = 'YXZ'; me.position.set(0, 0, 3); scene.add(me);
+  const me = makeHero(myLook({ sh: '#5ee6b0', pa: '#5ee6b0' })); me.rotation.order = 'YXZ'; me.position.set(0, 0, 3); scene.add(me); const YT = youTag(me);
   let held = [], path = null, busy = false; const heldS = new THREE.Group(); me.add(heldS);
-  function drawHeld() { heldS.clear(); held.forEach((m, i) => { const b = bubble(m[1], '#fff', '#000', 1.3); b.position.set(i * .8 - (held.length - 1) * .4, 4.6, 0); heldS.add(b) }) }
+  function drawHeld() { heldS.clear(); held.forEach((m, i) => { const b = bubble(m[1], '#fff', '#000', 1.5); b.position.set(i * 1.1 - (held.length - 1) * .55 + 1.8, 4.2, 0); heldS.add(b) }); $('held').innerHTML = held.length ? 'В руках: ' + held.map(m => m[1] + ' ' + m[2]).join(', ') : 'Руки пустые — возьми лекарство'; document.querySelectorAll('[data-med]').forEach(b => b.classList.toggle('on', held.some(m => m[0] === b.dataset.med))) }
   function goto(p, cb) { path = { p: p.clone(), cb } }
   function takeMed(m, g) { if (busy) return; goto(new THREE.Vector3(-HW + 2.4, 0, g.position.z), () => { play(me, 'PickUp', { once: true }); setTimeout(() => play(me, 'Idle'), 700); const cap = rk >= 3 ? 2 : 1; held.push(m); if (held.length > cap) held.shift(); drawHeld(); HAP('light') }) }
   function toPatient(bed) { if (busy) return; const pt = bed.userData.p; if (!pt || pt.state !== 'bed') return; goto(new THREE.Vector3(bed.position.x + 1.9, 0, bed.position.z + .3), () => {
@@ -75,17 +76,19 @@ function Hospital() {
   const pts = []; let spawnT = 1.5;
   function spawn() { const bed = beds.find(b => !b.userData.p); if (!bed) return; const need = pick(MEDS); const g = makeHero(rndLook()); g.rotation.order = 'YXZ'; g.position.set(HW - 1.5, 0, HD - 1.5); scene.add(g);
     const max = (rk >= 4 ? 28 : 20) - Math.min(6, (performance.now() - T0) / 15000); const pt = { g, bed, need, state: 'walk', pat: max, max }; bed.userData.p = pt; pts.push(pt);
-    const ring = bubble(need[1] + ' ' + need[2], '#fff', '#1b1446', 3); ring.position.y = 4.8; g.add(ring); pt.b = ring }
+    const ring = bubble(need[1] + ' ' + need[2], '#fff', '#1b1446', 3.4); ring.position.y = 4.8; ring.visible = false; g.add(ring); pt.b = ring }
   function leave(pt, ok) { pt.state = 'leave'; pt.bed.userData.p = null; pt.g.rotation.x = 0; pt.g.position.set(pt.bed.position.x + 1.8, 0, pt.bed.position.z + 1); pt.g.remove(pt.b); const b = bubble(ok ? '😊 Спасибо!' : '😠 Долго!', ok ? '#5ee6b0' : '#ff6b4a', '#1b1446', 2.6); b.position.y = 4.4; pt.g.add(b); play(pt.g, ok ? 'Victory' : 'Walk', { once: ok }); setTimeout(() => play(pt.g, 'Walk'), ok ? 1200 : 0) }
   // тап
   addEventListener('pointerup', e => { if (!RUN) return; const o = tapObj(e, [...SLOTS, ...beds]); if (o) { o.userData.tap(); return } setRay(e); const p = new THREE.Vector3(); if (ray.ray.intersectPlane(ground, p)) goto(new THREE.Vector3(Math.max(-HW + 1.5, Math.min(HW - 1, p.x)), 0, Math.max(-HD + 5, Math.min(HD - 1, p.z)))) });
-  window.__dbg = () => pts.map(p => p.state + ':' + p.g.position.x.toFixed(1) + ',' + p.g.position.z.toFixed(1)).join(' ');
-  tip('Нажми на шкаф с лекарствами → возьми нужное → нажми на пациента');
+  document.body.insertAdjacentHTML('beforeend', `<div id="medp"><div id="held">Руки пустые — возьми лекарство</div><div class="row">${MEDS.map(m => `<button class="k" data-med="${m[0]}"><span style="font-size:22px">${m[1]}</span><br>${m[2]}</button>`).join('')}</div></div>`);
+  document.querySelectorAll('[data-med]').forEach(b => b.onclick = () => { const i = MEDS.findIndex(m => m[0] === b.dataset.med); takeMed(MEDS[i], SLOTS[i]) });
+  tip('1) Внизу выбери лекарство, которое просит пациент  2) Нажми на пациента на койке');
   return (t, dt) => {
     if (path) { const d = path.p.clone().sub(me.position); d.y = 0; const L = d.length(); if (L > .15) { me.position.addScaledVector(d.normalize(), Math.min(L, 9 * dt)); me.rotation.y = Math.atan2(d.x, d.z); walk(me, t, true) } else { const cb = path.cb; path = null; walk(me, t, false); cb && cb() } } else if (!busy) walk(me, t, false);
+    YT.position.y = 5.4 + Math.sin(t * 4) * .2;
     if (RUN && (spawnT -= dt) <= 0) { spawn(); spawnT = Math.max(2.8, 6 - (performance.now() - T0) / 20000) }
     for (let i = pts.length - 1; i >= 0; i--) { const pt = pts[i], g = pt.g;
-      if (pt.state === 'walk') { const tg = new THREE.Vector3(pt.bed.position.x + 1.8, 0, pt.bed.position.z + 1); const d = tg.clone().sub(g.position); d.y = 0; if (d.length() > .2) { g.position.addScaledVector(d.normalize(), Math.min(d.length(), 6 * dt)); g.rotation.y = Math.atan2(d.x, d.z); walk(g, t, true) } else { pt.state = 'bed'; play(g, 'Idle'); g.rotation.set(-Math.PI / 2, 0, 0); g.position.set(pt.bed.position.x, 1.3, pt.bed.position.z + 1.75) } }
+      if (pt.state === 'walk') { const tg = new THREE.Vector3(pt.bed.position.x + 1.8, 0, pt.bed.position.z + 1); const d = tg.clone().sub(g.position); d.y = 0; if (d.length() > .2) { g.position.addScaledVector(d.normalize(), Math.min(d.length(), 6 * dt)); g.rotation.y = Math.atan2(d.x, d.z); walk(g, t, true) } else { pt.state = 'bed'; play(g, 'Idle'); g.rotation.set(-Math.PI / 2, 0, 0); g.position.set(pt.bed.position.x, 1.3, pt.bed.position.z + 1.75); pt.b.visible = true; pt.b.position.set(0, 2.2, -1.2) } }
       else if (pt.state === 'bed') { pt.pat -= dt; const k = pt.pat / pt.max; pt.b.material.color.setRGB(1, .5 + k * .5, .5 + k * .5); if (pt.pat <= 0) { combo(false); pop('Пациент ушёл 😠', '#ff6b4a'); leave(pt, false) } }
       else if (pt.state === 'leave') { const d = new THREE.Vector3(HW - .5, 0, HD + 3).sub(g.position); d.y = 0; if (d.length() < .5 || g.position.z > HD + 1) { scene.remove(g); dispose(g); pts.splice(i, 1) } else if (performance.now() % 100000 > 0) { g.position.addScaledVector(d.normalize(), 5 * dt); g.rotation.y = Math.atan2(d.x, d.z); walk(g, t, true) } }
     }
@@ -105,7 +108,7 @@ function Football() {
   const ball = mk(new THREE.SphereGeometry(.45, 18, 14), M('#fff', { map: ballT, roughness: .4 }), 0, .45, 0); const BV = new THREE.Vector3(); let owner = null, lastTouch = null, lastPasser = null, kickCd = 0;
   const players = [];
   function add(team, x, z, me, gk) { const look = me ? myLook({ sh: '#e8433a', pa: '#ffffff' }) : rndLook({ sh: team ? '#3a8bff' : '#e8433a', pa: team ? '#1c1c1c' : '#ffffff', ac: '' }); if (gk) look.sh = team ? '#2bb24c' : '#ffc65c'; const g = makeHero(look, !!me); g.position.set(x, 0, z); scene.add(g); const pl = { g, team, hx: x, hz: z, me, gk, cd: 0, v: new THREE.Vector3() }; players.push(pl); return pl }
-  const ME_ = add(0, -4, 0, true); add(0, -8, -8); add(0, -8, 8); add(0, -FW + 1, 0, false, true);
+  const ME_ = add(0, -4, 0, true); const YT2 = youTag(ME_.g); add(0, -8, -8); add(0, -8, 8); add(0, -FW + 1, 0, false, true);
   add(1, 6, 0); add(1, 10, -7); add(1, 10, 7); add(1, FW - 1, 0, false, true);
   let goals = [0, 0], kick = 1, gLock = false;
   function reset(toTeam) { gLock = false; ball.position.set(0, .45, 0); BV.set(0, 0, 0); owner = null; players.forEach(p => p.g.position.set(p.hx, 0, p.hz)); const k = players.find(p => p.team === toTeam && !p.gk && (toTeam === 0 ? p.me : true)); k.g.position.set(toTeam ? 1.2 : -1.2, 0, 0); owner = k; lastTouch = k }
@@ -175,7 +178,7 @@ function Cashier(kind) {
   const desk = new THREE.Group(); scene.add(desk);
   if (park) { B(5, 2.2, 3, '#ffffff', 0, 1.1, -1, desk); B(5.4, .2, 3.4, '#e8433a', 0, 4.4, -1, desk); for (const x of [-2.4, 2.4]) B(.2, 2.2, .2, '#e8433a', x, 3.3, .4, desk); const st = tex((x, W, H) => { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#ffffff' : '#e8433a'; x.fillRect(i * W / 8, 0, W / 8, H) } }, 256, 32); const aw = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 1.2), new THREE.MeshStandardMaterial({ map: st, side: THREE.DoubleSide })); aw.position.set(0, 4.1, .9); aw.rotation.x = .5; desk.add(aw); const lab = tex((x, W, H) => { x.fillStyle = '#ffc65c'; x.fillRect(0, 0, W, H); x.fillStyle = '#3b2300'; x.font = 'bold 44px Unbounded,sans-serif'; x.textAlign = 'center'; x.fillText('КАССА 🎟', W / 2, 46) }, 512, 64); const lm = new THREE.Mesh(new THREE.PlaneGeometry(4, .5), new THREE.MeshBasicMaterial({ map: lab })); lm.position.set(0, 4.75, .72); desk.add(lm) }
   else { B(7, 1.1, 1.6, '#3a3a5a', 0, .55, 0, desk); const belt = B(5, .1, 1.2, '#222', -1, 1.15, 0, desk); belt.name = 'belt'; B(1.2, 1.4, 1.2, '#2b2266', 2.6, 1.5, -.1, desk); const scr = B(.9, .6, .08, '#5ee6b0', 2.6, 2.5, .2, desk, { emissive: '#2a8a5a' }); B(1, .1, 1, '#c0c0c0', 1.5, 1.2, 0, desk) }
-  const me = makeHero(myLook(park ? { sh: '#e8433a' } : { sh: '#2bb24c' })); me.position.set(0, 0, park ? -1.6 : -1.7); scene.add(me);
+  const me = makeHero(myLook(park ? { sh: '#e8433a' } : { sh: '#2bb24c' })); me.position.set(0, 0, park ? -1.6 : -1.7); scene.add(me); youTag(me);
   // очередь
   const Q = []; const QZ = park ? 1.6 : 1.6;
   function addVisitor() { const g = makeHero(rndLook()); g.position.set(park ? 0 : -4, 0, 30); scene.add(g); Q.push({ g, slot: Q.length }) }

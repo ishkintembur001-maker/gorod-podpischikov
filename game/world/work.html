@@ -17,9 +17,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);font-family
 #cash{position:fixed;left:0;right:0;bottom:0;z-index:4;background:#120d33;border-radius:22px 22px 0 0;padding:10px 10px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.5)}
 #cash .row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}#cash .lab{font-size:12px;color:var(--dim);font-weight:800;margin-top:4px}
 #cash .order{display:flex;justify-content:space-between;align-items:center;background:var(--sky);border-radius:14px;padding:8px 12px;font-weight:900}#cash .order b{font-family:Unbounded,sans-serif;color:var(--win);font-size:16px}
-.k{flex:1;min-width:70px;border:0;border-radius:12px;padding:10px 4px;font-weight:900;font-size:13px;background:var(--sky2);color:var(--moon)}.k small{display:block;color:var(--win);font-size:11px}.k:active{transform:scale(.95)}
+.k{flex:1;min-width:58px;border:0;border-radius:12px;padding:10px 4px;font-weight:900;font-size:13px;background:var(--sky2);color:var(--moon)}.k small{display:block;color:var(--win);font-size:11px}.k:active{transform:scale(.95)}
 .k.go{background:var(--mint);color:#06301f}.k.no{background:var(--tile);color:#fff}.k.bill{background:#2f6e4a;color:#fff}
 .tray{min-height:30px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;background:rgba(255,255,255,.06);border-radius:12px;padding:5px 8px;font-weight:800;font-size:13px}.tray i{font-style:normal;background:var(--sky);border-radius:9px;padding:3px 7px}
+#medp{position:fixed;left:0;right:0;bottom:0;z-index:4;background:#120d33;border-radius:22px 22px 0 0;padding:10px 10px calc(12px + env(safe-area-inset-bottom));box-shadow:0 -8px 24px rgba(0,0,0,.5)}#medp .row{display:flex;gap:6px}#medp .k{min-width:0;padding:8px 2px;line-height:1.1}#medp .k.on{background:var(--mint);color:#06301f;outline:3px solid #fff}
+#held{font-weight:900;font-size:14px;color:var(--win);text-align:center;margin-bottom:6px}
 /* экраны */
 .scr{position:fixed;inset:0;z-index:8;background:rgba(18,13,51,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;gap:10px}
 .scr h1{font-family:Unbounded,sans-serif;font-size:22px;color:var(--win);margin:0}.scr p{margin:0;color:var(--moon);font-weight:700;max-width:360px;line-height:1.35}
