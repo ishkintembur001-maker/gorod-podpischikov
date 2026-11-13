@@ -11,22 +11,30 @@ async function token(env){if(!TOK)TOK=await kv(env,'token');return TOK}
 async function tg(env,m,b){const t=await token(env);return fetch('https://api.telegram.org/bot'+t+'/'+m,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json())}
 
 // ===== ЭКОНОМИКА =====
-const MAXLVL=10,inc=l=>Math.round(20*Math.pow(l,1.5)),upc=l=>200*l*l,CAP=8;
-const DECOR={garden:['🌳','Сад',300],flowers:['🌷','Цветы',300],flag:['🚩','Флаг',500],balloons:['🎈','Шарики на крыше',400],bbq:['🍖','Мангал',600],cats:['🐱','Котики',800],dogs:['🐶','Собака',800],playground:['🛝','Детская площадка',900],car:['🚗','Машина',1500],sauna:['🧖','Сауна',2500],pool:['🏊','Бассейн',3000],
- gold:['👑','Золотая крыша',0,100],neon:['💡','Неоновая подсветка',0,100],fountain:['⛲','Фонтан',0,100],panda:['🐼','Панда',0,150],lion:['🦁','Лев',0,150]};
-const STARS={coins_s:['💰','Мешок монет: 5 000',50],coins_l:['🧰','Сундук монет: 12 000',100],skip:['⏩','Ускорить время: доход за 8 часов сразу',50],boost:['⚡','Доход ×2 на 7 дней',100],star:['⭐','Звезда города на 30 дней: бонус ×2, +1 смена, золотая рамка',250]};
-for(const k in DECOR)if(DECOR[k][3])STARS['d_'+k]=[DECOR[k][0],DECOR[k][1],DECOR[k][3]];
+const MAXLVL=15,inc=l=>Math.round(20*Math.pow(l,1.5)),upc=l=>200*l*l,CAP=8;
+const DECOR={garden:['🌳','Сад',300,'Двор'],flowers:['🌷','Цветы',300,'Двор'],fence:['🪵','Красивый забор',350,'Двор'],lanterns:['🏮','Фонари',450,'Двор'],flag:['🚩','Флаг',500,'Двор'],balloons:['🎈','Шарики на крыше',400,'Двор'],bbq:['🍖','Мангал',600,'Двор'],swing:['🪢','Качели',700,'Двор'],gazebo:['⛺','Беседка',1100,'Двор'],trampoline:['🤸','Батут',900,'Двор'],playground:['🛝','Детская площадка',900,'Двор'],greenhouse:['🪴','Теплица',1200,'Двор'],sakura:['🌸','Сакура',1300,'Двор'],
+ cats:['🐱','Котики',800,'Питомцы'],dogs:['🐶','Собака',800,'Питомцы'],chickens:['🐔','Курочки',700,'Питомцы'],rabbit:['🐰','Кролики',900,'Питомцы'],parrot:['🦜','Попугай',1000,'Питомцы'],horse:['🐴','Лошадь',2500,'Питомцы'],
+ bike:['🚲','Велосипед',600,'Транспорт'],scooter:['🛵','Мопед',1200,'Транспорт'],car:['🚗','Машина',1500,'Транспорт'],moto:['🏍','Мотоцикл',2000,'Транспорт'],jeep:['🚙','Джип',3500,'Транспорт'],
+ solar:['☀️','Солнечные панели',1800,'Дом'],satellite:['📡','Спутниковая тарелка',800,'Дом'],lights:['✨','Гирлянды',650,'Дом'],sauna:['🧖','Сауна',2500,'Дом'],pool:['🏊','Бассейн',3000,'Дом'],
+ gold:['👑','Золотая крыша',0,'Премиум',100],neon:['💡','Неоновая подсветка',0,'Премиум',100],fountain:['⛲','Фонтан',0,'Премиум',100],panda:['🐼','Панда',0,'Премиум',150],lion:['🦁','Лев',0,'Премиум',150],yacht:['🛥','Яхта у дома',0,'Премиум',150],heli:['🚁','Вертолёт',0,'Премиум',250],tiger:['🐯','Тигр',0,'Премиум',150]};
+const SKINS={mansion:['🏛','Особняк с колоннами',200],noir:['🖤','Стиль нуар',150],sakura:['🌸','Розовая сакура',150]};
+const STARS={coins_s:['💰','Мешок монет: 5 000',50],coins_l:['🧰','Сундук монет: 12 000',100],coins_xl:['🏦','Сейф монет: 30 000',200],skip:['⏩','Ускорить время: доход за 8 часов сразу',50],shifts3:['💼','+3 смены сегодня',30],fw:['🎆','Салют над домом на 24 часа',30],boost:['⚡','Доход ×2 на 7 дней',100],star:['⭐','Звезда города на 30 дней: бонус ×2, +1 смена, золотая рамка',250]};
+for(const k in DECOR)if(DECOR[k][4])STARS['d_'+k]=[DECOR[k][0],DECOR[k][1],DECOR[k][4]];for(const k in SKINS)STARS['skin_'+k]=[SKINS[k][0],'Вид дома: '+SKINS[k][1],SKINS[k][2]];
+const MIS=[['collect',2,'Собери доход 2 раза',150],['shift',2,'Отработай 2 смены',250],['like',3,'Лайкни 3 дома соседей',150],['visit',2,'Сходи в гости к 2 соседям',150],['decor',1,'Купи что-нибудь для дома',200],['score',30,'Набери 30 очков за смену',300],['daily',1,'Забери бонус дня',100]];
+function mis(p){const d=day();let m=p.mis?JSON.parse(p.mis):null;if(!m||m.d!==d){let h=0;for(const c of d+p.tg)h=(h*31+c.charCodeAt(0))>>>0;const ids=[];let k=h;while(ids.length<3){const i=k%MIS.length;if(!ids.includes(i))ids.push(i);k=Math.floor(k/7)+13}m={d,ids,p:{},c:[]};p.mis=JSON.stringify(m)}return m}
+function bump(p,kind,n=1,max=false){const m=mis(p);for(const i of m.ids){const M=MIS[i];if(M[0]===kind){const v=m.p[kind]||0;m.p[kind]=max?Math.max(v,n):v+n}}p.mis=JSON.stringify(m)}
+const plvl=xp=>Math.floor(Math.sqrt(xp/150))+1;
 const JOBS={police:['👮','Полиция','🦹','полицейский'],hospital:['🏥','Больница','🤒','работник больницы'],football:['⚽','ФК ASKER','⚽','футболист ФК ASKER']};
-function rate(p){let r=inc(p.lvl);r+=JSON.parse(p.items).length*5;if(p.boost>now())r*=2;return r}
+function rate(p){let r=inc(p.lvl);r+=JSON.parse(p.items).length*5;r=Math.round(r*(1+(plvl(p.xp)-1)*0.03));if(p.boost>now())r*=2;return r}
 function collectable(p){const h=Math.min(CAP,(now()-p.col)/3600);return Math.floor(h*rate(p))}
 async function feed(env,txt){await env.DB.prepare('INSERT INTO feed(ts,txt) VALUES(?,?)').bind(now(),txt).run()}
 async function earn(env,p,c){const w=week();p.coins+=c;p.xp+=c;p.wxp=(p.wk===w?p.wxp:0)+c;p.wk=w}
-async function save(env,p){await env.DB.prepare('UPDATE players SET coins=?,lvl=?,items=?,col=?,boost=?,star=?,streak=?,dday=?,shifts=?,sday=?,sstart=?,xp=?,wxp=?,wk=?,lday=?,lcount=?,seen=?,spent_day=?,spent=? WHERE tg=?')
-  .bind(p.coins,p.lvl,p.items,p.col,p.boost,p.star,p.streak,p.dday,p.shifts,p.sday,p.sstart,p.xp,p.wxp,p.wk,p.lday,p.lcount,now(),p.spent_day,p.spent,p.tg).run()}
+async function save(env,p){await env.DB.prepare('UPDATE players SET mis=?,skin=?,fw=?,coins=?,lvl=?,items=?,col=?,boost=?,star=?,streak=?,dday=?,shifts=?,sday=?,sstart=?,xp=?,wxp=?,wk=?,lday=?,lcount=?,seen=?,spent_day=?,spent=? WHERE tg=?')
+  .bind(p.mis,p.skin||'',p.fw||0,p.coins,p.lvl,p.items,p.col,p.boost,p.star,p.streak,p.dday,p.shifts,p.sday,p.sstart,p.xp,p.wxp,p.wk,p.lday,p.lcount,now(),p.spent_day,p.spent,p.tg).run()}
 async function view(env,p){const idx=await index();const x=idx.get(p.nick)||[p.nick,0,[]];const sd=p.sday===day()?p.shifts:0;
   const online=(await env.DB.prepare('SELECT COUNT(*) c FROM players WHERE seen>?').bind(now()-300).first()).c;
   return {nick:p.nick,num:x[1],chips:x[2],coins:p.coins,lvl:p.lvl,maxlvl:MAXLVL,upcost:p.lvl<MAXLVL?upc(p.lvl):0,rate:rate(p),ready:collectable(p),cap:CAP,items:JSON.parse(p.items),boost:p.boost,star:p.star,now:now(),
-    daily:p.dday!==day(),streak:p.streak,shiftsLeft:(p.star>now()?4:3)-sd,likesLeft:10-(p.lday===day()?p.lcount:0),online,role:Object.keys(JOBS).find(k=>(x[2]||[]).includes(JOBS[k][3]))||null}}
+    daily:p.dday!==day(),streak:p.streak,shiftsLeft:(p.star>now()?4:3)-sd,likesLeft:10-(p.lday===day()?p.lcount:0),online,skin:p.skin||'',fw:p.fw||0,pl:plvl(p.xp),xp:p.xp,plnext:150*Math.pow(plvl(p.xp),2),plcur:150*Math.pow(plvl(p.xp)-1,2),mis:(()=>{const m=mis(p);const all=m.ids.every(i=>m.c.includes(i));return {list:m.ids.map(i=>({i,t:MIS[i][2],goal:MIS[i][1],prog:Math.min(MIS[i][1],m.p[MIS[i][0]]||0),r:MIS[i][3],c:m.c.includes(i)})),bonus:all&&!m.c.includes(99)}})(),role:Object.keys(JOBS).find(k=>(x[2]||[]).includes(JOBS[k][3]))||null}}
 
 // ===== initData (вход через Telegram) =====
 async function hmac(key,msg){const k=await crypto.subtle.importKey('raw',typeof key==='string'?new TextEncoder().encode(key):key,{name:'HMAC',hash:'SHA-256'},false,['sign']);return new Uint8Array(await crypto.subtle.sign('HMAC',k,new TextEncoder().encode(msg)))}
@@ -37,6 +45,7 @@ async function auth(env,init){const t=await token(env);if(!t||!init)return null;
 // ===== API =====
 async function api(env,req,path){
   const b=req.method==='POST'?await req.json().catch(()=>({})):{};const u=await auth(env,b.init||req.headers.get('x-init'));
+  if(path==='/api/catalog')return J({DECOR,SKINS,STARS});
   if(path==='/api/top'){const w=week();const top=(await env.DB.prepare('SELECT nick,lvl,wxp FROM players WHERE wk=? AND nick IS NOT NULL ORDER BY wxp DESC LIMIT 20').bind(w).all()).results;
     const f=(await env.DB.prepare('SELECT ts,txt FROM feed ORDER BY id DESC LIMIT 15').all()).results;return J({top,feed:f})}
   if(path==='/api/house'){const n=norm(b.nick);const p=await env.DB.prepare('SELECT nick,lvl,items,likes FROM players WHERE nick=?').bind(n).first();const x=(await index()).get(n);if(!x)return J({err:'Такого жителя нет'});return J({nick:x[0],num:x[1],chips:x[2],lvl:p?p.lvl:1,items:p?JSON.parse(p.items):[],likes:p?p.likes:0,player:!!p})}
@@ -49,17 +58,24 @@ async function api(env,req,path){
   if(!p)return J({need:'claim'});
   const today=day();let msg='';
   if(path==='/api/me'){}
-  else if(path==='/api/collect'){const c=collectable(p);if(c<1)return J({err:'Пока нечего собирать'});await earn(env,p,c);p.col=now();msg='+'+c+' 🪙'}
-  else if(path==='/api/daily'){if(p.dday===today)return J({err:'Бонус уже получен, приходи завтра'});const y=new Date(Date.now()+3*3600e3-86400e3).toISOString().slice(0,10);p.streak=p.dday===y?Math.min(7,p.streak+1):1;p.dday=today;let c=100*p.streak;if(p.star>now())c*=2;await earn(env,p,c);msg='День '+p.streak+': +'+c+' 🪙'}
+  else if(path==='/api/collect'){const c=collectable(p);if(c<1)return J({err:'Пока нечего собирать'});await earn(env,p,c);p.col=now();msg='+'+c+' 🪙';bump(p,'collect')}
+  else if(path==='/api/daily'){if(p.dday===today)return J({err:'Бонус уже получен, приходи завтра'});const y=new Date(Date.now()+3*3600e3-86400e3).toISOString().slice(0,10);p.streak=p.dday===y?Math.min(7,p.streak+1):1;p.dday=today;let c=100*p.streak;if(p.star>now())c*=2;await earn(env,p,c);msg='День '+p.streak+': +'+c+' 🪙';bump(p,'daily')}
   else if(path==='/api/upgrade'){if(p.lvl>=MAXLVL)return J({err:'Максимальный уровень'});const c=upc(p.lvl);if(p.coins<c)return J({err:'Нужно '+c+' 🪙'});p.coins-=c;p.col=now()-Math.min(CAP*3600,now()-p.col);p.lvl++;msg='Дом улучшен до '+p.lvl+' уровня!';if(p.lvl>=3)await feed(env,'⬆️ @'+p.nick+' улучшил дом до '+p.lvl+' ур.')}
-  else if(path==='/api/decor'){const d=DECOR[b.item];const it=JSON.parse(p.items);if(!d||d[3])return J({err:'Нет такого'});if(it.includes(b.item))return J({err:'Уже есть'});if(p.coins<d[2])return J({err:'Нужно '+d[2]+' 🪙'});p.coins-=d[2];it.push(b.item);p.items=JSON.stringify(it);msg=d[0]+' '+d[1]+' — готово!'}
+  else if(path==='/api/decor'){const d=DECOR[b.item];const it=JSON.parse(p.items);if(!d||d[4])return J({err:'Нет такого'});if(it.includes(b.item))return J({err:'Уже есть'});if(plvl(p.xp)<Math.ceil(d[2]/800))return J({err:'Откроется на '+Math.ceil(d[2]/800)+' уровне игрока'});if(p.coins<d[2])return J({err:'Нужно '+d[2]+' 🪙'});p.coins-=d[2];it.push(b.item);p.items=JSON.stringify(it);msg=d[0]+' '+d[1]+' — готово!';bump(p,'decor')}
   else if(path==='/api/shift/start'){const sd=p.sday===today?p.shifts:0;if(sd>=(p.star>now()?4:3))return J({err:'Смены на сегодня закончились'});p.sstart=now();await save(env,p);return J({ok:1,sec:20})}
-  else if(path==='/api/shift/end'){const el=now()-p.sstart;if(!p.sstart||el<18||el>120)return J({err:'Смена не засчитана'});const job=JOBS[b.job]?b.job:'police';const sc=Math.max(0,Math.min(45,b.score|0));const v=await view(env,p);let c=Math.round(sc*5*(1+p.lvl*0.1)*(v.role===job?1.5:1));
-    p.shifts=(p.sday===today?p.shifts:0)+1;p.sday=today;p.sstart=0;await earn(env,p,c);msg=JOBS[job][0]+' Смена: '+sc+' очков, +'+c+' 🪙';if(sc>=35)await feed(env,JOBS[job][0]+' @'+p.nick+' отлично отработал смену: '+sc)}
+  else if(path==='/api/shift/end'){const el=now()-p.sstart;if(!p.sstart||el<18||el>120)return J({err:'Смена не засчитана'});const job=JOBS[b.job]?b.job:'police';const sc=Math.max(0,Math.min(60,b.score|0));const v=await view(env,p);let c=Math.round(sc*5*(1+p.lvl*0.1)*(v.role===job?1.5:1));
+    p.shifts=(p.sday===today?p.shifts:0)+1;p.sday=today;p.sstart=0;await earn(env,p,c);msg=JOBS[job][0]+' Смена: '+sc+' очков, +'+c+' 🪙';bump(p,'shift');bump(p,'score',sc,true);if(sc>=35)await feed(env,JOBS[job][0]+' @'+p.nick+' отлично отработал смену: '+sc)}
   else if(path==='/api/like'){const n=norm(b.nick);if(n===p.nick)return J({err:'Себе нельзя 🙂'});if(p.lday===today&&p.lcount>=10)return J({err:'Лайки на сегодня закончились'});
     const r=await env.DB.prepare('INSERT OR IGNORE INTO likes(tg,nick,day) VALUES(?,?,?)').bind(p.tg,n,today).run();if(!r.meta.changes)return J({err:'Сегодня уже лайкал этот дом'});
-    await env.DB.prepare('UPDATE players SET coins=coins+20,xp=xp+20,likes=likes+1 WHERE nick=?').bind(n).run();p.lcount=(p.lday===today?p.lcount:0)+1;p.lday=today;await earn(env,p,10);msg='❤️ +10 🪙 тебе и +20 🪙 соседу'}
-  else if(path==='/api/buy'){const s=STARS[b.item];if(!s)return J({err:'Нет такого'});if(b.item.startsWith('d_')&&JSON.parse(p.items).includes(b.item.slice(2)))return J({err:'Уже есть'});
+    await env.DB.prepare('UPDATE players SET coins=coins+20,xp=xp+20,likes=likes+1 WHERE nick=?').bind(n).run();p.lcount=(p.lday===today?p.lcount:0)+1;p.lday=today;await earn(env,p,10);msg='❤️ +10 🪙 тебе и +20 🪙 соседу';bump(p,'like')}
+  else if(path==='/api/visit'){const n=norm(b.nick);const h=await env.DB.prepare('SELECT nick,lvl,items,likes,skin,fw,xp FROM players WHERE nick=?').bind(n).first();const x=(await index()).get(n);if(!x)return J({err:'Такого жителя нет'});
+    if(n!==p.nick){const r=await env.DB.prepare('INSERT OR IGNORE INTO visits(tg,nick,day) VALUES(?,?,?)').bind(p.tg,n,today).run();if(r.meta.changes){bump(p,'visit');await earn(env,p,5)}}await save(env,p);
+    return J({me:await view(env,p),house:{nick:x[0],num:x[1],chips:x[2],lvl:h?h.lvl:1,items:h?JSON.parse(h.items):[],likes:h?h.likes:0,skin:h?h.skin:'',fw:h?h.fw:0,pl:h?plvl(h.xp):1,player:!!h}})}
+  else if(path==='/api/random'){const r=await env.DB.prepare('SELECT nick FROM players WHERE nick IS NOT NULL AND tg<>? ORDER BY RANDOM() LIMIT 1').bind(p.tg).first();return J({nick:r?r.nick:null})}
+  else if(path==='/api/mission'){const m=mis(p);if(b.id===99){if(!m.ids.every(i=>m.c.includes(i))||m.c.includes(99))return J({err:'Сначала выполни все миссии'});m.c.push(99);p.mis=JSON.stringify(m);await earn(env,p,500);msg='🎁 Сундук дня: +500 🪙'}
+    else{const i=b.id|0;const M=MIS[i];if(!m.ids.includes(i)||m.c.includes(i))return J({err:'Уже получено'});if((m.p[M[0]]||0)<M[1])return J({err:'Миссия ещё не выполнена'});m.c.push(i);p.mis=JSON.stringify(m);await earn(env,p,M[3]);msg='✅ Миссия: +'+M[3]+' 🪙'}}
+  else if(path==='/api/skin'){if(b.skin&&!JSON.parse(p.items).includes('skin_'+b.skin))return J({err:'Сначала купи этот вид'});p.skin=b.skin||'';msg='Вид дома изменён'}
+  else if(path==='/api/buy'){const s=STARS[b.item];if(!s)return J({err:'Нет такого'});if((b.item.startsWith('d_')&&JSON.parse(p.items).includes(b.item.slice(2)))||(b.item.startsWith('skin_')&&JSON.parse(p.items).includes(b.item)))return J({err:'Уже есть'});
     const sp=p.spent_day===today?p.spent:0;if(sp+s[2]>500)return J({err:'Лимит покупок на сегодня — 500 ⭐'});
     const r=await tg(env,'createInvoiceLink',{title:s[1].slice(0,32),description:s[0]+' '+s[1]+' для дома @'+p.nick,payload:p.tg+':'+b.item+':'+now(),currency:'XTR',prices:[{label:s[1].slice(0,32),amount:s[2]}]});
     return r.ok?J({link:r.result}):J({err:'Оплата временно недоступна'})}
@@ -72,9 +88,11 @@ async function grant(env,sp,from){const [tgid,item]=sp.invoice_payload.split(':'
   const p=await env.DB.prepare('SELECT * FROM players WHERE tg=?').bind(Number(tgid)).first();if(!p||!s)return;const t=now();
   if(item==='coins_s')p.coins+=5000;else if(item==='coins_l')p.coins+=12000;else if(item==='skip')p.coins+=rate(p)*8;
   else if(item==='boost')p.boost=Math.max(p.boost,t)+7*86400;else if(item==='star')p.star=Math.max(p.star,t)+30*86400;
+  else if(item==='coins_xl')p.coins+=30000;else if(item==='fw'){p.fw=t+86400}else if(item==='shifts3'){const d=day();p.shifts=(p.sday===d?p.shifts:0)-3;p.sday=d}
+  else if(item.startsWith('skin_')){const it=JSON.parse(p.items);if(!it.includes(item))it.push(item);p.items=JSON.stringify(it);p.skin=item.slice(5)}
   else if(item.startsWith('d_')){const it=JSON.parse(p.items);if(!it.includes(item.slice(2)))it.push(item.slice(2));p.items=JSON.stringify(it)}
   const td=day();p.spent=(p.spent_day===td?p.spent:0)+sp.total_amount;p.spent_day=td;await save(env,p);
-  if(item.startsWith('d_'))await feed(env,s[0]+' У @'+p.nick+' теперь '+s[1].toLowerCase())}
+  if(item==='fw')await feed(env,'🎆 Над домом @'+p.nick+' салют!');if(item.startsWith('d_')||item.startsWith('skin_'))await feed(env,s[0]+' У @'+p.nick+' теперь '+s[1].toLowerCase())}
 
 // ===== БОТ =====
 const kb=()=>({inline_keyboard:[[{text:'🎮 Играть',web_app:{url:GAME}}],[{text:'🏙 Найти дом',web_app:{url:SITE+'/'}}],[{text:'📲 Наша страница в Instagram',url:IG}]]});
