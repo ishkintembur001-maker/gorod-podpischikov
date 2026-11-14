@@ -154,8 +154,8 @@ export function makeHero(look = {}, me = true) {
     if (torso && L.fl) { const fI = flagItem(L); torso.getWorldScale(ws); fI.scale.setScalar(1 / ws.x); fI.position.y = .3 / ws.y; torso.add(fI) }
     const au = auraItem(L); if (au) { g.add(au); AURAS.add(au) }
     if (L.bd) g.add(balloons());
-    if (L.vh) { const v = vehicle(L.vh); g.add(v); g.userData.veh = v; if (L.vh === 'scooter') { model.position.y = .38; model.position.z = -.2 } else { model.position.y = v.userData.seat - seatH + .1 + (L.vh === 'car' || L.vh === 'sport' ? 0 : .15); if (L.vh === 'car' || L.vh === 'sport') model.position.z = -.35; g.userData.anim = 'SitDown'; g.userData.ride = true } }
-    Object.assign(g.userData, { model, mix, acts, seatH, cur: null }); MIXERS.add(mix); if (g.userData.ride) play(g, 'SitDown', { once: true, fade: 0 }); else play(g, g.userData.anim || 'Idle');
+    if (L.vh) { const v = vehicle(L.vh); g.add(v); g.userData.veh = v; if (L.vh === 'scooter') { model.position.y = .38; model.position.z = -.2; g.userData.scoot = true } else { model.position.y = v.userData.seat - seatH + .1 + (L.vh === 'car' || L.vh === 'sport' ? 0 : .15); if (L.vh === 'car' || L.vh === 'sport') model.position.z = -.35; g.userData.anim = 'SitDown'; g.userData.ride = true } }
+    Object.assign(g.userData, { model, mix, acts, seatH, cur: null }); MIXERS.add(mix); if (g.userData.ride) play(g, 'SitDown', { once: true, fade: 0 }); else if (g.userData.scoot) { play(g, 'Idle'); g.userData.anim = 'Scoot'; model.rotation.x = .08 } else play(g, g.userData.anim || 'Idle');
   });
   g.scale.setScalar(1);
   return g;
