@@ -369,6 +369,23 @@ function bh(n,k=0){let h=2166136261^k;for(const c of n){h^=c.charCodeAt(0);h=Mat
 const BOT_DAY0=Date.UTC(2026,10,14);
 const BLOOKS={sk:['#f2d3b8','#e0b08a','#c68e63','#8d5a3b'],hc:['#2b1a10','#5a3a1e','#c48a3a','#111111','#a33a2a'],sh:['#e8433a','#3a8bff','#2bb24c','#ffc65c','#ffffff','#6a4fd0','#ff6fb5','#222222'],pa:['#2b3a55','#1c1c1c','#6b4a2b','#3a5a2a','#c0c0c0'],ac:['','','','cap','glasses','headphones','tubeteika']};
 const pk=(a,u)=>a[Math.floor(u*a.length)%a.length];
+// дома и заборы с воротами — твёрдые, сквозь них не пройти
+function solid(x,z){for(const h of (WORLD.houses||[]))if(Math.abs(x-h.x)<7.9&&Math.abs(z-h.z)<7.9)return true;return false}
+// кошки и собаки гуляют по улицам рядом с тобой, птицы летают над городом
+const PETS=[];{const S=(WORLD.streets||[]);const cc=['#f2a93b','#2b2b2b','#ffffff','#9a9a9a','#c86b2a','#e8d2b0'],dc=['#a8743f','#f1e3c6','#2b2118','#c8a070','#7a5a3a','#e0e0e0'];
+ for(let i=0;i<34;i++){const cat=i%2===0;const m=new THREE.Mesh(cat?AG.cat(cc[i%cc.length]):AG.dog(dc[i%dc.length]),M.vc);m.scale.setScalar(cat?2.3:2.6);m.castShadow=true;scene.add(m);PETS.push({m,cat,tx:0,tz:0,wait:0,sp:cat?3+Math.random()*2:4+Math.random()*3,ph:Math.random()*6,s:null})}
+ const tag=t=>{const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');x.fillStyle='#fff';x.beginPath();x.roundRect(4,4,120,50,22);x.fill();x.fillStyle='#2b2266';x.font='bold 30px sans-serif';x.textAlign='center';x.fillText(t,64,40);const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false}));sp.scale.set(2.6,1.3,1);sp.visible=false;return sp};
+ PETS.forEach(p=>{p.say=tag(p.cat?'Мяу!':'Гав!');scene.add(p.say)});
+ PETS.pick=(p,nearX,nearZ,far)=>{const C=S.filter(s=>Math.abs(s.x-nearX)<s.w/2+70&&Math.abs(s.z-nearZ)<s.d/2+70);const st=C.length?C[Math.floor(Math.random()*C.length)]:S[Math.floor(Math.random()*S.length)];if(!st)return;const along=st.w>st.d;let x=st.x+(Math.random()-.5)*st.w*(along?1:.6),z=st.z+(Math.random()-.5)*st.d*(along?.6:1);if(along)x=Math.max(nearX-60,Math.min(nearX+60,x));else z=Math.max(nearZ-60,Math.min(nearZ+60,z));if(far){p.m.position.set(x,0,z)}p.tx=x;p.tz=z}}
+const BIRDS=[];{const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.Float32BufferAttribute([0,0,0,-1.2,.3,-.4,0,0,.6,0,0,0,1.2,.3,-.4,0,0,.6],3));bg.computeVertexNormals();const bm=new THREE.MeshBasicMaterial({color:'#2b2440',side:THREE.DoubleSide});for(let f=0;f<4;f++)for(let i=0;i<7;i++){const m=new THREE.Mesh(bg,bm);scene.add(m);BIRDS.push({m,f,i,r:40+f*15,h:28+f*4+i%3,sp:.12+f*.03})}}
+function lifeTick(t,dt){const px=ME.position.x,pz=ME.position.z;
+ for(const p of PETS){const m=p.m;if(!p.init||Math.hypot(m.position.x-px,m.position.z-pz)>110){PETS.pick(p,px,pz,true);p.init=1}
+  const dx=p.tx-m.position.x,dz=p.tz-m.position.z,d=Math.hypot(dx,dz);
+  if(p.wait>0){p.wait-=dt;m.position.y=0;m.rotation.z=0;if(p.wait<=0)PETS.pick(p,px,pz,false)}
+  else if(d<.6){p.wait=1+Math.random()*4;if(Math.random()<.25&&Math.hypot(m.position.x-px,m.position.z-pz)<40){p.say.visible=true;p.st=t+1.6}}
+  else{const v=Math.min(d,p.sp*dt);m.position.x+=dx/d*v;m.position.z+=dz/d*v;m.rotation.y=Math.atan2(dx,dz)-Math.PI/2;m.position.y=Math.abs(Math.sin(t*(p.cat?10:12)+p.ph))*.18;m.rotation.z=Math.sin(t*10+p.ph)*.05}
+  if(p.say.visible){p.say.position.set(m.position.x,3.4,m.position.z);if(t>p.st)p.say.visible=false}}
+ for(const b of BIRDS){const a=t*b.sp+b.f*1.7-b.i*.06;b.m.position.set(px+Math.cos(a)*(b.r+b.i*1.5)+(b.f-1.5)*30,b.h,pz+Math.sin(a)*(b.r+b.i*1.5));b.m.rotation.set(0,-a,Math.sin(t*12+b.i)*.6);b.m.scale.set(1,1+Math.sin(t*12+b.i)*.5,1)}}
 const BOTS=[];
 {const S=WORLD.streets||[];const H=S.filter(s=>s.w>s.d),V=S.filter(s=>s.d>=s.w);const xs=V.map(s=>s.x).sort((a,b)=>a-b),zs=H.map(s=>s.z).sort((a,b)=>a-b);
  if(xs.length>1&&zs.length>1)BOTN.forEach((n,i)=>{const u=k=>bh(n,k);const day=Math.floor((Date.now()-BOT_DAY0)/864e5);const HUBS=[[P.cx,P.cz],[HS.x,HS.z],[PS.x,PS.z],[MALL.x,MALL.z],[PK.x,PK.z],[FB.x,FB.z],[VP.x,VP.z],[P.cx+40,P.cz+40],[P.cx-40,P.cz-30]].concat(MY?[[MY.x,MY.z]]:[]);const hb=HUBS[Math.floor(u(1)*HUBS.length)];let c=xs.reduce((bi,x,k)=>Math.abs(x-hb[0])<Math.abs(xs[bi]-hb[0])?k:bi,0),r=zs.reduce((bi,z,k)=>Math.abs(z-hb[1])<Math.abs(zs[bi]-hb[1])?k:bi,0);c=Math.max(0,Math.min(xs.length-1,c+Math.round((u(2)-.5)*2)));const pts=[[xs[c],zs[r]]];
@@ -385,7 +402,7 @@ function botLabel(b){const c=document.createElement('canvas');c.width=512;c.heig
 let botT=0;window.__bots=()=>BOTS.length+' vis:'+BOTS.filter(b=>b.g).length+' streets:'+(WORLD.streets||[]).length;
 function botTick(t,dt){const ts=Date.now()/1000,night=nightK()>.6,px=ME.position.x,pz=ME.position.z;botT-=dt;const check=botT<=0;if(check)botT=.5;
  for(const b of BOTS){const p=botPos(b,ts);if(!p)continue;const awake=!night||b.u(20+Math.floor(ts/3600))<.35;const near=awake&&Math.hypot(p.x-px,p.z-pz)<110;
-  if(check){if(near&&!b.g&&BOTS.filter(q=>q.g).length<16){b.g=makeHero(b.look,false);b.g.userData.nick=b.n;b.g.userData.bot=b;const l=botLabel(b);l.position.y=4.3;b.g.add(l);b.g.position.set(p.x,0,p.z);scene.add(b.g)}
+  if(check){if(near&&!b.g&&BOTS.filter(q=>q.g).length<24){b.g=makeHero(b.look,false);b.g.userData.nick=b.n;b.g.userData.bot=b;const l=botLabel(b);l.position.y=4.3;b.g.add(l);b.g.position.set(p.x,0,p.z);scene.add(b.g)}
    else if(!near&&b.g){scene.remove(b.g);hdispose(b.g);b.g=null}}
   if(b.g){const g=b.g,stop=Math.sin(ts*.07+b.u(30)*50)>.93;if(stop){walk(g,t,false);if(Math.sin(ts*.5+b.u(31)*9)>.97&&g.userData.anim!=='Victory'){hplay(g,'Victory',{once:true});showEmo(g,pk(['👋','😂','🔥','🎉','😎'],b.u(32+Math.floor(ts/30))))}}else{g.position.set(p.x,0,p.z);g.rotation.y=p.ry;hwalk(g,t,true)}}}}
 function walk(g,t,on){hwalk(g,t,on)}
@@ -400,7 +417,7 @@ let FR=0,FPT=performance.now(),LOWQ=false;function perf(now){FR++;if(now-FPT>250
 document.getElementById('fs').onclick=()=>parent.postMessage({t:'back'},'*');
 const t0=performance.now();let last=t0;const camP=new THREE.Vector3(ME.position.x,30,ME.position.z+34);
 function loop(now){requestAnimationFrame(loop);const t=(now-t0)/1000,dt=Math.min(.05,(now-last)/1000);last=now;
- const L_=Math.hypot(joy.x,joy.y),U=ME.userData;if(L_>.1){const sp=16*Math.min(1,L_),ca=Math.cos(camAng),sa=Math.sin(camAng);const dx=joy.x*ca+joy.y*sa,dz=-joy.x*sa+joy.y*ca;ME.position.x+=dx*sp*dt;ME.position.z+=dz*sp*dt;ME.rotation.y=Math.atan2(dx,dz);hwalk(ME,t,true)}else hwalk(ME,t,false);
+ lifeTick(t,dt);const L_=Math.hypot(joy.x,joy.y),U=ME.userData;if(L_>.1){const sp=16*Math.min(1,L_),ca=Math.cos(camAng),sa=Math.sin(camAng);const dx=joy.x*ca+joy.y*sa,dz=-joy.x*sa+joy.y*ca;{const nx=ME.position.x+dx*sp*dt,nz=ME.position.z+dz*sp*dt,was=solid(ME.position.x,ME.position.z);if(was||!solid(nx,nz)){ME.position.x=nx;ME.position.z=nz}else if(!solid(nx,ME.position.z))ME.position.x=nx;else if(!solid(ME.position.x,nz))ME.position.z=nz}ME.rotation.y=Math.atan2(dx,dz);hwalk(ME,t,true)}else hwalk(ME,t,false);
  U.ring.material.opacity=.5+.3*Math.sin(t*4);
  camP.lerp(new THREE.Vector3(ME.position.x+Math.sin(camAng)*camDist*.62,camDist*1.2,ME.position.z+Math.cos(camAng)*camDist*.62),.08);camera.position.copy(camP);camera.lookAt(ME.position.x,3,ME.position.z);
  applyLight(nightK(),t);L.sun.position.set(ME.position.x+160,240,ME.position.z+140);L.sun.target.position.set(ME.position.x,0,ME.position.z);const sc=L.sun.shadow.camera;sc.left=-70;sc.right=70;sc.top=70;sc.bottom=-70;sc.near=10;sc.far=700;sc.updateProjectionMatrix();

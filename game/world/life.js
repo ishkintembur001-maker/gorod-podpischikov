@@ -93,6 +93,15 @@ function doorsTick(dt) { for (const d of DOORM) { const near = Math.hypot(hero.p
 
 // ---------- мебель ----------
 const FB = {
+  armchair: g => { B(1.8, .5, 1.6, '#c9534a', 0, .45, 0, g); B(1.8, 1.2, .35, '#b2453d', 0, 1.1, -.65, g); B(.3, .8, 1.6, '#b2453d', -.8, .85, 0, g); B(.3, .8, 1.6, '#b2453d', .8, .85, 0, g); for (const x of [-.7, .7]) for (const z of [-.6, .6]) C(.06, .06, .2, '#3a2a1a', x, .1, z, g, 6); return 1.6 },
+  coffee: g => { B(1.2, 1.1, .9, '#6a4a3a', 0, .55, 0, g); B(.9, 1.1, .7, '#2a2a30', 0, 1.65, 0, g, { metalness: .5, roughness: .3 }); B(.5, .25, .3, '#c0c6cc', 0, 1.35, .3, g, { metalness: .8 }); C(.12, .1, .2, '#ffffff', 0, 1.22, .35, g, 10); B(.6, .15, .02, '#5ee6b0', 0, 2, .36, g, { emissive: '#2a8a60' }); return .9 },
+  treadmill: g => { B(1.4, .3, 3.2, '#2a2a33', 0, .15, 0, g); B(1.1, .04, 2.8, '#111', 0, .32, .1, g); for (const x of [-.6, .6]) B(.1, 1.6, .1, '#888', x, 1, -1.4, g, { metalness: .6 }); B(1.3, .5, .2, '#333', 0, 1.8, -1.4, g); B(.8, .25, .02, '#58a8ff', 0, 1.85, -1.29, g, { emissive: '#2050a0' }); return 3.2 },
+  palm: g => { C(.55, .45, .9, '#c47a4a', 0, .45, 0, g, 12); C(.12, .18, 3.2, '#8a6a3a', 0, 2.4, 0, g, 8); const lm = mat('#3fae58'); for (let i = 0; i < 6; i++) { const l = B(.35, .06, 2, lm, 0, 4, 0, g); l.rotation.y = i * Math.PI / 3; l.rotation.x = .55; l.position.set(Math.sin(i * Math.PI / 3) * .8, 3.8, Math.cos(i * Math.PI / 3) * .8) } return 1.1 },
+  easel: g => { for (const x of [-.5, .5]) { const l = B(.08, 2.6, .08, '#8a5a3a', x, 1.3, 0, g); l.rotation.z = x > 0 ? -.12 : .12 } B(.08, 2.4, .08, '#8a5a3a', 0, 1.2, -.5, g); const pt = tex((x, w, h) => { x.fillStyle = '#fdf6e3'; x.fillRect(0, 0, w, h); for (let i = 0; i < 14; i++) { x.fillStyle = `hsl(${i * 37},70%,60%)`; x.beginPath(); x.arc(Math.random() * w, Math.random() * h, 10 + Math.random() * 30, 0, 7); x.fill() } }); const cv = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.2, .06), [mat('#eee'), mat('#eee'), mat('#eee'), mat('#eee'), mat('#fff', { map: pt }), mat('#eee')]); cv.position.set(0, 2, .08); cv.rotation.x = -.1; g.add(cv); B(1.4, .08, .25, '#8a5a3a', 0, 1.35, .12, g); return 1 },
+  robot: g => { const r = new THREE.Group(); r.name = 'robot'; g.add(r); C(.55, .55, .25, '#e8e8f0', 0, .18, 0, r, 20, { metalness: .3, roughness: .3 }); C(.2, .2, .06, '#2a2a33', 0, .33, 0, r, 12); B(.12, .04, .04, '#5ee6b0', 0, .35, .4, r, { emissive: '#30c080' }); return 1.1 },
+  goldtoilet: g => { const gm = mat('#ffc94a', { metalness: .9, roughness: .2 }); B(1, .9, .5, gm, 0, .95, -.55, g); C(.42, .32, .5, gm, 0, .25, .1, g, 20); C(.46, .46, .08, gm, 0, .54, .12, g, 20); B(.9, .06, .45, '#fff1b8', 0, 1.42, -.55, g); return 1.4 },
+  dj: g => { B(2.6, 1.1, 1, '#1d1a2e', 0, .55, 0, g); B(2.6, .08, 1.05, '#ff4fd8', 0, 1.1, 0, g, { emissive: '#a02080' }); for (const x of [-.75, .75]) { const d = C(.35, .35, .06, '#333', x, 1.15, 0, g, 20); d.name = 'disc' } B(.5, .1, .4, '#58a8ff', 0, 1.16, 0, g, { emissive: '#2050a0' }); for (const x of [-1.6, 1.6]) { B(.7, 1.8, .7, '#222', x, .9, -.2, g); C(.25, .25, .05, '#555', x, 1.2, .16, g, 16).rotation.x = Math.PI / 2 } return 1 },
+  telescope: g => { for (let i = 0; i < 3; i++) { const l = B(.06, 1.8, .06, '#555', Math.sin(i * 2.1) * .35, .85, Math.cos(i * 2.1) * .35, g); l.rotation.set(Math.cos(i * 2.1) * .2, 0, -Math.sin(i * 2.1) * .2) } const t = C(.16, .22, 1.8, '#f2f2f8', 0, 2, .2, g, 14, { metalness: .4 }); t.rotation.x = -1; C(.1, .1, .2, '#222', 0, 1.6, -.25, g, 10).rotation.x = -1; return 1 },
   toilet: g => { B(1, .9, .5, '#f4f7f9', 0, .95, -.55, g, { roughness: .25 }); C(.42, .32, .5, '#f4f7f9', 0, .25, .1, g, 20, { roughness: .25 }); C(.46, .46, .08, '#e2e8ec', 0, .54, .12, g, 20); B(.9, .06, .45, '#e2e8ec', 0, 1.42, -.55, g); B(.12, .05, .05, '#a0a8b0', .3, 1.48, -.55, g); B(.5, .4, .12, '#f0f0f0', .9, .9, -.75, g); return 1.4 },
   fridge: g => { B(1.8, 3.6, 1.4, '#eef2f5', 0, 1.8, 0, g, { roughness: .3, metalness: .2 }); B(1.82, .05, 1.42, '#c7cfd6', 0, 2.5, 0, g); B(.08, .9, .1, '#8a96a0', .7, 3, .72, g); B(.08, 1.2, .1, '#8a96a0', .7, 1.4, .72, g); return 1.4 },
   bed: g => { B(3.2, .6, 4.6, '#7a4a2a', 0, .3, 0, g); B(3.2, 1.8, .3, '#7a4a2a', 0, .9, -2.2, g); B(3, .45, 4.2, '#f7f3ea', 0, .8, .1, g); B(3.05, .25, 2.6, '#6a4fd0', 0, 1.05, .9, g); B(1.2, .3, .7, '#ffffff', -.75, 1.15, -1.5, g); B(1.2, .3, .7, '#ffffff', .75, 1.15, -1.5, g); return 4.6 },
@@ -204,7 +213,13 @@ function plan(g) {
   const sofa = OBJ.get('sofa');
   switch (k) {
     case 'sofa': return { ...seat(0, .25, .9, 0), anim: 'relax' };
-    case 'toilet': return { ...seat(0, .12, .58, 0), anim: 'relax' };
+    case 'toilet': case 'goldtoilet': return { ...seat(0, .12, .58, 0), anim: 'relax' };
+    case 'armchair': return { ...seat(0, .1, .7, 0), anim: 'relax' };
+    case 'treadmill': return { app: F(0, 2.4), at: F(0, .2), y: .34, rot: r + Math.PI, pose: 'stand', anim: 'run' };
+    case 'easel': return { app: F(0, 1.6), at: F(0, 1.5), y: 0, rot: r + Math.PI, pose: 'stand', anim: 'cook', prop: '🖌' };
+    case 'dj': return { app: F(0, 1.7), at: F(0, 1.6), y: 0, rot: r + Math.PI, pose: 'stand', anim: 'game', prop: '🎧' };
+    case 'coffee': return { app: F(0, 1.6), at: F(0, 1.55), y: 0, rot: r + Math.PI, pose: 'stand', anim: 'cook', prop: '☕' };
+    case 'telescope': return { app: F(0, -1.2), at: F(0, -1), y: 0, rot: r, pose: 'stand', anim: 'look' };
     case 'tv': if (sofa) { const sp = plan(sofa); return { ...sp, face: g.position, anim: 'watch' } } return { app: F(0, 4), at: F(0, 3.2), y: -seatOf() + .55, rot: r + Math.PI, pose: 'sit', anim: 'watch' };
     case 'cinema': return { app: F(-1.2, 4.6), at: F(-1.2, 3.05), y: .85 - seatOf() + .1, rot: r + Math.PI, pose: 'sit', anim: 'watch', prop: '🍿' };
     case 'pc': return { app: F(0, 2.3), at: F(0, 1.15), y: 1 - seatOf() + .05, rot: r + Math.PI, pose: 'sit', anim: 'type' };
@@ -266,14 +281,15 @@ let ang = .5, dist = innerWidth < innerHeight ? 40 : 34, BUILD = false, sel = nu
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function setPtr(e) { ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, cam) }
 let sx = 0, sy = 0, lx = null;
-$('gl').addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; lx = e.clientX; if (BUILD && sel) { setPtr(e); const h = ray.intersectObject(sel, true)[0]; drag = !!h } });
+let doff = new THREE.Vector3();
+$('gl').addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; lx = e.clientX; if (BUILD) { setPtr(e); const h = ray.intersectObjects(furn.children, true)[0]; if (h) { const g = OBJ.get(h.object.userData.k); if (g !== sel) select(g); const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); doff.set(sel.position.x - p.x, 0, sel.position.z - p.z); drag = true; lx = null } } });
 $('gl').addEventListener('pointermove', e => {
-  if (drag && sel) { setPtr(e); const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 2) / 2; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 2) / 2; return }
+  if (drag && sel) { setPtr(e); const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); p.add(doff); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 4) / 4; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 4) / 4; return }
   if (lx != null && e.buttons) { ang -= (e.clientX - lx) * .005; ang = Math.max(-.2, Math.min(1.3, ang)); lx = e.clientX }
 });
 addEventListener('pointerup', e => {
   const tap = Math.hypot(e.clientX - sx, e.clientY - sy) < 8; lx = null;
-  if (drag) { drag = false; return }
+  if (drag) { drag = false; autosave(); return }
   if (!tap || e.target.id !== 'gl') return;
   setPtr(e); const h = ray.intersectObjects(furn.children, true)[0];
   if (BUILD) { select(h ? OBJ.get(h.object.userData.k) : null); return }
@@ -294,14 +310,17 @@ function menu(g, x, y) {
   const efs = e => Object.entries(e).map(([n, v]) => `${NI[n][0]}+${v}`).join(' ');
   $('om').innerHTML = `<b>${f[0]} ${f[1]}</b>` + (AX ? AX.map((a, i) => btn(i, a[0] + ' ' + a[1], i ? k + '.' + i : k, efs(a[2]))).join('') : eff ? btn(0, USE[k] || 'Использовать', k, eff) : '<small>Украшение дома</small>');
   $('om').style.left = Math.min(innerWidth - 230, Math.max(10, x - 110)) + 'px'; $('om').style.top = Math.max(70, Math.min(innerHeight - 90 - (AX ? AX.length : 1) * 52, y - 150)) + 'px'; $('om').classList.remove('hidden');
-  $('om').querySelectorAll('.ua').forEach(b => b.onclick = () => act(g, +b.dataset.i));
+  $('om').insertAdjacentHTML('beforeend', '<button class="ua mv">✋ Переставить / повернуть</button>'); $('om').querySelector('.mv').onclick = () => moveMode(g);
+  $('om').querySelectorAll('.ua:not(.mv)').forEach(b => b.onclick = () => act(g, +b.dataset.i));
 }
-const USE = { arcade: 'Играть в автомат', throne: 'Сесть на трон', goldtv: 'Смотреть золотой ТВ', sauna: 'Попариться', desk: 'Поработать', dining: 'Выпить коктейль', fridge: 'Перекусить', stove: 'Приготовить ужин', chef: 'Готовить как шеф', table: 'Поесть за столом', bed: 'Поспать', kingbed: 'Спать как король', sofa: 'Отдохнуть', shower: 'Принять душ', bath: 'Полежать в ванне', jacuzzi: 'В джакузи', tv: 'Смотреть ТВ', cinema: 'Смотреть кино', pc: 'Листать Instagram', toilet: 'Сходить в туалет', console: 'Играть', guitar: 'Сыграть', piano: 'Сыграть на рояле', books: 'Почитать', aquarium: 'Кормить рыбок', fireplace: 'Греться у камина', phone: 'Позвонить подписчикам' };
-const EMO = { arcade: '🕹', throne: '👑', goldtv: '📺', sauna: '🧖', desk: '✍️', dining: '🥤', fridge: '🍕', stove: '🍳', chef: '🥘', table: '🍽', bed: '💤', kingbed: '👑', sofa: '🛋', shower: '🫧', bath: '🛁', jacuzzi: '♨️', tv: '📺', cinema: '🍿', pc: '📱', toilet: '🚽', console: '🎮', guitar: '🎸', piano: '🎹', books: '📖', aquarium: '🐠', fireplace: '🔥', phone: '📞' };
+const USE = { arcade: 'Играть в автомат', throne: 'Сесть на трон', goldtv: 'Смотреть золотой ТВ', sauna: 'Попариться', desk: 'Поработать', dining: 'Выпить коктейль', fridge: 'Перекусить', stove: 'Приготовить ужин', chef: 'Готовить как шеф', table: 'Поесть за столом', bed: 'Поспать', kingbed: 'Спать как король', sofa: 'Отдохнуть', shower: 'Принять душ', bath: 'Полежать в ванне', jacuzzi: 'В джакузи', tv: 'Смотреть ТВ', cinema: 'Смотреть кино', pc: 'Листать Instagram', toilet: 'Сходить в туалет', armchair: 'Посидеть в кресле', coffee: 'Сварить кофе', treadmill: 'Пробежка', easel: 'Порисовать', robot: 'Запустить уборку', goldtoilet: 'Посидеть на золотом', dj: 'Включить DJ-сет', telescope: 'Смотреть на звёзды', console: 'Играть', guitar: 'Сыграть', piano: 'Сыграть на рояле', books: 'Почитать', aquarium: 'Кормить рыбок', fireplace: 'Греться у камина', phone: 'Позвонить подписчикам' };
+const EMO = { arcade: '🕹', throne: '👑', goldtv: '📺', sauna: '🧖', desk: '✍️', dining: '🥤', fridge: '🍕', stove: '🍳', chef: '🥘', table: '🍽', bed: '💤', kingbed: '👑', sofa: '🛋', shower: '🫧', bath: '🛁', jacuzzi: '♨️', tv: '📺', cinema: '🍿', pc: '📱', toilet: '🚽', armchair: '😌', coffee: '☕', treadmill: '🏃', easel: '🎨', robot: '🤖', goldtoilet: '👑', dj: '🎧', telescope: '🌌', console: '🎮', guitar: '🎸', piano: '🎹', books: '📖', aquarium: '🐠', fireplace: '🔥', phone: '📞' };
 // ---------- ремонт ----------
 function select(g) { if (sel) sel.traverse(o => o.material && o.material.emissive && o.userData.em0 !== undefined && o.material.emissive.setHex(o.userData.em0)); sel = g; $('bsel').classList.toggle('hidden', !g); if (g) { g.traverse(o => { if (o.material && o.material.emissive) { o.userData.em0 = o.material.emissive.getHex(); o.material = o.material.clone(); o.material.emissive.setHex(0x5a3a00) } }); $('bname').textContent = CAT.furn[g.userData.k][0] + ' ' + CAT.furn[g.userData.k][1] } }
-$('rot').onclick = () => sel && (sel.rotation.y = (sel.rotation.y + Math.PI / 2) % (Math.PI * 2));
-$('stow').onclick = () => { if (!sel) return; OBJ.delete(sel.userData.k); furn.remove(sel); select(null); drawer() };
+let svT = 0; function autosave() { clearTimeout(svT); svT = setTimeout(() => P.call('life/save', { furn: layout(), wall: '#' + wallM.color.getHexString(), floor: LIFE().floor }), 700) }
+$('rot').onclick = () => { if (sel) { sel.rotation.y = (sel.rotation.y + Math.PI / 4) % (Math.PI * 2); autosave() } };
+function moveMode(g) { BUILD = true; document.body.classList.add('bm'); $('om').classList.add('hidden'); drawer(); select(g); P.toast && P.toast('✋ Тяни предмет пальцем, ⟳ — повернуть') }
+$('stow').onclick = () => { if (!sel) return; OBJ.delete(sel.userData.k); furn.remove(sel); select(null); drawer(); autosave() };
 function layout() { return [...OBJ.values()].map(g => [g.userData.k, g.position.x, g.position.z, +g.rotation.y.toFixed(2)]) }
 $('build').onclick = () => { BUILD = true; document.body.classList.add('bm'); $('om').classList.add('hidden'); drawer() };
 $('bdone').onclick = async () => { BUILD = false; select(null); rebuildGrid(); document.body.classList.remove('bm'); await P.call('life/save', { furn: layout(), wall: '#' + wallM.color.getHexString(), floor: LIFE().floor }); };
@@ -315,7 +334,7 @@ function drawer() {
   document.querySelectorAll('[data-w]').forEach(i => i.onclick = () => { L.wall = i.dataset.w; wallM.color.set(L.wall) });
   document.querySelectorAll('[data-f]').forEach(i => i.onclick = () => { L.floor = i.dataset.f; buildHouse() });
   document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { const g = addObj(b.dataset.p, hero.position.x, hero.position.z, 0); select(g); drawer() });
-  document.querySelectorAll('[data-b]').forEach(b => b.onclick = async () => { const k = b.dataset.b; if (F[k][3]) { P.buy('f_' + k); return } const j = await P.call('life/buy', { k }); if (j && j.me) { const g = addObj(k, 0, 0, 0); select(g); drawer() } });
+  document.querySelectorAll('[data-b]').forEach(b => b.onclick = async () => { const k = b.dataset.b; if (F[k][3]) { P.buy('f_' + k); return } const j = await P.call('life/buy', { k }); if (j && j.me) { const fp = (CAT.fpos || {})[k] || [hero.position.x, hero.position.z - 2, 0]; const g = addObj(k, fp[0], fp[1], fp[2]); select(g); drawer(); autosave(); P.toast && P.toast('✋ Тяни предмет пальцем, ⟳ — повернуть') } });
 }
 
 // ---------- образ ----------
@@ -359,6 +378,7 @@ function loop(now) {
     else if (A === 'game') U.arms.forEach((a, i) => a.rotation.x = -1.2 + Math.sin(t * 11 + i) * .15);
     else if (A === 'phone') { U.arms[1].rotation.x = -2.6; U.arms[1].rotation.z = .3 }
     else if (A === 'guitar') { U.arms[0].rotation.x = -1.1; U.arms[1].rotation.x = -.9 + Math.sin(t * 14) * .3 }
+    else if (A === 'run') { U.legs && U.legs.forEach((l, i) => l.rotation.x = Math.sin(t * 12 + i * Math.PI) * .7); U.arms.forEach((a, i) => a.rotation.x = Math.sin(t * 12 + i * Math.PI + Math.PI) * .7) }
     else if (A === 'read') U.arms.forEach(a => a.rotation.x = -1.2);
     else if (A === 'cook' || A === 'fridge') U.arms.forEach((a, i) => a.rotation.x = -1.3 + Math.sin(t * 6 + i * 2) * .3);
     else if (A === 'shower') { U.arms.forEach((a, i) => a.rotation.x = -2.4 + Math.sin(t * 7 + i * 3) * .4); drops(t) }
@@ -370,7 +390,7 @@ function loop(now) {
   doorsTick(dt);
   if (bubble) bubble.position.y = 4.1 + Math.sin(t * 4) * .1;
   hero.userData.ring.material.opacity = .5 + .3 * Math.sin(t * 4);
-  for (const g of furn.children) g.traverse(o => { if (o.name === 'screen') o.material.color.setHSL((t * .05 + g.position.x * .01) % 1, .6, .55); if (o.name === 'flame') o.scale.y = .8 + Math.sin(t * 12) * .25; if (o.name === 'fish') o.position.x = Math.sin(t * .8 + o.position.y * 3) * 1; if (o.name === 'water') o.position.y = .95 + Math.sin(t * 3) * .03 });
+  for (const g of furn.children) g.traverse(o => { if (o.name === 'screen') o.material.color.setHSL((t * .05 + g.position.x * .01) % 1, .6, .55); if (o.name === 'robot') { o.position.x = Math.sin(t * .5) * 1.5; o.position.z = Math.sin(t * .8) * 1.2; o.rotation.y = t } if (o.name === 'disc') o.rotation.y = t * 4; if (o.name === 'flame') o.scale.y = .8 + Math.sin(t * 12) * .25; if (o.name === 'fish') o.position.x = Math.sin(t * .8 + o.position.y * 3) * 1; if (o.name === 'water') o.position.y = .95 + Math.sin(t * 3) * .03 });
   const tx = BUILD && sel ? sel.position.x * .3 : hero.position.x * FK(), tz = BUILD && sel ? sel.position.z * .3 : hero.position.z * Math.max(.2, FK()) + 1.5 * (1 - FK());
   cam.position.set(tx + Math.sin(ang) * dist * .75, dist * .82, tz + Math.cos(ang) * dist * .75); cam.lookAt(tx, 1, tz);
   R.render(scene, cam);
@@ -379,5 +399,6 @@ function loop(now) {
   const j = await P.call('rels'); CAT = j || { furn: {}, lookv: {} };
   buildHouse(); placeAll(); rebuildGrid(); hud(); $('load').remove(); requestAnimationFrame(loop);
   setInterval(hud, 30000);
+  setInterval(() => { if (BUILD || !LIFE()) return; for (const [k, x, z, r] of LIFE().furn) if (!OBJ.has(k)) { addObj(k, x, z, r); rebuildGrid() } }, 3000);
 })();
 window.hud = hud; window.__hero = () => hero; window.__st = () => (doing ? doing.anim : '') + '|' + POSE; window.__act = (k, i) => OBJ.get(k) && act(OBJ.get(k), i); window.__menu = k => OBJ.get(k) && menu(OBJ.get(k), 180, 400);
