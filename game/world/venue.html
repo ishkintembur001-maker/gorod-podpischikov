@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Город</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b1446;--sky:#2b2266;--sky2:#372c7d;--win:#ffc65c;--tile:#ff6b4a;--mint:#5ee6b0;--moon:#e9e4ff;--dim:#a79fd6}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);font-family:Nunito,-apple-system,sans-serif;color:var(--moon);touch-action:none;-webkit-user-select:none;user-select:none}
+#gl{position:fixed;inset:0;width:100%;height:100%}button{font-family:inherit;cursor:pointer}.hidden{display:none!important}
+.hud{position:fixed;left:0;right:0;top:0;z-index:3;display:flex;gap:6px;align-items:center;padding:8px 10px;background:linear-gradient(rgba(18,13,51,.92),rgba(18,13,51,0))}
+.hud .p{background:var(--sky);border-radius:14px;padding:6px 10px;font-weight:900;font-size:14px;white-space:nowrap}.hud .p.t{background:var(--tile);color:#fff}.hud .p.c{background:var(--win);color:#3b2300}
+.hud .ttl{flex:1;font-family:Unbounded,sans-serif;font-size:12px;color:var(--win);line-height:1.2;overflow:hidden}.hud .ttl small{display:block;color:var(--dim);font-family:Nunito;font-weight:800;font-size:11px}
+#tip{position:fixed;left:50%;top:56px;transform:translateX(-50%);z-index:3;background:rgba(43,34,102,.92);padding:7px 12px;border-radius:14px;font-size:13px;font-weight:800;text-align:center;max-width:92vw}
+#pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);z-index:6;font-family:Unbounded,sans-serif;font-size:26px;font-weight:800;color:var(--win);text-shadow:0 3px 10px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:all .4s}#pop.on{opacity:1;top:34%}
+.btns{position:fixed;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:4;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.big{border:0;border-radius:50%;width:84px;height:84px;font-size:15px;font-weight:900;color:#3b2300;background:radial-gradient(circle at 35% 30%,#ffe9a8,#ffc65c 60%,#d9962a);box-shadow:0 6px 0 #9a6a1a,0 10px 20px rgba(0,0,0,.4)}.big.r{background:radial-gradient(circle at 35% 30%,#ffb8a8,#ff6b4a 60%,#c0392b);color:#fff;box-shadow:0 6px 0 #8a2a1a}.big.m{width:66px;height:66px;font-size:13px;background:radial-gradient(circle at 35% 30%,#c8ffe8,#5ee6b0 60%,#2f9e74);box-shadow:0 5px 0 #1f6e50}
+.big:active{transform:translateY(4px)}
+#joy{position:fixed;left:18px;bottom:calc(22px + env(safe-area-inset-bottom));width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.4);z-index:4;touch-action:none}#knob{position:absolute;left:38px;top:38px;width:54px;height:54px;border-radius:50%;background:#fff;pointer-events:none}
+
+.bar0{position:fixed;left:0;right:0;bottom:0;z-index:4;background:linear-gradient(180deg,rgba(18,13,51,0),rgba(18,13,51,.95) 30%);padding:26px 10px calc(12px + env(safe-area-inset-bottom));display:flex;gap:8px}
+.sec{flex:1;border:0;border-radius:18px;padding:12px 6px;font-weight:900;font-size:14px;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.35)}.sec small{display:block;font-size:11px;opacity:.9;font-weight:800}
+.sec.b{background:linear-gradient(180deg,#ff6b6b,#d63031)}.sec.w{background:linear-gradient(180deg,#5aa8ff,#2d6cdf)}
+#panel{position:fixed;left:0;right:0;bottom:0;z-index:7;background:#1b1446;border-radius:24px 24px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+#panel h2{margin:0 0 4px;font-family:Unbounded,sans-serif;font-size:18px;color:var(--win)}#panel p{margin:4px 0;font-weight:700;font-size:14px;line-height:1.35}
+#panel .bar{height:12px;background:var(--sky);border-radius:8px;overflow:hidden;margin:8px 0}#panel .bar i{display:block;height:100%;background:var(--mint)}
+#panel button{width:100%;border:0;border-radius:16px;padding:14px;font-weight:900;font-size:16px;margin-top:8px}.go1{background:var(--win);color:#3b2300;box-shadow:0 5px 0 #b9852a}.go2{background:var(--sky2);color:var(--moon)}
+#mg{position:fixed;left:0;right:0;bottom:0;z-index:6;padding:12px 12px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(18,13,51,0),rgba(18,13,51,.95) 25%)}
+#call{text-align:center;font-family:Unbounded,sans-serif;font-size:30px;color:#fff;text-shadow:0 3px 10px #000;margin-bottom:10px;min-height:40px}
+#mg .row{display:flex;gap:8px}.pb{flex:1;border:0;border-radius:18px;padding:18px 4px;font-weight:900;font-size:16px;color:#fff;background:var(--sky2);box-shadow:0 5px 0 rgba(0,0,0,.4)}.pb.on{background:linear-gradient(180deg,#ffd166,#f2a23a);color:#3b2300;transform:scale(1.06)}.pb:active{transform:translateY(3px)}
+#tbar{position:relative;height:34px;border-radius:17px;background:var(--sky);overflow:hidden;margin-bottom:10px}#tbar .z{position:absolute;top:0;bottom:0;background:#2bb24c}#tbar .m{position:absolute;top:-2px;bottom:-2px;width:8px;border-radius:4px;background:#fff;box-shadow:0 0 8px #fff}
+#eqm{position:fixed;z-index:6;background:#fff;color:#1b1446;border-radius:16px;padding:10px 12px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:190px}#eqm button{width:100%;border:0;border-radius:12px;padding:10px;margin-top:6px;font-weight:900;background:var(--win);color:#3b2300}
+</style></head><body>
+<canvas id="gl"></canvas>
+<div class="hud"><button class="p" id="back" style="border:0;color:inherit">⬅</button><div class="ttl" id="ttl">…<small id="st"></small></div><span class="p c" id="coins"></span></div>
+<div id="pop"></div><div class="bar0" id="bar0"></div><div id="panel" class="hidden"></div>
+<style>.mi{display:flex;align-items:center;gap:10px;background:var(--sky);border-radius:14px;padding:10px 12px;margin:6px 0;font-weight:800}.mi b{flex:1}.mi .q{display:flex;gap:6px;align-items:center}.mi .q button{width:34px!important;height:34px;padding:0!important;margin:0!important;border-radius:10px!important;background:var(--sky2)!important;color:#fff!important;font-size:18px!important}
+.film{display:flex;gap:10px;align-items:center;background:var(--sky);border-radius:14px;padding:10px;margin:6px 0;font-weight:800;border:3px solid transparent}.film.on{border-color:var(--win)}.film i{font-style:normal;font-size:30px;width:52px;height:52px;border-radius:12px;display:grid;place-items:center}
+.who{display:flex;gap:6px}.who button{flex:1;font-size:13px!important;padding:12px 4px!important}.who button.on{outline:3px solid var(--win)}</style>
+<script type="importmap">{"imports":{"three":"./three.js"}}</script><script type="module" src="venue.js"></script></body></html>
