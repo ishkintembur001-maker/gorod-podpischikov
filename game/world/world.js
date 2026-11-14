@@ -44,7 +44,7 @@ export function buildWorld(residents){
   const sky=new THREE.Mesh(new THREE.SphereGeometry(5000,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(0x7f8f9e)},hor:{value:new THREE.Color(0xc9d2d4)},nightK:{value:0}},
     vertexShader:'varying vec3 vp;void main(){vp=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
     fragmentShader:'uniform vec3 top;uniform vec3 hor;varying vec3 vp;void main(){float h=clamp(vp.y*2.2,0.0,1.0);gl_FragColor=vec4(mix(hor,top,h),1.0);}'}));scene.add(sky);WORLD.sky=sky;
-  WORLD.plots=plots;WORLD.trees=trees;return plots;
+  WORLD.plots=plots;WORLD.trees=trees;WORLD.pines=pines;return plots;
 }
 // ---------- residents → houses ----------
 const ROOFC={'':0xc2412b,red:0xc2412b,green:0x3f8a3a,blue:0x2f62b8,pink:0xe58ab0,black:0x2b2b2b,yellow:0xe9c03a,orange:0xe07a2a,rainbow:0xd95fa0,purple:0x8a5cc4,white:0xeeeeee,gray:0x7a7a86,brown:0x7a4a2a,gold:0xd9a92a};

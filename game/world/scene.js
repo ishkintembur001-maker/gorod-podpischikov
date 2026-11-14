@@ -1,6 +1,8 @@
 import {makeHero,walk as hwalk,tickHeroes,play as hplay,dispose as hdispose} from './hero.js';
 import {THREE,renderer,scene,camera,octx,M,GEO,AG,mergeParts,rng,NIGHT_MATS,W,H} from './city.js';
 import {setupWorld,WORLD,L,SP_} from './main.js';
+function addCol(x,z,r){const G=window.__COLG||(window.__COLG=new Map());const k=Math.floor(x/10)+','+Math.floor(z/10);let a=G.get(k);if(!a)G.set(k,a=[]);a.push([x,z,r])}
+function colHit(x,z){const G=window.__COLG;if(!G)return false;const cx=Math.floor(x/10),cz=Math.floor(z/10);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const a=G.get((cx+i)+','+(cz+j));if(a)for(const c of a)if((x-c[0])*(x-c[0])+(z-c[1])*(z-c[1])<c[2]*c[2])return true}return false}
 const {BX,SP,CY,CO,part}=GEO;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));const lerp=(a,b,t)=>a+(b-a)*t;const prog=(t,a,b)=>clamp((t-a)/(b-a));
 const ease=x=>x<0.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;const easeOut=x=>1-Math.pow(1-x,3);const easeBack=x=>{if(x<=0)return 0;if(x>=1)return 1;const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
@@ -105,7 +107,7 @@ const park=new THREE.Group();scene.add(park);{
   // trees + benches + lamps
   const r=rng(77);const trunkM=MAT(0x6b4a2b),leafs=[MAT(0x3f8a3a),MAT(0x4d9b3f),MAT(0x2f7a3a)];
   for(let i=0;i<46;i++){let x,z;for(;;){x=(r()-0.5)*144;z=(r()-0.5)*70;if(Math.abs(x)>5&&Math.abs(z)>5&&Math.hypot(x,z)>16&&!(x>18&&x<72&&z<30)&&!(x<-30&&x>-70&&Math.abs(z)<24)&&!(x<-18&&x>-46&&z>8))break}
-    mesh(new THREE.CylinderGeometry(0.35,0.45,3,8),trunkM,x,1.5,z,park);const lf=mesh(new THREE.IcosahedronGeometry(2.4+r()*1.2,0),leafs[i%3],x,4.4,z,park)}
+    mesh(new THREE.CylinderGeometry(0.35,0.45,3,8),trunkM,x,1.5,z,park);addCol(PK.x+x,PK.z+z,1);const lf=mesh(new THREE.IcosahedronGeometry(2.4+r()*1.2,0),leafs[i%3],x,4.4,z,park)}
   for(const [x,z,ry] of [[-12,4,0],[12,4,0],[-12,-4,Math.PI],[12,-4,Math.PI],[-30,4,0],[30,4,0]]){const b=new THREE.Group();mesh(new THREE.BoxGeometry(3.4,0.25,1),MAT(0x9a6a3a),0,0.9,0,b);mesh(new THREE.BoxGeometry(3.4,0.9,0.2),MAT(0x9a6a3a),0,1.4,-0.45,b);b.position.set(x,0,z);b.rotation.y=ry;park.add(b)}
 }
 // ferris wheel
@@ -451,7 +453,8 @@ const SCIR=[[PK.x,PK.z,8.4],[PK.x+44,PK.z-14,7.6],[PK.x-50,PK.z,10]];
 // река: по воде ходить нельзя — только по мостам и пирсу рыбака
 function onBridge(x,z){const rv=WORLD.river;if(!rv)return false;if(Math.abs(x-rv.x)>rv.w/2+1.2)return false;for(const bz of rv.br)if(Math.abs(z-bz)<2.6)return true;if(FISH.pz!==undefined&&Math.abs(z-FISH.pz)<1.5&&x>FISH.px0)return true;return false}
 function inWater(x,z){const rv=WORLD.river;return rv&&Math.abs(x-rv.x)<rv.w/2+.4&&!onBridge(x,z)}
-function solid(x,z){if(inWater(x,z))return true;for(const h of (WORLD.houses||[]))if(Math.abs(x-h.x)<7.9&&Math.abs(z-h.z)<7.9)return true;for(const b of SBOX)if(Math.abs(x-b[0])<b[2]&&Math.abs(z-b[1])<b[3])return true;for(const c of SCIR)if(Math.hypot(x-c[0],z-c[1])<c[2])return true;return false}
+for(const p of (WORLD.pines||[]))addCol(p.x,p.z,1+p.sx*.12);
+function solid(x,z){if(inWater(x,z))return true;if(colHit(x,z))return true;for(const h of (WORLD.houses||[]))if(Math.abs(x-h.x)<7.9&&Math.abs(z-h.z)<7.9)return true;for(const b of SBOX)if(Math.abs(x-b[0])<b[2]&&Math.abs(z-b[1])<b[3])return true;for(const c of SCIR)if(Math.hypot(x-c[0],z-c[1])<c[2])return true;return false}
 // камера не уходит за дома и здания: если между тобой и камерой стена — камера подъезжает ближе
 let CAMK=1,CAMUP=0;const OCCB=[[MUSP.x,MUSP.z-1,15,9,14],[GYMP.x,GYMP.z,17,11,14],[CINP.x,CINP.z,15,10,15],[BURP.x,BURP.z,13,9,8],[HS.x,HS.z,11.5,6.5,13],[PS.x,PS.z,11.5,6.5,12],[MALL.x,MALL.z,15.5,9.5,12],[FB.x,FB.z+35,35,5,9],[FB.x,FB.z-35,35,5,9],[FB.x,FB.z-44.6,16,1,21],[PK.x-50,PK.z,9,9,12]];
 function occT(ax,ay,az,bx,by,bz){let best=1;const px=ax,pz=az;const test=(x,z,hx,hz,h)=>{if(Math.abs(x-px)>90||Math.abs(z-pz)>90)return;let t0=0,t1=1;for(const [o,d,lo,hi] of [[ax,bx-ax,x-hx,x+hx],[ay,by-ay,0,h],[az,bz-az,z-hz,z+hz]]){if(Math.abs(d)<1e-6){if(o<lo||o>hi)return;continue}let u=(lo-o)/d,v=(hi-o)/d;if(u>v)[u,v]=[v,u];t0=Math.max(t0,u);t1=Math.min(t1,v);if(t0>t1)return}if(t0>.02&&t0<best)best=t0};
@@ -575,7 +578,7 @@ function digDone(i){const d=DIGS.find(q=>q.i===i);if(d){scene.remove(d.g)}const 
 const LAKE={x:FORP.x+36,z:FORP.z+40},BERR={x:FORP.x-34,z:FORP.z+34},ABD={x:FORP.x,z:FORP.z+104};
 {const free=(x,z)=>Math.hypot(x-FORP.x,z-FORP.z)<21||Math.abs(x-FORP.x)<5&&z>FORP.z&&z<ABD.z||Math.hypot(x-LAKE.x,z-LAKE.z)<17||Math.hypot(x-BERR.x,z-BERR.z)<12||Math.abs(x-ABD.x)<26&&Math.abs(z-ABD.z)<22||Math.abs(z-(FORP.z+38))<3.5&&x>BERR.x&&x<LAKE.x;
  const N=520,cone=new THREE.ConeGeometry(1,1,7),trunk=new THREE.CylinderGeometry(.25,.3,1,6),IM=new THREE.InstancedMesh(cone,new THREE.MeshLambertMaterial({color:0x1f5a2c}),N),IT=new THREE.InstancedMesh(trunk,new THREE.MeshLambertMaterial({color:0x5a3a20}),N),o=new THREE.Object3D();let n=0,sd=7;const r=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
- for(let k=0;k<4000&&n<N;k++){const x=FORP.x+(r()-.5)*150,z=FORP.z-18+r()*140;if(free(x,z))continue;const h=9+r()*9,w=2.4+r()*1.6;o.position.set(x,1.5+h/2,z);o.scale.set(w,h,w);o.rotation.set(0,r()*6,0);o.updateMatrix();IM.setMatrixAt(n,o.matrix);o.position.set(x,1,z);o.scale.set(1.4,2,1.4);o.updateMatrix();IT.setMatrixAt(n,o.matrix);n++}
+ for(let k=0;k<4000&&n<N;k++){const x=FORP.x+(r()-.5)*150,z=FORP.z-18+r()*140;if(free(x,z))continue;const h=9+r()*9,w=2.4+r()*1.6;o.position.set(x,1.5+h/2,z);o.scale.set(w,h,w);o.rotation.set(0,r()*6,0);o.updateMatrix();IM.setMatrixAt(n,o.matrix);addCol(x,z,1.1);o.position.set(x,1,z);o.scale.set(1.4,2,1.4);o.updateMatrix();IT.setMatrixAt(n,o.matrix);n++}
  IM.count=IT.count=n;IM.instanceMatrix.needsUpdate=IT.instanceMatrix.needsUpdate=true;scene.add(IM,IT);
  const PM=MAT(0x9a6a3a);for(let z=FORP.z+16;z<ABD.z-18;z+=2.6){const b=mesh(new THREE.BoxGeometry(2.6,.12,1.6),PM,FORP.x+Math.sin(z*.08)*1.2,.08,z)}for(let x=BERR.x+8;x<LAKE.x-12;x+=2.6)mesh(new THREE.BoxGeometry(1.6,.12,2.4),PM,x,.08,FORP.z+38);
  // лесное озеро
@@ -601,8 +604,8 @@ const LAKE={x:FORP.x+36,z:FORP.z+40},BERR={x:FORP.x-34,z:FORP.z+34},ABD={x:FORP.
 // ===== ??? =====
 const SEC={x:FORP.x-60,z:FORP.z+170};let SECF=false;
 {const g=new THREE.Group();g.position.set(SEC.x,0,SEC.z);scene.add(g);const sand=new THREE.Mesh(new THREE.CircleGeometry(48,40),MAT(0xd8c08a));sand.rotation.x=-Math.PI/2;sand.position.y=.05;g.add(sand);
- const ST=MAT(0xb8a27a),ST2=MAT(0x9c8762);let sd=11;const r=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
- for(let i=0;i<14;i++){const a=i/14*Math.PI*2,R=30+r()*6,h=r()<.4?2+r()*3:7+r()*4;const c=new THREE.Mesh(new THREE.CylinderGeometry(.9,1,h,10),ST);c.position.set(Math.cos(a)*R,h/2,Math.sin(a)*R);c.castShadow=true;g.add(c);if(h<6){const f=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,2.4,10),ST2);f.rotation.z=Math.PI/2;f.position.set(Math.cos(a)*R+1.8,.9,Math.sin(a)*R);g.add(f)}}
+ const ST=MAT(0xb8a27a),ST2=MAT(0x9c8762);let sd=11;addCol(SEC.x-22,SEC.z+6,2.8);addCol(SEC.x+20,SEC.z-8,1.4);addCol(SEC.x+22,SEC.z+14,2.4);addCol(SEC.x+26,SEC.z+18,2.4);const r=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+ for(let i=0;i<14;i++){const a=i/14*Math.PI*2,R=30+r()*6,h=r()<.4?2+r()*3:7+r()*4;const c=new THREE.Mesh(new THREE.CylinderGeometry(.9,1,h,10),ST);c.position.set(Math.cos(a)*R,h/2,Math.sin(a)*R);addCol(SEC.x+Math.cos(a)*R,SEC.z+Math.sin(a)*R,1.3);c.castShadow=true;g.add(c);if(h<6){const f=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,2.4,10),ST2);f.rotation.z=Math.PI/2;f.position.set(Math.cos(a)*R+1.8,.9,Math.sin(a)*R);g.add(f)}}
  for(const [x,z,w,ry] of [[-14,-8,12,.3],[12,10,10,-.5],[6,-16,8,1.2],[-10,14,9,2]]){const wl=new THREE.Mesh(new THREE.BoxGeometry(w,2.2+r()*2,1.2),ST2);wl.position.set(x,1.4,z);wl.rotation.y=ry;g.add(wl)}
  const pyr=new THREE.Mesh(new THREE.ConeGeometry(9,10,4),MAT(0xc9b07a));pyr.position.set(0,5,-2);pyr.rotation.y=Math.PI/4;pyr.castShadow=true;g.add(pyr);const door=new THREE.Mesh(new THREE.BoxGeometry(2.2,3,.4),MAT(0x2a2015));door.position.set(0,1.5,4.3);g.add(door);
  const hd=new THREE.Group();hd.position.set(-22,0,6);g.add(hd);const hm=new THREE.Mesh(new THREE.BoxGeometry(4,5,3.6),ST);hm.position.y=2.5;hd.add(hm);const nz=new THREE.Mesh(new THREE.BoxGeometry(.8,1.4,.8),ST);nz.position.set(0,2.6,2);hd.add(nz);for(const sx of [-1,1]){const e=new THREE.Mesh(new THREE.BoxGeometry(.9,.4,.3),MAT(0x3a2e1a));e.position.set(sx*.9,3.4,1.85);hd.add(e)}hd.rotation.y=.6;
@@ -621,7 +624,7 @@ function weatherApply(){const w=WD.w,h=WD.h;const W={sun:'☀️ Ясно',cloud
  RAIN.visible=w==='rain';SNOW.visible=w==='snow'||w==='cloud'||w==='fog';if(scene.fog&&scene.fog.density!==undefined){scene.fog.userData.d0=scene.fog.userData.d0||scene.fog.density;scene.fog.density=w==='fog'?scene.fog.userData.d0*3:scene.fog.userData.d0}}
 function rainTick(dt){if(!RAIN.visible)return;const a=RAIN.geometry.attributes.position.array;for(let i=0;i<a.length;i+=6){a[i+1]-=dt*38;a[i+4]-=dt*38;if(a[i+4]<0){a[i+1]+=60;a[i+4]+=60}}RAIN.geometry.attributes.position.needsUpdate=true;RAIN.position.set(ME.position.x,0,ME.position.z)}
 // табло
-function board(x,z,ry,w,h){const cv=document.createElement('canvas');cv.width=768;cv.height=Math.round(768*h/w);const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;const fr=new THREE.Mesh(new THREE.BoxGeometry(w+.5,h+.5,.4),MAT(0x2a1d55));fr.position.y=h/2+2.6;g.add(fr);const sc=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tx}));sc.position.set(0,h/2+2.6,.21);g.add(sc);for(const sx of [-w/2+.6,w/2-.6])mesh(new THREE.CylinderGeometry(.2,.2,2.8,8),MAT(0x555566),sx,1.4,0,g);scene.add(g);return {cv,tx}}
+function board(x,z,ry,w,h){const cv=document.createElement('canvas');cv.width=768;cv.height=Math.round(768*h/w);const tx=new THREE.CanvasTexture(cv);tx.colorSpace=THREE.SRGBColorSpace;const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;const fr=new THREE.Mesh(new THREE.BoxGeometry(w+.5,h+.5,.4),MAT(0x2a1d55));fr.position.y=h/2+2.6;g.add(fr);const sc=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tx}));sc.position.set(0,h/2+2.6,.21);g.add(sc);for(const sx of [-w/2+.6,w/2-.6])mesh(new THREE.CylinderGeometry(.2,.2,2.8,8),MAT(0x555566),sx,1.4,0,g);scene.add(g);for(let u=-w/2;u<=w/2;u+=1.5)addCol(x+Math.cos(ry)*u,z-Math.sin(ry)*u,.8);return {cv,tx}}
 const BRD=board(P.cx-26,P.cz+14,0,14,8.5),FBRD=board(WORLD.river.x-WORLD.river.w/2-9,P.cz+36,Math.PI/2,9,6);
 function drawBoards(){{const c=BRD.cv.getContext('2d'),W=BRD.cv.width,H=BRD.cv.height;const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1d6a');g.addColorStop(1,'#120d33');c.fillStyle=g;c.fillRect(0,0,W,H);c.fillStyle='#ffd34d';c.font='900 40px sans-serif';c.textAlign='center';c.fillText('🏆 ТУРНИРЫ НЕДЕЛИ',W/2,52);
   const col=(x,t,L)=>{c.textAlign='left';c.fillStyle='#fff';c.font='800 28px sans-serif';c.fillText(t,x,100);(L||[]).slice(0,5).forEach((r,i)=>{c.fillStyle=i<3?'#ffd34d':'#cfc8ff';c.font='800 22px sans-serif';c.fillText((['🥇','🥈','🥉','4.','5.'][i])+' @'+String(r.nick).slice(0,13),x,140+i*36);c.fillStyle='#5ee6b0';c.fillText(t.startsWith('🎣')?(+r.v).toFixed(1)+' кг':Math.round(r.v)+'',x+190,140+i*36)});if(!(L||[]).length){c.fillStyle='#a79fd6';c.font='700 20px sans-serif';c.fillText('пока никого',x,140)}};
