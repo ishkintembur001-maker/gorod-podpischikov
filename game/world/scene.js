@@ -362,8 +362,8 @@ const joy={x:0,y:0};{const jw=document.getElementById('joy'),jk=document.getElem
 let camAng=camAng0,camDist=34;{let lx=null;const gl=document.getElementById('gl');gl.addEventListener('pointerdown',e=>lx=e.clientX);addEventListener('pointerup',()=>lx=null);gl.addEventListener('pointermove',e=>{if(lx!=null){camAng-=(e.clientX-lx)*.006;lx=e.clientX}});gl.addEventListener('wheel',e=>{camDist=Math.max(18,Math.min(70,camDist+e.deltaY*.03))})}
 document.getElementById('zin').onclick=()=>camDist=Math.max(18,camDist-8);document.getElementById('zout').onclick=()=>camDist=Math.min(70,camDist+8);
 const act=document.getElementById('act');let NEAR=null;act.onclick=()=>{if(NEAR&&NEAR[6]!==undefined&&!RIDE){startSpot(NEAR);return}if(NEAR){parent.postMessage({t:'hap'},'*');parent.postMessage({t:'enter',k:NEAR[0]},'*')}};
-document.getElementById('taxi').innerHTML=ZONES.filter(z=>z[0]!=='home'||MY).map(z=>`<button data-z="${z[0]}">${z[1]}</button>`).join('');
-document.querySelectorAll('#taxi button').forEach(b=>b.onclick=()=>{const z=ZONES.find(q=>q[0]===b.dataset.z);ME.position.set(z[2]+(Math.random()-.5)*4,0,z[3]+(z[0]==='home'?FC*3:z[4]*.6));document.getElementById('taxi').classList.remove('open')});
+document.getElementById('taxi').innerHTML=ZONES.filter(z=>z[0]!=='home'||MY).map(z=>`<button data-z="${z[0]}">${z[1]}</button>`).join('')+'<button data-z="forest">🌲 Лес</button>';
+document.querySelectorAll('#taxi button').forEach(b=>b.onclick=()=>{if(b.dataset.z==='forest'){ME.position.set(FORP.x+(Math.random()-.5)*3,0,FORP.z+10);document.getElementById('taxi').classList.remove('open');return}const z=ZONES.find(q=>q[0]===b.dataset.z);ME.position.set(z[2]+(Math.random()-.5)*4,0,z[3]+(z[0]==='home'?FC*3:z[4]*.6));document.getElementById('taxi').classList.remove('open')});
 document.getElementById('taxib').onclick=()=>document.getElementById('taxi').classList.toggle('open');
 addEventListener('message',e=>{const d=e.data||{};if(d.t==='found'){FOUND=new Set(d.found)}});
 // время суток (Москва)
