@@ -34,6 +34,12 @@ const HW = 11, HD = 13;
   sign('🥊 БОКС · 🤼 БОРЬБА', 7, 1.1, '#1d1a2e', '#ffd34d', 5, 2.4, -HD + .25);
   for (const z of [-6, 2]) { const m = new THREE.Mesh(new THREE.PlaneGeometry(5, 3), new THREE.MeshStandardMaterial({ color: '#bfe6ff', metalness: .9, roughness: .05 })); m.position.set(HW - .25, 2.6, z); m.rotation.y = -Math.PI / 2; scene.add(m) } }
 
+const FX = [0, 60, 120], FLN = ['🏋️ Тренажёрный зал', '🥊 Зал бокса', '🤼 Зал борьбы'];
+function shell(ox, title, wc, fc) { const ft = tex((g, W, H) => { g.fillStyle = fc; g.fillRect(0, 0, W, H); for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.06)'; g.fillRect(i * W / 8, 0, W / 8, H) } }, 256, 256); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(3, 4);
+  const f = new THREE.Mesh(new THREE.PlaneGeometry(HW * 2, HD * 2), new THREE.MeshStandardMaterial({ map: ft, roughness: .6 })); f.rotation.x = -Math.PI / 2; f.position.x = ox; f.receiveShadow = true; scene.add(f);
+  const wm = M(wc); B(HW * 2, 6, .4, wm, ox, 3, -HD); B(.4, 6, HD * 2, wm, ox - HW, 3, 0); B(.4, 6, HD * 2, wm, ox + HW, 3, 0); B(HW * 2, .8, .3, '#e8433a', ox, .4, HD); sign(title, 14, 2, '#1d1a2e', '#ffd34d', ox, 4.4, -HD + .25) }
+shell(60, '🥊 ЭТАЖ 2 · ЗАЛ БОКСА', '#2a2440', '#3a3550'); shell(120, '🤼 ЭТАЖ 3 · ЗАЛ БОРЬБЫ', '#e8eefc', '#9fb8e8');
+for (const ox of FX) { B(2.6, 4.2, .3, '#b0b0c0', ox + HW - 2.5, 2.1, HD - .3); B(2.2, 3.6, .1, '#8a8aa0', ox + HW - 2.5, 1.9, HD - .5); sign('🛗 ЛИФТ', 2.4, .6, '#ffd34d', '#3b2300', ox + HW - 2.5, 4.5, HD - .5, scene, Math.PI) }
 const EQ = [], CLICK = [];
 function eq(k, ico, name, x, z, ry, build, stand, anim) { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); build(g); g.userData.eq = k; CLICK.push(g); const s = new THREE.Vector3(...stand).applyAxisAngle(new THREE.Vector3(0, 1, 0), ry).add(g.position); EQ.push({ k, ico, name, g, stand: s, anim, face: ry }); return g }
 // беговые дорожки
@@ -42,11 +48,18 @@ eq('bike', '🚴', 'Велотренажёр', -8.6, 7.6, Math.PI / 2, g => { B(
 eq('bench', '🏋️', 'Скамья со штангой', 6, 3.5, -Math.PI / 2, g => { B(.8, .7, 2.6, '#2a2a33', 0, .55, 0, g); for (const s of [-1, 1]) B(.1, 1.8, .1, '#888', s * .9, .9, -1, g); const b = C(.05, .05, 3, '#bbb', 0, 1.8, -1, g, 8); b.rotation.z = Math.PI / 2; for (const s of [-1.3, 1.3]) { const p = C(.5, .5, .22, '#111', s, 1.8, -1, g); p.rotation.z = Math.PI / 2 } }, [0, 0, 1.6], 'PickUp');
 eq('dumb', '💪', 'Гантели', 9.4, 7.5, -Math.PI / 2, g => { B(.8, 1, 3, '#2a2a33', 0, .5, 0, g); for (let i = 0; i < 5; i++) { const d = C(.12, .12, .6, '#c0392b', 0, 1.15, -1.2 + i * .6, g, 8); d.rotation.z = Math.PI / 2 } }, [0, 0, 1.4], 'PickUp');
 const BAGS = [];
-for (const z of [-1.5, 1]) eq('bag', '🥊', 'Боксёрская груша', 9.2, z, -Math.PI / 2, g => { B(.2, .2, 1.2, '#333', 0, 5.2, 0, g); C(.04, .04, 1.4, '#555', 0, 4.5, 0, g, 6); const b = C(.55, .55, 2.4, '#1d1d1d', 0, 2.6, 0, g); BAGS.push(b) }, [0, 0, 1.3], 'Punch');
+for (const [i, z] of [[2, -2.2], [3, -5.4]]) eq('tread', '🏃', 'Беговая дорожка', -8.6, z, Math.PI / 2, g => { B(3.2, .3, 1.4, '#2a2a33', 0, .15, 0, g); B(2.8, .05, 1.1, '#111', 0, .33, 0, g); for (const s of [-.6, .6]) B(.1, 1.6, .1, '#888', 1.4, 1, s, g); B(.2, .5, 1.3, '#333', 1.5, 1.8, 0, g); B(.05, .25, .8, '#58a8ff', 1.4, 1.85, 0, g) }, [-.2, .34, 0], 'Run');
+eq('bike', '🚴', 'Велотренажёр', -8.6, -8.8, Math.PI / 2, g => { B(1.8, .2, .5, '#333', 0, .1, 0, g); C(.45, .45, .2, '#222', .6, .55, 0, g).rotation.x = Math.PI / 2; B(.15, 1.2, .15, '#666', -.4, .7, 0, g); B(.6, .12, .4, '#111', -.4, 1.35, 0, g); B(.15, 1.3, .15, '#666', .7, .9, 0, g); B(.1, .1, .8, '#666', .7, 1.55, 0, g) }, [-.4, .55, 0], 'Run');
+for (const [x, z] of [[0, -4], [-3.5, -9]]) eq('bench', '🏋️', 'Скамья со штангой', x, z, 0, g => { B(.8, .7, 2.6, '#2a2a33', 0, .55, 0, g); for (const s of [-1, 1]) B(.1, 1.8, .1, '#888', s * .9, .9, -1, g); const b = C(.05, .05, 3, '#bbb', 0, 1.8, -1, g, 8); b.rotation.z = Math.PI / 2; for (const s of [-1.3, 1.3]) { const p = C(.5, .5, .22, '#111', s, 1.8, -1, g); p.rotation.z = Math.PI / 2 } }, [0, 0, 1.6], 'PickUp');
+eq('dumb', '💪', 'Гантели', 9.4, -6, -Math.PI / 2, g => { B(.8, 1, 3, '#2a2a33', 0, .5, 0, g); for (let i = 0; i < 5; i++) { const d = C(.12, .12, .6, '#2b6cd8', 0, 1.15, -1.2 + i * .6, g, 8); d.rotation.z = Math.PI / 2 } }, [0, 0, 1.4], 'PickUp');
+eq('rope', '⏫', 'Скакалка', 66, 9.5, 0, g => { const r = new THREE.Mesh(new THREE.TorusGeometry(.6, .03, 6, 20), M('#f2c230')); r.rotation.x = Math.PI / 2; r.position.y = .05; g.add(r); C(.9, .9, .02, '#e8433a', 0, .01, 0, g, 24) }, [0, 0, 0], 'Jump');
+eq('mat', '🧘', 'Растяжка перед схваткой', 113, 8, 0, g => { B(1.6, .05, 3, '#2bb24c', 0, .03, 0, g) }, [0, 0, 0], 'Roll');
+{ const g = new THREE.Group(); g.position.set(127, 0, 6); scene.add(g); C(2.6, 2.6, .14, '#e8433a', 0, .07, 0, g, 32); C(2.1, 2.1, .16, '#3a62d8', 0, .08, 0, g, 32) }
+for (const z of [-2, 1.5, 5, 8.5]) eq('bag', '🥊', 'Боксёрская груша', 69.2, z, -Math.PI / 2, g => { B(.2, .2, 1.2, '#333', 0, 5.2, 0, g); C(.04, .04, 1.4, '#555', 0, 4.5, 0, g, 6); const b = C(.55, .55, 2.4, '#1d1d1d', 0, 2.6, 0, g); BAGS.push(b) }, [0, 0, 1.3], 'Punch');
 eq('rope', '⏫', 'Скакалка', 0, 6.5, 0, g => { const r = new THREE.Mesh(new THREE.TorusGeometry(.6, .03, 6, 20), M('#f2c230')); r.rotation.x = Math.PI / 2; r.position.y = .05; g.add(r); C(.9, .9, .02, '#3a8fd8', 0, .01, 0, g, 24) }, [0, 0, 0], 'Jump');
 eq('mat', '🧘', 'Коврик для растяжки', 0, 10, 0, g => { B(1.6, .05, 3, '#8a4dff', 0, .03, 0, g) }, [0, 0, 0], 'Roll');
 // ринг (бокс) и ковёр (борьба)
-const RING = new THREE.Vector3(-5, 0, -7), MAT = new THREE.Vector3(5.2, 0, -7);
+const RING = new THREE.Vector3(60, 0, -4), MAT = new THREE.Vector3(120, 0, -4);
 { const g = new THREE.Group(); g.position.copy(RING); scene.add(g); g.userData.sec = 'box'; CLICK.push(g); B(8, 1, 8, '#22305e', 0, .5, 0, g); B(7.7, .08, 7.7, '#3a62d8', 0, 1.04, 0, g);
   [[-3.8, -3.8, '#e8433a'], [3.8, 3.8, '#3a8fd8'], [-3.8, 3.8, '#fff'], [3.8, -3.8, '#fff']].forEach(([x, z, c]) => C(.18, .18, 2.8, c, x, 2.2, z, g, 8));
   for (const y of [1.7, 2.3, 2.9]) { const rm = M('#ffffff'); B(7.6, .07, .07, rm, 0, y, -3.8, g); B(7.6, .07, .07, rm, 0, y, 3.8, g); B(.07, .07, 7.6, rm, -3.8, y, 0, g); B(.07, .07, 7.6, rm, 3.8, y, 0, g) }
@@ -70,6 +83,8 @@ function stepMove(dt, t) { if (!path) { walk(me, t, false); return } const d = p
 // ---------- камера ----------
 const CAM0 = { p: new THREE.Vector3(0, 33, 27), l: new THREE.Vector3(0, 0, 0.5) }; let camT = CAM0;
 const cp = CAM0.p.clone(), cl = CAM0.l.clone();
+let FLOOR = 0;
+function goFloor(i, cb) { if (busy) return; FLOOR = i; path = null; me.position.set(FX[i] + HW - 2.5, 0, HD - 1.6); me.rotation.y = Math.PI; play(me, 'Idle'); CAM0.p.set(FX[i], 33, 27); CAM0.l.set(FX[i], 0, .5); camT = { p: CAM0.p.clone(), l: CAM0.l.clone() }; cp.copy(CAM0.p); cl.copy(CAM0.l); HAP('medium'); toast('🛗 ' + FLN[i]); document.querySelectorAll('.fl').forEach(b => b.classList.toggle('on', +b.dataset.f === i)); if (cb) setTimeout(cb, 500) }
 function setCam(p, l) { camT = { p: new THREE.Vector3(...p), l: new THREE.Vector3(...l) } }
 
 // ---------- состояние ----------
@@ -81,7 +96,7 @@ function ui() { $('coins').textContent = '🪙 ' + ((ME().coins || 0).toLocaleSt
 
 // ---------- тренажёры ----------
 function eqMenu(E, x, y) { const m = $('eqm'); m.innerHTML = `<div>${E.ico} ${E.name}</div><small style="color:#6a5aa8">+1 к ${['tread', 'bike', 'rope', 'mat'].includes(E.k) ? 'выносливости' : 'силе'} · +монеты</small><button>Тренироваться</button>`; m.style.left = Math.min(innerWidth - 210, Math.max(10, x - 100)) + 'px'; m.style.top = Math.max(70, Math.min(innerHeight - 200, y - 130)) + 'px'; m.classList.remove('hidden'); m.querySelector('button').onclick = () => { m.classList.add('hidden'); useEq(E) } }
-function useEq(E) { if (busy) return; busy = true; HAP('light'); goTo(E.stand, async () => { me.rotation.y = E.face + (E.k === 'tread' || E.k === 'bike' ? Math.PI / 2 * 0 : 0); if (E.k === 'tread' || E.k === 'bike') { me.position.y = E.k === 'bike' ? .3 : .34; me.rotation.y = E.face - Math.PI / 2 } else me.rotation.y = Math.atan2(E.g.position.x - me.position.x, E.g.position.z - me.position.z);
+function useEq(E) { if (busy) return; busy = true; HAP('light'); goTo(E.stand, async () => { me.rotation.y = E.face + (E.k === 'tread' || E.k === 'bike' ? Math.PI / 2 * 0 : 0); if (E.k === 'tread' || E.k === 'bike') { me.position.y = E.k === 'bike' ? .3 : .34; me.rotation.y = E.face + Math.PI / 2 } else me.rotation.y = Math.atan2(E.g.position.x - me.position.x, E.g.position.z - me.position.z);
   play(me, E.anim); const j = P.call('gym', { a: 'eq', k: E.k }); const t0 = performance.now(); while (performance.now() - t0 < 5000) { if (E.k === 'bag') BAGS.forEach(b => b.parent.rotation.z = Math.sin(performance.now() / 120) * .12); await new Promise(r => setTimeout(r, 50)) } BAGS.forEach(b => b.parent.rotation.z = 0);
   me.position.y = 0; play(me, 'Idle'); const r = await j; if (r && r.gym) { GYM = r.gym; ui() } busy = false }) }
 
@@ -98,7 +113,7 @@ function panel(s) { const X = GYM[s], nm = s === 'box' ? '🥊 Секция бо
 const wait = ms => new Promise(r => setTimeout(r, ms));
 async function enterArena(at, partner, face) { busy = true; $('bar0').classList.add('hidden'); await new Promise(r => goTo(at, r)); me.position.y = at.y; me.rotation.y = face; partner.rotation.y = face + Math.PI }
 async function finish(s, score, max) { $('mg').classList.add('hidden'); setCam([...CAM0.p.toArray()], [...CAM0.l.toArray()]); const j = await load({ a: 'train', s, score, max });
-  play(me, score / max >= .5 ? 'Victory' : 'Defeat', { once: true }); await wait(1600); me.position.set(0, 0, HD - 2); me.rotation.y = Math.PI; play(me, 'Idle'); busy = false; $('bar0').classList.remove('hidden'); panel(s) }
+  play(me, score / max >= .5 ? 'Victory' : 'Defeat', { once: true }); await wait(1600); me.position.set(FX[FLOOR], 0, HD - 2); me.rotation.y = Math.PI; play(me, 'Idle'); busy = false; $('bar0').classList.remove('hidden'); panel(s) }
 
 async function boxing() { await enterArena(new THREE.Vector3(RING.x - 1.3, 1.08, RING.z), sparB, Math.PI / 2); setCam([RING.x + 1, 9, RING.z + 8.5], [RING.x, 2, RING.z]);
   const mg = $('mg'); mg.innerHTML = `<div id="call">Тренер: «Работаем!»</div><div class="row"><button class="pb" data-k="0">👊 Джеб</button><button class="pb" data-k="1">🤜 Хук</button><button class="pb" data-k="2">💥 Апперкот</button></div>`; mg.classList.remove('hidden'); play(coachB, 'Victory', { once: true });
@@ -120,8 +135,8 @@ async function wrestling() { await enterArena(new THREE.Vector3(MAT.x - .9, .2, 
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let sx = 0, sy = 0;
 $('gl').addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY });
 $('gl').addEventListener('pointerup', e => { if (busy || Math.hypot(e.clientX - sx, e.clientY - sy) > 10) return; $('eqm').classList.add('hidden'); ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, cam); const h = ray.intersectObjects(CLICK, true)[0]; if (!h) return; let o = h.object; while (o && !o.userData.eq && !o.userData.sec) o = o.parent; if (!o) return;
-  if (o.userData.sec) { panel(o.userData.sec); return } const E = EQ.find(q => q.g === o); if (E) eqMenu(E, e.clientX, e.clientY) });
-document.querySelectorAll('.sec').forEach(b => b.onclick = () => { if (!busy) panel(b.dataset.s) });
+  if (o.userData.sec) { panel(o.userData.sec); return } if (Math.abs(o.position.x - FX[FLOOR]) > 30) return; const E = EQ.find(q => q.g === o); if (E) eqMenu(E, e.clientX, e.clientY) });
+document.querySelectorAll('.fl').forEach(b => b.onclick = () => { const i = +b.dataset.f; goFloor(i, i ? () => panel(i === 1 ? 'box' : 'wr') : null) });
 $('back').onclick = () => P.closeWork && P.closeWork();
 
 // ---------- цикл ----------
@@ -130,4 +145,4 @@ function loop(now) { requestAnimationFrame(loop); const dt = Math.min(.05, (now 
   if (!busy) { sparB.position.x = RING.x + 1.3 + Math.sin(t * 2) * .3 }
   cp.lerp(camT.p, .06); cl.lerp(camT.l, .08); cam.position.copy(cp); cam.lookAt(cl); R.render(scene, cam) }
 preload(myLook()); requestAnimationFrame(loop); load().then(ui);
-setTimeout(() => toast('🏋️ Тапни тренажёр или выбери секцию внизу'), 800);
+setTimeout(() => toast('🛗 3 этажа: тренажёры, бокс, борьба — переключай внизу'), 800);
