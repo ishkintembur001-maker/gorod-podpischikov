@@ -266,6 +266,7 @@ async function bot(env,u){
     text:'🏡 <b>Город подписчиков</b>\n\n🎮 <b>Играть</b> — заходи за своего жителя, собирай доход, работай в полиции, больнице или ФК ASKER, улучшай дом и попадай в топ недели. Лучшие игроки появятся в видео!\n\n🔎 <b>Найти себя:</b> просто напиши свой ник из Instagram — покажу твой дом, его номер и что в нём есть.'});
   const n=norm(text);if(!n||n.length<2)return J({method:'sendMessage',chat_id:chat,text:'Напиши ник из Instagram, например: @gorod.podpischikov001',reply_markup:kb()});
   const idx=await index();const x=(await findNick(n)).x;
+  if(x&&(x[2]||[])[0]==='новый житель')return J({method:'sendMessage',chat_id:chat,parse_mode:'HTML',text:`🏡 <b>@${x[0]}</b> — дом №${x[1]}\n\n🎮 Нажми «Играть», чтобы развивать свой дом!`,reply_markup:kb()});
   if(x)return J({method:'sendPhoto',chat_id:chat,photo:SITE+'/cards/'+encodeURIComponent(x[0])+'.jpg?v=4',caption:`🏡 <b>@${x[0]}</b> — дом №${x[1]}\n\n✅ ${(x[2]||[]).join(' · ')}\n\n🎮 Нажми «Играть», чтобы развивать свой дом!`,parse_mode:'HTML',reply_markup:kb()});
   const sug=[];for(const [k,v] of idx){if(k.startsWith(n)||k.includes(n))sug.push('@'+v[0]);if(sug.length>=6)break}
   return J({method:'sendMessage',chat_id:chat,text:sug.length?'Точного совпадения нет. Может быть:\n'+sug.join('\n'):'Ника @'+n+' пока нет в городе — но это не страшно! 🎮 Жми «Играть» и введи свой ник @'+n+' — дом построится сразу.\n\nИ подпишись на @gorod.podpischikov001, поставь лайк и напиши в комментарии, какой дом хочешь — попадёшь в видео!',reply_markup:kb()})}
