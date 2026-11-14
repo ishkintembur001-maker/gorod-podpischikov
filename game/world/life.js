@@ -49,8 +49,41 @@ const WALLS = [ // [x0,z0,x1,z1,высокая] — 9 комнат 3×3
   [-HW, -5, -12, -5, 1], [-9.37, -5, -1.3, -5, 1], [1.3, -5, HW, -5, 1],
   [-HW, 5, -12, 5, 0], [-9.37, 5, -1.3, 5, 0], [1.3, 5, 9.37, 5, 0], [11.97, 5, HW, 5, 0]];
 const DOORS = [[XA, -10, 'z'], [XB, -10, 'z'], [XA, 0, 'z'], [XB, 0, 'z'], [XA, 10, 'z'], [XB, 10, 'z'], [-10.67, -5, 'x'], [0, -5, 'x'], [-10.67, 5, 'x'], [0, 5, 'x'], [10.67, 5, 'x']];
-const ROOMS = [['Кухня', -10.7, -10], ['Гостиная', 0, -10], ['Спальня', 10.7, -10], ['Столовая', -10.7, 0], ['Холл', 0, 0], ['Игровая', 10.7, 0], ['Ванная', -10.7, 10], ['Прихожая', 0, 10], ['Кабинет', 10.7, 10]];
+const ROOMS = [['Кухня', -10.7, -10], ['Гостиная', 0, -10], ['Спальня', 10.7, -10], ['Лаунж', -10.7, 0], ['Холл', 0, 0], ['Игровая', 10.7, 0], ['Ванная', -10.7, 10], ['Прихожая', 0, 10], ['Кабинет', 10.7, 10]];
 let DOORM = [];
+// встроенный интерьер: кухонный гарнитур, тумбы, ковры, полки, картины — как у дизайнера
+const SOLID = [[-12.3, -14.95, -10.2, -13.6], [9.6, -14.9, 11.1, -13.6], [14.1, -14.9, 15.6, -13.6], [15, 8.6, 15.9, 13], [-4.95, 6.2, -4.1, 8.8], [3.9, 6, 5, 7.6], [-15.6, -1, -14.6, 1]];
+function interior() {
+  const I = new THREE.Group(); house.add(I);
+  const wood = mat('#7a4f2e', { roughness: .6 }), wl = mat('#c9a77c', { roughness: .6 }), white = mat('#f4f1ea', { roughness: .45 }), stone = mat('#3a3a44', { roughness: .3 }), steel = mat('#c0c6cc', { metalness: .8, roughness: .25 });
+  const rug = (w, d, c, x, z, c2) => { const t = tex((g, W, H) => { g.fillStyle = c; g.fillRect(0, 0, W, H); g.strokeStyle = c2 || 'rgba(255,255,255,.35)'; g.lineWidth = 10; g.strokeRect(18, 18, W - 36, H - 36); g.lineWidth = 4; g.strokeRect(36, 36, W - 72, H - 72) }); const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat('#fff', { map: t, roughness: 1 })); m.rotation.x = -Math.PI / 2; m.position.set(x, .035, z); m.receiveShadow = true; I.add(m) };
+  const round = (r, c, x, z) => { const m = C(r, r, .04, mat(c, { roughness: 1 }), x, .03, z, I, 40); m.castShadow = false };
+  const pic = (x, z, ry, w, h, hue) => { const t = tex((g, W, H) => { const gr = g.createLinearGradient(0, 0, W, H); gr.addColorStop(0, `hsl(${hue},60%,70%)`); gr.addColorStop(1, `hsl(${hue + 60},55%,45%)`); g.fillStyle = gr; g.fillRect(0, 0, W, H); g.fillStyle = 'rgba(255,255,255,.5)'; g.beginPath(); g.arc(W * .65, H * .35, W * .14, 0, 7); g.fill(); g.fillStyle = `hsl(${hue + 120},40%,30%)`; g.beginPath(); g.moveTo(0, H); g.lineTo(W * .35, H * .5); g.lineTo(W * .6, H * .8); g.lineTo(W * .8, H * .55); g.lineTo(W, H); g.fill() }); const f = new THREE.Group(); f.position.set(x, 2.7, z); f.rotation.y = ry; I.add(f); B(w + .2, h + .2, .08, '#2b2118', 0, 0, 0, f); const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat('#fff', { map: t })); p.position.z = .05; f.add(p) };
+  const lampT = (x, z) => { C(.18, .25, .1, '#333', x, 1.5, z, I, 12); C(.03, .03, .5, '#333', x, 1.75, z, I, 6); C(.22, .32, .4, '#fff1d0', x, 2.15, z, I, 16, { emissive: '#ffcf80', emissiveIntensity: NIGHT ? 1.3 : .2 }) };
+  const plantB = (x, z, s = 1) => { C(.45 * s, .35 * s, .8 * s, '#e8e2d6', x, .4 * s, z, I, 16); for (let i = 0; i < 7; i++) { const l = new THREE.Mesh(new THREE.SphereGeometry(.5 * s, 10, 8), mat(i % 2 ? '#2f9e5a' : '#3fb86a')); l.position.set(x + Math.sin(i * 1.9) * .35 * s, (1.1 + (i % 3) * .45) * s, z + Math.cos(i * 1.9) * .35 * s); l.castShadow = true; I.add(l) } };
+  // кухня: гарнитур с мойкой, верхние шкафы, подвесная лампа над столом, ковёр под столом
+  B(2.1, 1.75, 1.3, white, -11.25, .88, -14.25, I); B(2.2, .12, 1.4, stone, -11.25, 1.8, -14.25, I); B(1, .1, .7, steel, -11.25, 1.83, -14.15, I); C(.05, .05, .6, steel, -11.25, 2.1, -14.7, I, 8); for (const x of [-11.75, -10.75]) B(.08, .5, .05, steel, x, 1.2, -13.58, I);
+  B(4.4, 1, .7, white, -12.6, 3.75, -14.6, I); for (const x of [-14.2, -13.1, -12, -10.9]) B(.06, .3, .05, steel, x + .45, 3.5, -14.23, I);
+  rug(5, 3.6, '#2f6f8a', -11, -9.6); C(.02, .02, 1.4, '#222', -11, 3.5, -9.6, I, 6); C(.15, .7, .5, '#ffcf66', -11, 2.6, -9.6, I, 20, { emissive: '#ffb030', emissiveIntensity: NIGHT ? 1.2 : .25 });
+  // гостиная: ковёр, торшер, полка над ТВ, картины, растение
+  rug(6, 4, '#8a3a4a', 0, -11.4); plantB(-4.5, -6, 1.1); B(3.6, .12, .5, wood, 0, 3.4, -14.7, I); for (let i = 0; i < 5; i++) B(.25, .5 + (i % 2) * .2, .35, `hsl(${i * 70},45%,55%)`, -1.2 + i * .55, 3.72, -14.7, I);
+  pic(-5.1, -7.4, Math.PI / 2, 2, 1.4, 200); pic(5.1, -13, -Math.PI / 2, 1.6, 2, 20);
+  // спальня: тумбы с лампами, ковёр, картина над кроватью
+  for (const x of [10.35, 14.85]) { B(1.3, 1.3, 1.1, wood, x, .65, -14.25, I); lampT(x, -14.25) } rug(5, 3, '#5a4fb0', 12.6, -8.9); pic(12.6, -14.82, 0, 3, 1.4, 260); plantB(6.2, -6, .9);
+  // лаунж: круглый ковёр, комод, картина, растения
+  round(2.8, '#c98a3a', -10.6, 0); B(1, 1.6, 2, wood, -15.1, .8, 0, I); for (const z of [-.6, .6]) lampT(-15.1, z); pic(-15.82, 0, Math.PI / 2, 2.4, 1.5, 120); plantB(-6, -4.2, .9); plantB(-6, 4.2, .9);
+  // холл: круглый ковёр и люстра-кольцо
+  round(2.6, '#3b3170', 0, 0); round(2.2, '#4a3f8a', 0, 0);
+  // игровая: яркий ковёр, кресла-мешки, постер
+  rug(5.6, 4, '#e8433a', 11.2, 0, '#ffc65c'); for (const [x, z, c] of [[12.4, 1.4, '#3a8bff'], [10.2, 1.8, '#f2c230']]) { const b = new THREE.Mesh(new THREE.SphereGeometry(.85, 16, 12), mat(c, { roughness: .9 })); b.scale.y = .6; b.position.set(x, .5, z); b.castShadow = true; I.add(b) }
+  // ванная: коврики и полотенцесушитель
+  rug(2.2, 1.4, '#9fd6e8', -7.6, 9.6); rug(1.6, 1.2, '#9fd6e8', -13.6, 10, '#ffffff'); for (let i = 0; i < 4; i++) B(1.2, .06, .06, steel, -5.75, 1.6 + i * .3, 12.6, I).rotation.y = Math.PI / 2;
+  // прихожая: обувница, вешалка, зеркало
+  B(.8, 1.2, 2.6, wood, -4.55, .6, 7.5, I); const mi = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.4), mat('#cfe6ff', { metalness: .9, roughness: .05 })); mi.position.set(-5.05, 2.5, 7.5); mi.rotation.y = Math.PI / 2; I.add(mi); C(.06, .06, 3.4, '#2b2118', 4.4, 1.7, 6.8, I, 8); for (let i = 0; i < 4; i++) { const h = B(.5, .06, .06, '#2b2118', 4.4, 3.2, 6.8, I); h.rotation.y = i * Math.PI / 4 } C(.35, .4, .1, '#2b2118', 4.4, .05, 6.8, I, 12);
+  // кабинет: книжный стеллаж, ковёр, растение
+  B(.8, 3.6, 4.4, wood, 15.45, 1.8, 10.8, I); for (let r = 0; r < 4; r++) { B(.7, .08, 4.3, wl, 15.4, .5 + r * .85, 10.8, I); for (let i = 0; i < 9; i++) B(.45, .55, .3, `hsl(${(i * 47 + r * 90) % 360},45%,50%)`, 15.3, .82 + r * .85, 8.9 + i * .45, I) } rug(4.4, 3, '#2b6a4a', 10.6, 9.4); plantB(6.2, 14.2, 1);
+  I.traverse(o => { if (o.isMesh) o.userData.static = 1 });
+}
 function buildHouse() {
   house.clear(); DOORM = [];
   const L = LIFE();
@@ -80,7 +113,8 @@ function buildHouse() {
     for (const s2 of [0, w]) B(ax === 'z' ? .3 : .15, 3.4, ax === 'z' ? .15 : .3, trim, ax === 'z' ? 0 : s2, 1.7, ax === 'z' ? s2 : 0, piv);
     DOORM.push({ piv, cx: dx, cz: dz, ax, a: 0 }) }
   const view = tex((x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, NIGHT ? '#0d0a2e' : '#7cc4ff'); g.addColorStop(1, NIGHT ? '#3a2a6a' : '#d8efff'); x.fillStyle = g; x.fillRect(0, 0, w, h); let X = 0; while (X < w) { const bw = 18 + Math.random() * 30, bh = 40 + Math.random() * 110; x.fillStyle = NIGHT ? '#151033' : '#8aa0c8'; x.fillRect(X, h - bh, bw, bh); x.fillStyle = '#ffc65c'; for (let yy = h - bh + 8; yy < h - 6; yy += 14) for (let xx = X + 4; xx < X + bw - 6; xx += 10) if (Math.random() < (NIGHT ? .45 : .12)) x.fillRect(xx, yy, 5, 7); X += bw + 4 } }, 256, 160);
-  for (const x of [-10.7, 6.6]) { B(4.2, 2.6, .2, trim, x, 2.4, -HD + .05, house); const gl = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 2.2), new THREE.MeshBasicMaterial({ map: view, toneMapped: false })); gl.position.set(x, 2.4, -HD + .17); house.add(gl); B(.12, 2.2, .1, trim, x, 2.4, -HD + .2, house) }
+  for (const x of [-8, 7.6]) { B(4.2, 2.3, .2, trim, x, 2.95, -HD + .05, house); const gl = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 1.95), new THREE.MeshBasicMaterial({ map: view, toneMapped: false })); gl.position.set(x, 2.95, -HD + .17); house.add(gl); B(.12, 1.95, .1, trim, x, 2.95, -HD + .2, house); for (const sx of [-1, 1]) B(.7, 2.8, .08, '#b04a5a', x + sx * 2.35, 2.75, -HD + .25, house) }
+  interior();
   const me = ME();
   const card = tex((x, w, h) => { x.fillStyle = '#2b2266'; x.fillRect(0, 0, w, h); x.fillStyle = '#ffc65c'; x.font = 'bold 30px sans-serif'; x.textAlign = 'center'; x.fillText('@' + (me && me.nick || 'житель'), w / 2, 70); x.fillStyle = '#e9e4ff'; x.font = '22px sans-serif'; x.fillText('мой дом в Городе', w / 2, 112); x.fillText('подписчиков', w / 2, 140); x.font = '60px serif'; x.fillText('🏡', w / 2, 220) }, 256, 256);
   const fc = B(1.9, 1.9, .12, '#7a4a2a', -HW + .1, 2.6, -9.5, house); fc.rotation.y = Math.PI / 2;
@@ -163,6 +197,7 @@ const ci = (x, z) => [Math.floor((x + HW) / CS), Math.floor((z + HD) / CS)];
 const cc = (i, j) => new THREE.Vector3(-HW + (i + .5) * CS, 0, -HD + (j + .5) * CS);
 function wallBlocked(x, z) {
   if (Math.abs(x) > HW - .7 || Math.abs(z) > HD - .7) return true;
+  for (const [x0, z0, x1, z1] of SOLID) if (x > x0 - .4 && x < x1 + .4 && z > z0 - .4 && z < z1 + .4) return true;
   for (const [x0, z0, x1, z1] of WALLS) { if (x0 === x1) { if (Math.abs(x - x0) < .55 && z > Math.min(z0, z1) - .3 && z < Math.max(z0, z1) + .3) return true } else if (Math.abs(z - z0) < .55 && x > Math.min(x0, x1) - .3 && x < Math.max(x0, x1) + .3) return true }
   return false;
 }
@@ -283,17 +318,17 @@ const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), ground = new THREE
 function setPtr(e) { ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, cam) }
 let sx = 0, sy = 0, lx = null;
 let doff = new THREE.Vector3();
-$('gl').addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; lx = e.clientX; if (BUILD) { setPtr(e); const h = ray.intersectObjects(furn.children, true)[0]; if (h) { const g = OBJ.get(h.object.userData.k); if (g !== sel) select(g); const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); doff.set(sel.position.x - p.x, 0, sel.position.z - p.z); drag = true; lx = null } } });
+$('gl').addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; lx = e.clientX; if (BUILD) { setPtr(e); const h = ray.intersectObjects(furn.children, true)[0]; if (h) { const g = OBJ.get(h.object.userData.k); if (g !== sel) select(g) } if (sel) { const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); doff.set(sel.position.x - p.x, 0, sel.position.z - p.z); drag = true; lx = null } } });
 $('gl').addEventListener('pointermove', e => {
   if (drag && sel) { setPtr(e); const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); p.add(doff); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 4) / 4; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 4) / 4; return }
   if (lx != null && e.buttons) { ang -= (e.clientX - lx) * .005; ang = Math.max(-.2, Math.min(1.3, ang)); lx = e.clientX }
 });
 addEventListener('pointerup', e => {
   const tap = Math.hypot(e.clientX - sx, e.clientY - sy) < 8; lx = null;
-  if (drag) { drag = false; autosave(); return }
+  if (drag && !tap) { drag = false; autosave(); return } drag = false;
   if (!tap || e.target.id !== 'gl') return;
   setPtr(e); const h = ray.intersectObjects(furn.children, true)[0];
-  if (BUILD) { select(h ? OBJ.get(h.object.userData.k) : null); return }
+  if (BUILD) { if (h) { select(OBJ.get(h.object.userData.k)); return } if (sel) { const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 4) / 4; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 4) / 4; autosave() } return }
   if (h) { menu(OBJ.get(h.object.userData.k), e.clientX, e.clientY); return }
   $('om').classList.add('hidden');
   const p = new THREE.Vector3(); if (ray.ray.intersectPlane(ground, p) && !busy) walkTo(new THREE.Vector3(Math.max(-HW + 1, Math.min(HW - 1, p.x)), 0, Math.max(-HD + 1, Math.min(HD - 1, p.z))));
@@ -320,7 +355,8 @@ const EMO = { arcade: '🕹', throne: '👑', goldtv: '📺', sauna: '🧖', des
 // ---------- ремонт ----------
 function select(g) { if (sel) sel.traverse(o => o.material && o.material.emissive && o.userData.em0 !== undefined && o.material.emissive.setHex(o.userData.em0)); sel = g; $('bsel').classList.toggle('hidden', !g); if (g) { g.traverse(o => { if (o.material && o.material.emissive) { o.userData.em0 = o.material.emissive.getHex(); o.material = o.material.clone(); o.material.emissive.setHex(0x5a3a00) } }); $('bname').textContent = CAT.furn[g.userData.k][0] + ' ' + CAT.furn[g.userData.k][1] } }
 let svT = 0; function autosave() { clearTimeout(svT); svT = setTimeout(() => P.call('life/save', { furn: layout(), wall: '#' + wallM.color.getHexString(), floor: LIFE().floor }), 700) }
-$('rot').onclick = () => { if (sel) { sel.rotation.y = (sel.rotation.y + Math.PI / 4) % (Math.PI * 2); autosave() } };
+$('bok').onclick = () => select(null);
+$('rot').onclick = () => { if (sel) { sel.rotation.y = (Math.round(sel.rotation.y / (Math.PI / 2)) + 1) % 4 * (Math.PI / 2); autosave() } };
 function moveMode(g) { BUILD = true; document.body.classList.add('bm'); $('om').classList.add('hidden'); drawer(); select(g); P.toast && P.toast('✋ Тяни предмет пальцем, ⟳ — повернуть') }
 $('stow').onclick = () => { if (!sel) return; OBJ.delete(sel.userData.k); furn.remove(sel); select(null); drawer(); autosave() };
 function layout() { return [...OBJ.values()].map(g => [g.userData.k, g.position.x, g.position.z, +g.rotation.y.toFixed(2)]) }
