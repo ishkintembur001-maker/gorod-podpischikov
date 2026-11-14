@@ -1,6 +1,6 @@
 // Кинотеатр и бургерная «Бургер Город»: зайти, купить билет / заказать еду, посмотреть фильм / поесть
 import * as THREE from './three.js';
-import { makeHero, walk, play, tickHeroes, preload } from './hero.js';
+import { makeHero, walk, play, tickHeroes, preload, dispose } from './hero.js';
 const P = parent, $ = id => document.getElementById(id);
 const V = new URLSearchParams(location.search).get('v') || 'burger';
 const ME = () => P.ME || {};
@@ -38,6 +38,7 @@ const panel = $('panel'), closeP = () => { panel.classList.add('hidden'); $('bar
 const openP = html => { panel.innerHTML = html; panel.classList.remove('hidden'); $('bar0').classList.add('hidden') };
 
 let tick = () => { };
+const VW = {}; const WK = new URLSearchParams(location.search).get('w');
 // =================== КИНОТЕАТР ===================
 if (V === 'cinema') {
   $('ttl').firstChild.textContent = '🎬 Кинотеатр'; $('st').textContent = 'билет 50 🪙 · вдвоём 100 🪙';
@@ -47,7 +48,7 @@ if (V === 'cinema') {
   const scr = new THREE.Mesh(new THREE.PlaneGeometry(18, 7.7), new THREE.MeshBasicMaterial({ map: ft, toneMapped: false })); scr.position.set(0, 5.2, -12.7); scene.add(scr); B(18.8, 8.4, .2, '#111', 0, 5.2, -12.85);
   const scrLight = new THREE.PointLight('#8ab4ff', 0, 30); scrLight.position.set(0, 5, -9); scene.add(scrLight);
   const SEATS = []; for (let r = 0; r < 4; r++) { B(20, .5 + r * .5, 2.6, '#2a1830', 0, (.5 + r * .5) / 2, -3 + r * 3); for (let c = 0; c < 8; c++) { const x = -7 + c * 2, z = -3 + r * 3, y = .5 + r * .5; B(1.4, .5, 1.1, '#c0392b', x, y + .25, z); B(1.4, 1.2, .25, '#a02a20', x, y + .8, z + .55); SEATS.push({ x, y: y + .45, z }) } }
-  B(4, 1.2, 1.4, '#c0392b', 7.5, .6, 10); sign('🍿 ПОПКОРН', 3.6, .8, '#ffd34d', '#c0392b', 7.5, 1.6, 10.72); const seller = NPC({ sh: '#c0392b', pa: '#1c1c1c', ac: 'cap' }, 7.5, 8.6, 0);
+  B(4, 1.2, 1.4, '#c0392b', 7.5, .6, 10); sign('🍿 ПОПКОРН', 3.6, .8, '#ffd34d', '#c0392b', 7.5, 1.6, 10.72); const seller = NPC({ sh: '#c0392b', pa: '#1c1c1c', ac: 'cap' }, 7.5, 8.6, 0); Object.assign(VW, { staff: seller, at: [7.5, 8.6], front: [7.5, 11.8], spawn: [2, 12], cam: [[7.5, 8.5, 21], [7.5, 1.6, 9.5]], items: [['pop', '🍿', 'Попкорн'], ['cola', '🥤', 'Кола'], ['hot', '🌭', 'Хот-дог'], ['choc', '🍫', 'Шоколад'], ['tick', '🎟', 'Билет']] });
   const people = []; for (const [i, j] of [[0, 1], [2, 5], [3, 2], [1, 6], [3, 7]]) { const s = SEATS[i * 8 + j]; const h = NPC({ sh: ['#3a8fd8', '#ff6fa8', '#2bb24c', '#f2c230', '#8a4dff'][people.length], pa: '#2b3a55', g: people.length % 2 ? 'f' : 'm', hs: people.length % 4 }, s.x, s.z + .1, Math.PI); h.position.y = s.y - 1.1; play(h, 'SitDown', { once: true }); people.push(h) }
   const FILMS = [['🦸', 'Герои города', '#3a62d8', 'боевик'], ['😂', 'Мэр в отпуске', '#f2a23a', 'комедия'], ['🚀', 'Город на Луне', '#8a4dff', 'фантастика'], ['💘', 'Любовь у фонтана', '#ff6fa8', 'мелодрама']];
   let film = 0, who = 'solo', playing = false, pt0 = 0;
@@ -88,7 +89,7 @@ else {
   const mt = tex((g, W, H) => { g.fillStyle = '#1d1a2e'; g.fillRect(0, 0, W, H); g.font = '900 40px sans-serif'; g.fillStyle = '#ffcc33'; g.fillText('МЕНЮ', 30, 52); const L = [['🍔 Бургер', 40], ['🍟 Картошка', 25], ['🍗 Наггетсы', 35], ['🥤 Кола', 15], ['🍦 Мороженое', 20], ['🍱 Комбо «Город»', 90]]; g.font = '800 30px sans-serif'; L.forEach(([n, p], i) => { g.fillStyle = '#fff'; g.fillText(n, 30 + (i % 2) * 500, 110 + (i >> 1) * 52); g.fillStyle = '#5ee6b0'; g.fillText(p + ' 🪙', 330 + (i % 2) * 500, 110 + (i >> 1) * 52) }) }, 1024, 256);
   { const m = new THREE.Mesh(new THREE.PlaneGeometry(13.6, 3.4), new THREE.MeshBasicMaterial({ map: mt, toneMapped: false })); m.position.set(0, 2.3, -12.4); scene.add(m) }
   for (const x of [-3, 3]) { B(.9, .7, .6, '#333', x, 1.85, -8); B(.7, .45, .05, '#58a8ff', x, 2.05, -7.68) }
-  const cashiers = [NPC({ sh: '#d62828', pa: '#1c1c1c', ac: 'cap' }, -3, -9.6, 0), NPC({ sh: '#d62828', pa: '#1c1c1c', ac: 'cap', g: 'f', hs: 1 }, 3, -9.6, 0)];
+  const cashiers = [NPC({ sh: '#d62828', pa: '#1c1c1c', ac: 'cap' }, -3, -9.6, 0), NPC({ sh: '#d62828', pa: '#1c1c1c', ac: 'cap', g: 'f', hs: 1 }, 3, -9.6, 0)]; Object.assign(VW, { staff: cashiers[0], at: [-3, -9.6], front: [-3, -6.5], spawn: [1, 1], cam: [[-3, 9, 5], [-3, 1.6, -8]], items: [['burger', '🍔', 'Бургер'], ['fries', '🍟', 'Фри'], ['nuggets', '🍗', 'Наггетсы'], ['cola', '🥤', 'Кола'], ['ice', '🍦', 'Мороженое']] });
   B(3, 1.8, 1, '#888', -8, .9, -11.6); B(2.6, .1, .8, '#ffcc33', -8, 1.85, -11.6);
   // столы
   const TABLES = []; for (const [x, z] of [[-6, -1], [0, -1], [6, -1], [-6, 5], [0, 5], [6, 5]]) { C(1.3, 1.3, .12, '#ffffff', x, 1.6, z); C(.12, .12, 1.6, '#888', x, .8, z, scene, 8); for (const s of [-1, 1]) { C(.5, .5, .12, '#d62828', x + s * 1.9, 1, z); C(.08, .08, 1, '#888', x + s * 1.9, .5, z, scene, 8) } TABLES.push({ x, z }) }
@@ -109,10 +110,40 @@ else {
   tick = t => { };
 }
 CAM.p0 = CAM.p.toArray(); CAM.l0 = CAM.l.toArray();
+
+// =================== РАБОТА (кассир / бармен) ===================
+if (WK) {
+  $('ttl').firstChild.textContent = V === 'cinema' ? '🍿 Работа в кинотеатре' : '👨‍🍳 Работа в «Бургер Город»';
+  const IT = k => VW.items.find(i => i[0] === k);
+  const walkers = []; const oldTick = tick; let lt = 0;
+  tick = t => { oldTick(t); const dt = lt ? Math.min(.05, t - lt) : 0; lt = t; for (let i = walkers.length - 1; i >= 0; i--) { const w = walkers[i], d = new THREE.Vector3(w.to[0] - w.h.position.x, 0, w.to[1] - w.h.position.z), L = d.length(); if (L < .15) { walk(w.h, t, false); walkers.splice(i, 1); w.done && w.done(); continue } w.h.position.addScaledVector(d.normalize(), Math.min(L, 8 * dt)); w.h.rotation.y = Math.atan2(d.x, d.z); walk(w.h, t, true) } };
+  const mvNPC = (h, to) => new Promise(r => walkers.push({ h, to, done: r }));
+  const orderSprite = (h, o) => { const t = tex((g, W, H) => { g.fillStyle = '#fff'; g.beginPath(); g.roundRect(4, 4, W - 8, H - 8, 40); g.fill(); g.font = '80px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(o.map(k => IT(k)[1]).join(''), W / 2, H / 2 + 4) }, 512, 128); const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); sp.scale.set(4, 1, 1); sp.position.set(0, 4.6, 0); sp.renderOrder = 7; h.add(sp); return sp };
+  let JOB = null;
+  const plan = () => { const J = JOB; if (!J) return; openP(`<h2>${V === 'cinema' ? '🍿 Работа в кинотеатре' : '👨‍🍳 Работа в бургерной'}</h2><p>Встаёшь за кассу. Гости подходят с заказом над головой — собери его на поднос и отдай. Смена 60 секунд, 4 смены в день.</p><p>Должность: <b style="color:var(--win)">${J.name}</b> · оплата ×${J.mul}</p>${J.next ? `<div class="bar"><i style="width:${Math.round(J.x / J.next * 100)}%"></i></div><p style="color:var(--dim)">До повышения: ${J.next - J.x} заказов</p>` : '<p>🏆 Ты на вершине карьеры!</p>'}<p style="font-size:13px;color:var(--dim)">Карьера: ${J.ranks.map((r, i) => (i === J.r ? '<b style="color:var(--mint)">' + r[0] + '</b>' : r[0]) + ' ×' + r[2]).join(' → ')}</p><button class="go1" id="ws" ${J.left < 1 ? 'disabled' : ''}>${J.left < 1 ? 'Смены кончились — завтра' : '▶ Начать смену · осталось ' + J.left}</button><button class="go2" id="px">Закрыть</button>`); $('px').onclick = closeP; const b = $('ws'); if (b && J.left > 0) b.onclick = start };
+  const bar = () => { $('bar0').innerHTML = `<button class="sec b" id="wp">💼 Смена<small>${JOB ? JOB.name + ' · смен: ' + JOB.left : 'загрузка…'}</small></button>`; $('wp').onclick = plan };
+  (async () => { const j = await P.call('venue', { a: 'wjob', k: V }); JOB = j && j.job; bar(); plan() })();
+  bar();
+  async function start() { if (busy) return; const j = await P.call('venue', { a: 'wstart', k: V }); if (!j || !j.ok) return; JOB = j.job || JOB; busy = true; closeP(); $('bar0').classList.add('hidden');
+    await goTo(VW.at[0], VW.at[1] + 2.4); VW.staff.visible = false; me.position.set(VW.at[0], 0, VW.at[1]); me.rotation.y = 0; play(me, 'Idle'); setCam(...VW.cam);
+    let served = 0, cur = null, tray = [], end = performance.now() + 60000, over = false;
+    const LK = ['#3a8fd8', '#ff6fa8', '#2bb24c', '#f2c230', '#8a4dff', '#e8433a', '#20b2aa'];
+    const draw = () => { openP(`<h2>⏱ <span id="wt">${Math.max(0, Math.ceil((end - performance.now()) / 1000))}</span> сек · ✅ ${served}</h2><p>Заказ: <b style="font-size:26px">${cur && cur.arr ? cur.o.map(k => IT(k)[1]).join(' ') : '⏳ гость идёт…'}</b></p><p>Поднос: <b style="font-size:26px">${tray.map(k => IT(k)[1]).join(' ') || '—'}</b></p><div class="wk">${VW.items.map(i => `<button data-i="${i[0]}">${i[1]}<small>${i[2]}</small></button>`).join('')}</div><div style="display:flex;gap:8px"><button class="go2" id="wc">🗑 Сброс</button><button class="go1" id="wg">✅ Отдать</button></div>`);
+      panel.querySelectorAll('[data-i]').forEach(b => b.onclick = () => { if (tray.length < 6) { tray.push(b.dataset.i); HAP('light'); draw() } }); $('wc').onclick = () => { tray = []; draw() }; $('wg').onclick = give };
+    const next = async () => { if (over) return; const n = Math.min(4, 1 + Math.floor(served / 3) + (Math.random() < .35 ? 1 : 0)); const o = []; for (let i = 0; i < n; i++) o.push(VW.items[Math.floor(Math.random() * VW.items.length)][0]);
+      const h = NPC({ sh: LK[Math.floor(Math.random() * LK.length)], pa: '#2b3a55', g: Math.random() < .5 ? 'f' : 'm', hs: Math.floor(Math.random() * 4) }, VW.spawn[0], VW.spawn[1], Math.PI); cur = { o, h, arr: false }; tray = []; draw();
+      await mvNPC(h, VW.front); if (over) return; h.rotation.y = Math.PI; play(h, 'Idle'); cur.sp = orderSprite(h, o); cur.arr = true; draw() };
+    const leave = async (c, e) => { c.sp && c.h.remove(c.sp); emo(c.h, e); await mvNPC(c.h, VW.spawn); scene.remove(c.h); dispose(c.h) };
+    function give() { if (!cur || !cur.arr || over) return; const ok = [...tray].sort().join() === [...cur.o].sort().join(); const c = cur; cur = null; if (ok) { served++; HAP('medium'); play(me, 'Victory', { once: true }) } else { P.toast && P.toast('😡 Не тот заказ! Смотри внимательнее') } leave(c, ok ? '😍' : '😡'); next() }
+    const tm = setInterval(async () => { const w = $('wt'); const left = Math.ceil((end - performance.now()) / 1000); if (w) w.textContent = Math.max(0, left); if (left > 0) return; clearInterval(tm); over = true; closeP();
+      if (cur) leave(cur, '👋'); const r = await P.call('venue', { a: 'wend', k: V, sc: served }); coins(); if (r && r.job) JOB = r.job; if (r && r.msg) P.toast && P.toast(r.msg);
+      VW.staff.visible = true; me.position.set(VW.at[0], 0, VW.at[1] + 2.4); setCam(CAM.p0, CAM.l0); busy = false; bar(); $('bar0').classList.remove('hidden'); plan(); goTo(0, 11).then(() => { me.rotation.y = Math.PI; play(me, 'Idle') }) }, 250);
+    next() }
+}
 $('back').onclick = () => P.closeWork && P.closeWork(); coins();
 let last = performance.now();
 function loop(now) { requestAnimationFrame(loop); const dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now; stepMove(dt, t); tickHeroes(dt); tick(t);
   for (let i = bubbles.length - 1; i >= 0; i--) { const b = bubbles[i], k = (now - b.t0) / 1600; b.s.position.y += dt * .8; b.s.material.opacity = 1 - k; if (k >= 1) { scene.remove(b.s); bubbles.splice(i, 1) } }
   cp.lerp(CAM.p, .06); cl.lerp(CAM.l, .08); cam.position.copy(cp); cam.lookAt(cl); R.render(scene, cam) }
 preload(myLook()); requestAnimationFrame(loop);
-setTimeout(() => P.toast && P.toast(V === 'cinema' ? '🎬 Купи билет и выбери, с кем пойдёшь' : '🍔 Жми «Заказать еду» — и за стол!'), 700);
+setTimeout(() => !WK && P.toast && P.toast(V === 'cinema' ? '🎬 Купи билет и выбери, с кем пойдёшь' : '🍔 Жми «Заказать еду» — и за стол!'), 700);
