@@ -40,7 +40,7 @@ const SHOW=['ramazan__179','temburhan','kamila_vekua','sumaia09072015','baatyr67
 for(const p of [...P23,...PEOPLE]){const r=window.RESIDENTS.find(q=>q.n===p.n);if(r)Object.assign(r,{an:{}},p.set);else window.RESIDENTS.push({n:p.n,g:'m',roof:'',wall:'',friend:'',an:{},cc:'',z:'any',...p.set})}
 const ROWS=Math.ceil((window.RESIDENTS.length+60)/36)+1;
 window.FIXED={};P23.forEach((p,i)=>window.FIXED[p.n]=[P23C[i],ROWS-2]);PEOPLE.forEach(p=>window.FIXED[p.n]=[p.c,ROWS-(p.r||2)]);
-window.TREEFREE=(x,z)=>{const cx=WORLD.plaza.cx,pz=WORLD.oz+WORLD.H0+78;return (x>cx+100&&x<cx+252&&z>pz-50&&z<pz+70)||(x>cx-60&&x<cx+60&&z>pz+30&&z<pz+140)};
+window.TREEFREE=(x,z)=>{const cx=WORLD.plaza.cx,pz=WORLD.oz+WORLD.H0+78;return (x>cx-265&&x<cx-90&&z>pz-45&&z<pz+62)||(x>cx+100&&x<cx+252&&z>pz-50&&z<pz+70)||(x>cx-60&&x<cx+60&&z>pz+30&&z<pz+140)};
 const houses=setupWorld();const by=WORLD.by;PEOPLE.forEach(f=>f.h=by[f.n]);
 const POL=['0987654321234567890amina','aybek__2014','dilshod_9929676','rukiiat2089','aysanem281','sanzhar_2015th','nurmuhammed564','shox_o172','almaz98850','_ryspaev_57'];
 // ---- hospital ----
@@ -318,7 +318,11 @@ const FNAME={kg:'🇰🇬 Кыргызстан',kz:'🇰🇿 Казахстан'
 const QS=new URLSearchParams(location.search);const NICK=(QS.get('nick')||'').toLowerCase();
 const MY=WORLD.by[NICK]||null;
 const MALL=SP_.mall&&SP_.mall.x!=null?SP_.mall:{x:P.cx+60,z:P.cz};
-const FC=MY&&MY.face?MY.face:1;const ZONES=[['home','🏠 Мой дом',MY?MY.x:P.cx,MY?MY.z+FC*11:P.cz+30,10],['hospital','🏥 Больница',HS.x,HS.z+12,16],['police','👮 Полиция',PS.x,PS.z+16,18],['shop','🛍 ТЦ «Город»',MALL.x,MALL.z,26],['park','🎢 Парк',PK.x,PK.z,40],['football','⚽ Стадион ASKER',FB.x,FB.z,38],['vip','👑 VIP-район',VP.x,VP.z+50,40],['emb','🌊 Набережная',XL-16,EZ,22],['plaza','🔥 Площадь мэра',P.cx,P.cz,20]];
+const FC=MY&&MY.face?MY.face:1;const GYMP={x:P.cx-233,z:PK.z-4};
+{const g=new THREE.Group();g.position.set(GYMP.x,0,GYMP.z);scene.add(g);const wm=MAT(0xe9e9f2),rd=MAT(0xe8433a);mesh(new THREE.BoxGeometry(34,9,22),wm,0,4.5,0,g);mesh(new THREE.BoxGeometry(34.6,1,22.6),rd,0,9.3,0,g);const gl=new THREE.Mesh(new THREE.BoxGeometry(26,6,0.2),new THREE.MeshPhongMaterial({color:0x9fd6ff,shininess:90,emissive:0x1a3a5a}));gl.position.set(0,3.8,11.05);g.add(gl);mesh(new THREE.BoxGeometry(4,5,0.3),MAT(0x2b2b33),0,2.5,11.1,g);
+ const st=ctex(1024,180,(c,w,h)=>{c.fillStyle='#e8433a';c.fillRect(0,0,w,h);c.fillStyle='#fff';c.font='900 120px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('🏋️ СПОРТЗАЛ',w/2,h/2+6)});const sg=new THREE.Mesh(new THREE.PlaneGeometry(22,3.9),new THREE.MeshBasicMaterial({map:st}));sg.position.set(0,11.8,11.2);g.add(sg);mesh(new THREE.BoxGeometry(22.6,4.4,0.4),rd,0,11.8,10.95,g);
+ const s2=ctex(1024,110,(c,w,h)=>{c.fillStyle='#1d1a2e';c.fillRect(0,0,w,h);c.fillStyle='#ffd34d';c.font='900 64px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText('🥊 БОКС · 🤼 БОРЬБА · ТРЕНАЖЁРЫ',w/2,h/2+4)});const s3=new THREE.Mesh(new THREE.PlaneGeometry(26,2.8),new THREE.MeshBasicMaterial({map:s2}));s3.position.set(0,7.6,11.12);g.add(s3)}
+const ZONES=[['gym','🏋️ Спортзал',GYMP.x,GYMP.z+15,9],['home','🏠 Мой дом',MY?MY.x:P.cx,MY?MY.z+FC*11:P.cz+30,10],['hospital','🏥 Больница',HS.x,HS.z+12,16],['police','👮 Полиция',PS.x,PS.z+16,18],['shop','🛍 ТЦ «Город»',MALL.x,MALL.z,26],['park','🎢 Парк',PK.x,PK.z,40],['football','⚽ Стадион ASKER',FB.x,FB.z,38],['vip','👑 VIP-район',VP.x,VP.z+50,40],['emb','🌊 Набережная',XL-16,EZ,22],['plaza','🔥 Площадь мэра',P.cx,P.cz,20]];
 function lbl(text){const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');x.fillStyle='rgba(27,20,70,.88)';x.beginPath();x.roundRect(6,12,500,104,52);x.fill();x.fillStyle='#ffc65c';x.font='bold 54px -apple-system,"Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(text,256,66);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.renderOrder=9;s.scale.set(16,4,1);return s}
 const ZL=[];for(const z of ZONES){if(z[0]==='plaza'||(z[0]==='home'&&!MY))continue;const s=lbl(z[1]);s.scale.set(12,3,1);s.position.set(z[2],z[0]==='home'?(MY.top||9)+6:22,z[0]==='home'?MY.z:z[3]);s.material.transparent=true;scene.add(s);ZL.push([s,z])}
 function hero(col=0xe8433a,me=true){const g=new THREE.Group();const S=(w,h,d,c,x,y,z,p=g)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color:c,roughness:.7}));m.position.set(x,y,z);m.castShadow=true;p.add(m);return m};
@@ -390,7 +394,7 @@ const BOT_DAY0=Date.UTC(2026,10,14);
 const BLOOKS={sk:['#f2d3b8','#e0b08a','#c68e63','#8d5a3b'],hc:['#2b1a10','#5a3a1e','#c48a3a','#111111','#a33a2a'],sh:['#e8433a','#3a8bff','#2bb24c','#ffc65c','#ffffff','#6a4fd0','#ff6fb5','#222222'],pa:['#2b3a55','#1c1c1c','#6b4a2b','#3a5a2a','#c0c0c0'],ac:['','','','cap','glasses','headphones','tubeteika']};
 const pk=(a,u)=>a[Math.floor(u*a.length)%a.length];
 // дома и заборы с воротами — твёрдые, сквозь них не пройти
-const SBOX=[[HS.x,HS.z,11.8,6.8],[PS.x,PS.z,12,7],[MALL.x,MALL.z,15.8,9.8],[FB.x,FB.z+35,36,5.5],[FB.x,FB.z-35,36,5.5],[FB.x,FB.z-44.6,16,1],[PK.x-32,PK.z+22,7.4,2.4],[PK.x+20,PK.z-7,2,1.6],
+const SBOX=[[GYMP.x,GYMP.z,17.4,11.4],[HS.x,HS.z,11.8,6.8],[PS.x,PS.z,12,7],[MALL.x,MALL.z,15.8,9.8],[FB.x,FB.z+35,36,5.5],[FB.x,FB.z-35,36,5.5],[FB.x,FB.z-44.6,16,1],[PK.x-32,PK.z+22,7.4,2.4],[PK.x+20,PK.z-7,2,1.6],
   [VP.x,VP.z-47.8,64,.6],[VP.x-64,VP.z,.6,48],[VP.x+64,VP.z,.6,48],[VP.x-36,VP.z+47.8,28,.6],[VP.x+36,VP.z+47.8,28,.6]];
 const SCIR=[[PK.x,PK.z,8.4],[PK.x+44,PK.z-14,7.6],[PK.x-50,PK.z,10]];
 // река: по воде ходить нельзя — только по мостам и пирсу рыбака
@@ -398,7 +402,7 @@ function onBridge(x,z){const rv=WORLD.river;if(!rv)return false;if(Math.abs(x-rv
 function inWater(x,z){const rv=WORLD.river;return rv&&Math.abs(x-rv.x)<rv.w/2+.4&&!onBridge(x,z)}
 function solid(x,z){if(inWater(x,z))return true;for(const h of (WORLD.houses||[]))if(Math.abs(x-h.x)<7.9&&Math.abs(z-h.z)<7.9)return true;for(const b of SBOX)if(Math.abs(x-b[0])<b[2]&&Math.abs(z-b[1])<b[3])return true;for(const c of SCIR)if(Math.hypot(x-c[0],z-c[1])<c[2])return true;return false}
 // камера не уходит за дома и здания: если между тобой и камерой стена — камера подъезжает ближе
-let CAMK=1,CAMUP=0;const OCCB=[[HS.x,HS.z,11.5,6.5,13],[PS.x,PS.z,11.5,6.5,12],[MALL.x,MALL.z,15.5,9.5,12],[FB.x,FB.z+35,35,5,9],[FB.x,FB.z-35,35,5,9],[FB.x,FB.z-44.6,16,1,21],[PK.x-50,PK.z,9,9,12]];
+let CAMK=1,CAMUP=0;const OCCB=[[GYMP.x,GYMP.z,17,11,14],[HS.x,HS.z,11.5,6.5,13],[PS.x,PS.z,11.5,6.5,12],[MALL.x,MALL.z,15.5,9.5,12],[FB.x,FB.z+35,35,5,9],[FB.x,FB.z-35,35,5,9],[FB.x,FB.z-44.6,16,1,21],[PK.x-50,PK.z,9,9,12]];
 function occT(ax,ay,az,bx,by,bz){let best=1;const px=ax,pz=az;const test=(x,z,hx,hz,h)=>{if(Math.abs(x-px)>90||Math.abs(z-pz)>90)return;let t0=0,t1=1;for(const [o,d,lo,hi] of [[ax,bx-ax,x-hx,x+hx],[ay,by-ay,0,h],[az,bz-az,z-hz,z+hz]]){if(Math.abs(d)<1e-6){if(o<lo||o>hi)return;continue}let u=(lo-o)/d,v=(hi-o)/d;if(u>v)[u,v]=[v,u];t0=Math.max(t0,u);t1=Math.min(t1,v);if(t0>t1)return}if(t0>.02&&t0<best)best=t0};
  for(const h of (WORLD.houses||[]))test(h.x,h.z,7.2,7.2,h.top||13);for(const b of OCCB)test(...b);return best}
 // ---------- развлечения в парке ----------
