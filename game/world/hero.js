@@ -161,7 +161,7 @@ export function makeHero(look = {}, me = true) {
   return g;
 }
 export function play(g, name, { once = false, fade = .25 } = {}) {
-  const U = g.userData; U.anim = name; if (!U.acts) return; const a = U.acts[name]; if (!a || U.cur === a) return;
+  const U = g.userData; if ((U.scoot || U.ride) && (name === 'Walk' || name === 'Run')) name = U.ride ? 'SitDown' : 'Idle'; U.anim = U.scoot && name === 'Idle' ? 'Scoot' : name; if (!U.acts) return; const a = U.acts[name]; if (!a || U.cur === a) return;
   a.reset(); a.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat); a.clampWhenFinished = once; a.enabled = true; a.setEffectiveWeight(1); a.play();
   if (U.cur) U.cur.crossFadeTo(a, fade, false); U.cur = a;
 }
@@ -173,4 +173,4 @@ export function tickHeroes(dt) { for (const m of MIXERS) m.update(dt); AT += dt;
   for (const a of AURAS) { if (!a.parent) { AURAS.delete(a); continue } a.children.forEach((p, i) => { if (i === 0) { p.rotation.z = AT * .8; p.material.opacity = .4 + .2 * Math.sin(AT * 3); return } const an = p.userData.a + AT * 1.2; p.position.set(Math.cos(an) * 1.3, (p.userData.h + AT * .9) % 3.6, Math.sin(an) * 1.3) }) }
 }
 export function dispose(g) { if (g && g.userData && g.userData.mix) MIXERS.delete(g.userData.mix) }
-export function walk(g, t, on) { const U = g.userData; if (!U.acts) { if (U.ph) walkBlocky(U.ph, t, on); return } const want = on ? 'Walk' : 'Idle'; if (U.anim === 'Walk' || U.anim === 'Idle' || U.anim === 'Victory' && !U.cur?.isRunning?.()) play(g, want) }
+export function walk(g, t, on) { const U = g.userData; if (U.scoot || U.ride) return; if (!U.acts) { if (U.ph) walkBlocky(U.ph, t, on); return } const want = on ? 'Walk' : 'Idle'; if (U.anim === 'Walk' || U.anim === 'Idle' || U.anim === 'Victory' && !U.cur?.isRunning?.()) play(g, want) }
