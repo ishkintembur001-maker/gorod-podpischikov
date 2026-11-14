@@ -392,11 +392,35 @@ setInterval(()=>logChat(),5000);
 const PHR=['Привет! 👋','Как дела?','Го дружить! 🤝','Пошли в парк 🎡','Классный город!','Кто на стадион? ⚽','Зайди ко мне в гости 🏠','Спасибо! ❤️'];
 {const p=document.getElementById('sayp');p.innerHTML=PHR.map(t=>`<button>${t}</button>`).join('')+'<form id="sayf"><input id="sayi" maxlength="80" placeholder="Напиши всем рядом…" autocomplete="off"><button>➤</button></form>';
  const send=t=>{t=t.trim();if(!t)return;SENDSY=t;say(ME,t);logChat(myNick,t);sendPos();parent.postMessage({t:'hap'},'*');p.classList.add('hidden');
-  if(/прив|салам|hello|hi\b|здрав|ку\b/i.test(t)){const nb=BOTS.filter(b=>b.g&&b.g.position.distanceTo(ME.position)<45);if(nb.length){const b=nb[Math.floor(Math.random()*nb.length)];setTimeout(()=>{const r=['Привет, @'+myNick+'! 👋','Салам! 😎','Привет! Как ты?','Хай! Го в парк?'][Math.floor(Math.random()*4)];say(b.g,r);logChat(b.n,r);hplay(b.g,'Victory',{once:true})},1500+Math.random()*1500)}}};
+  botReply(t)};
+
  p.querySelectorAll('button:not(form button)').forEach(b=>b.onclick=()=>send(b.textContent));document.getElementById('sayf').onsubmit=e=>{e.preventDefault();send(document.getElementById('sayi').value);document.getElementById('sayi').value=''};
  document.getElementById('sayb').onclick=()=>{p.classList.toggle('hidden');parent.postMessage({t:'hap'},'*')}}
-// боты иногда что-то говорят
-setInterval(()=>{const vb=BOTS.filter(b=>b.g);if(!vb.length||Math.random()<.4)return;const b=vb[Math.floor(Math.random()*vb.length)];const t=['Всем привет! 👋','Кто в парк? 🎡','Сегодня отличный день ☀️','Иду на работу 💼','Кто хочет дружить?','Обожаю этот город ❤️','Завтра матч ⚽','Мороженое в парке топ 🍦','Подписывайтесь друг на друга!','Ура, бонус дня забрал 🎁'][Math.floor(Math.random()*10)];say(b.g,t);logChat(b.n,t)},7000);
+// боты: говорят редко и отвечают по смыслу
+const BDO=['только что с рыбалки 🎣','катался на горках 🎢','работал в бургерной 🍔','был в спортзале 🥊','гулял в лесу 🌲','смотрел кино 🎬','покупал обновку в ТЦ 👕'];
+const BR=[[/ты\s*бот|вы\s*боты|ты\s*живой|ты\s*робот/i,()=>['Да, я житель-бот города 🤖 Но тут много живых игроков — пиши им!']],
+ [/прив|салам|здрав|хай|hello|\bhi\b|^ку\b|добр(ое|ый)/i,()=>['Привет, @'+myNick+'! 👋 Как дела?','Салам, @'+myNick+'! 😎 Как ты?','Привет! Рад видеть в городе 😊']],
+ [/как\s*(дела|ты|сам|жизнь)/i,()=>['Отлично! Только что '+BDO[Math.floor(Math.random()*BDO.length)]+' А ты как?','Хорошо, спасибо! А у тебя?']],
+ [/^(хорошо|норм|отлично|супер|класс|нормально|тоже)/i,()=>['Класс! 😄 Чем займёшься?','Здорово! Миссии сегодня уже сделал? 🎯']],
+ [/что\s*дела|чем\s*занят|что\s*ты\s*тут/i,()=>['Я '+BDO[Math.floor(Math.random()*BDO.length)]+' А ты?']],
+ [/друж|друг/i,()=>['Давай дружить с живыми игроками: нажми на игрока → 🤝 Дружить. За друга +100 🪙!']],
+ [/как\s*играть|что\s*делать|помоги|не\s*понима|подскаж/i,()=>['Жми ❓ сверху — там всё понятно. А 🎯 Миссии покажут, что сделать сегодня','Подойди к зданию → «Зайти». Миссии 🎯 справа сверху, а «📍 Туда» переносит к месту']],
+ [/деньг|монет|заработ|работ/i,()=>['Работай в бургерной или кино — за смену хорошо платят 💰 И миссии дня дают монеты','Бонус каждый день + сундуки за активность в городе 🎁']],
+ [/вип|vip/i,()=>['VIP-район справа от парка 👑 Лучшие игроки получают там дома первыми!']],
+ [/рыб/i,()=>['На набережной у реки клюёт отлично 🎣 С удочкой из ТЦ ловится больше']],
+ [/парк|горк|аттракц|колесо/i,()=>['Горки и башня в луна-парке — огонь 🎢','В парке колесо обозрения и карусели, пошли! 🎡']],
+ [/кино|фильм/i,()=>['В кинотеатре 4 фильма 🍿 С девушкой даже веселее 💑']],
+ [/спорт|бокс|борьб|качал/i,()=>['Записывайся в секцию бокса или борьбы и тренируйся каждый день 🥊']],
+ [/подар/i,()=>['Подарки дарят в ТЦ или через ✉️ у друзей 🎁']],
+ [/спасиб|благодар|рахмат/i,()=>['Обращайся! 🙌','Всегда рад 😊']],
+ [/пока|до\s*свид|бб|ушёл|ушел/i,()=>['Пока! Заходи ещё 👋','До встречи в городе! 😊']],
+ [/\?$/,()=>['Хороший вопрос 🤔 Жми ❓ — там подсказки','Не знаю точно 😅 Спроси живых игроков в чате']]];
+let BLAST=0;
+function botReply(t){const nb=BOTS.filter(b=>b.g&&b.g.position.distanceTo(ME.position)<45);if(!nb.length||Date.now()-BLAST<6000)return;
+ const r=BR.find(x=>x[0].test(t.trim()));if(!r)return;BLAST=Date.now();
+ nb.sort((a,b)=>a.g.position.distanceTo(ME.position)-b.g.position.distanceTo(ME.position));const b=nb[0],L=r[1]();const txt=L[Math.floor(Math.random()*L.length)];
+ setTimeout(()=>{say(b.g,txt);logChat(b.n,txt);hplay(b.g,'Victory',{once:true})},1600+Math.random()*1400)}
+setInterval(()=>{if(Math.random()<.65||Date.now()-BLAST<30000)return;const vb=BOTS.filter(b=>b.g&&b.g.position.distanceTo(ME.position)<60);if(!vb.length)return;const b=vb[Math.floor(Math.random()*vb.length)];const t=['Всем привет! 👋','Кто в луна-парк? 🎢','Сегодня отличный день ☀️','Иду на смену в бургерную 🍔','Обожаю этот город ❤️','Кто на рыбалку? 🎣'][Math.floor(Math.random()*6)];say(b.g,t);logChat(b.n,t)},45000);
 setInterval(()=>{if(!document.hidden)sendPos()},4000);setTimeout(sendPos,800);
 addEventListener('message',e=>{const d=e.data||{};if(d.t!=='pl')return;document.getElementById('onl').innerHTML=`🟢 <b>${d.city+BOTS.filter(b=>b.g).length}</b> рядом · ${d.online} онлайн`;if(d.pl.length)MET=true;const seen=new Set();
  if(d.chat)for(const c of d.chat.slice().reverse())if(c.n!==myNick&&!CLOG.some(x=>x.n===c.n&&x.t===c.t))logChat(c.n,c.t);
