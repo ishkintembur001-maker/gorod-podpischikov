@@ -4,7 +4,7 @@ import { makeHero, walk, play, tickHeroes, dispose } from './hero.js';
 const P = parent, $ = id => document.getElementById(id);
 const ME = () => P.ME, LIFE = () => P.ME && P.ME.life;
 let CAT = null;
-const HW = 12, HD = 8, WH = 4.2; // половина ширины/глубины дома, высота стен
+const HW = 16, HD = 10, WH = 4.2; // половина ширины/глубины дома, высота стен
 
 // ---------- сцена ----------
 const R = new THREE.WebGLRenderer({ canvas: $('gl'), antialias: true });
@@ -27,45 +27,55 @@ function C(rt, rb, h, c, x, y, z, p, seg = 20, o) { const m = new THREE.Mesh(new
 const house = new THREE.Group(); scene.add(house);
 let floorM, wallM;
 function tex(fn, w = 256, h = 256) { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t }
+// планировка: 6 комнат, перегородки с дверными проёмами
+const X1 = -HW / 3 * 1, X2 = HW / 3 * 1, XA = -HW + (HW * 2) / 3, XB = -HW + (HW * 4) / 3; // XA=-5.33, XB=5.33
+const WALLS = [ // [x0,z0,x1,z1,высокая]
+  [XA, -HD, XA, -6.3, 1], [XA, -3.7, XA, 0, 1], [XB, -HD, XB, -6.3, 1], [XB, -3.7, XB, 0, 1],
+  [XA, 0, XA, 3.7, 0], [XA, 6.3, XA, HD, 0], [XB, 0, XB, 3.7, 0], [XB, 6.3, XB, HD, 0],
+  [-HW, 0, -1.3, 0, 1], [1.3, 0, 9.4, 0, 1], [12, 0, HW, 0, 1]];
+const DOORS = [[XA, -5, 'z'], [XB, -5, 'z'], [0, 0, 'x'], [10.7, 0, 'x']];
+const ROOMS = [['Кухня', -10.7, -5], ['Гостиная', 0, -5], ['Спальня', 10.7, -5], ['Ванная', -10.7, 5], ['Прихожая', 0, 5], ['Кабинет', 10.7, 5]];
+let DOORM = [];
 function buildHouse() {
-  house.clear();
+  house.clear(); DOORM = [];
   const L = LIFE();
-  // пол: доски в жилых комнатах, плитка в ванной
   const wood = tex((x, w, h) => { x.fillStyle = L.floor; x.fillRect(0, 0, w, h); for (let i = 0; i < 8; i++) { x.fillStyle = `rgba(0,0,0,${.05 + (i % 3) * .03})`; x.fillRect(0, i * 32, w, 2); x.fillStyle = `rgba(255,255,255,${.03 * (i % 2)})`; x.fillRect((i * 97) % w, i * 32 + 2, 90, 30) } });
-  wood.wrapS = wood.wrapT = THREE.RepeatWrapping; wood.repeat.set(4, 3);
+  wood.wrapS = wood.wrapT = THREE.RepeatWrapping; wood.repeat.set(5, 3);
   floorM = mat('#ffffff', { map: wood, roughness: .6 });
   const fl = new THREE.Mesh(new THREE.BoxGeometry(HW * 2, .3, HD * 2), floorM); fl.position.y = -.15; fl.receiveShadow = true; fl.name = 'floor'; house.add(fl);
   const tile = tex((x, w, h) => { x.fillStyle = '#e9f3f7'; x.fillRect(0, 0, w, h); x.strokeStyle = '#b9cdd6'; x.lineWidth = 4; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, h); x.moveTo(0, i * 64); x.lineTo(w, i * 64); x.stroke() } });
-  tile.wrapS = tile.wrapT = THREE.RepeatWrapping; tile.repeat.set(3, 2);
-  const bt = new THREE.Mesh(new THREE.PlaneGeometry(HW - .3, HD - .3), mat('#fff', { map: tile, roughness: .3 })); bt.rotation.x = -Math.PI / 2; bt.position.set(HW / 2, .02, HD / 2); bt.receiveShadow = true; house.add(bt);
+  tile.wrapS = tile.wrapT = THREE.RepeatWrapping; tile.repeat.set(3, 3);
+  const bt = new THREE.Mesh(new THREE.PlaneGeometry(XA + HW - .3, HD - .3), mat('#fff', { map: tile, roughness: .3 })); bt.rotation.x = -Math.PI / 2; bt.position.set((-HW + XA) / 2, .02, HD / 2); bt.receiveShadow = true; house.add(bt);
+  const chk = tex((x, w, h) => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = (i + j) % 2 ? '#f2efe6' : '#3a3a4a'; x.fillRect(i * 32, j * 32, 32, 32) } }); chk.wrapS = chk.wrapT = THREE.RepeatWrapping; chk.repeat.set(3, 2.5);
+  const kt = new THREE.Mesh(new THREE.PlaneGeometry(XA + HW - .3, HD - .3), mat('#fff', { map: chk, roughness: .35 })); kt.rotation.x = -Math.PI / 2; kt.position.set((-HW + XA) / 2, .02, -HD / 2); kt.receiveShadow = true; house.add(kt);
+  const mat2 = tex((x, w, h) => { x.fillStyle = '#7a3a2a'; x.fillRect(0, 0, w, h); x.fillStyle = '#c9a24e'; x.font = 'bold 40px sans-serif'; x.textAlign = 'center'; x.fillText('ДОБРО ПОЖАЛОВАТЬ', w / 2, 80) }, 512, 128);
+  const dm = new THREE.Mesh(new THREE.PlaneGeometry(3.4, .9), new THREE.MeshStandardMaterial({ map: mat2 })); dm.rotation.x = -Math.PI / 2; dm.position.set(0, .03, HD - .8); house.add(dm);
   wallM = mat(L.wall, { roughness: .9 });
   const trim = mat('#ffffff', { roughness: .5 });
-  // задние стены — высокие, передние — низкие (как в Симс)
   B(HW * 2 + .4, WH, .3, wallM, 0, WH / 2, -HD - .15, house);
   B(.3, WH, HD * 2 + .3, wallM, -HW - .15, WH / 2, 0, house);
-  B(HW * 2 + .4, .7, .3, wallM, 0, .35, HD + .15, house);
+  B(HW * 2 + .4, .7, .3, wallM, -HW / 2 - .7, .35, HD + .15, house); B(HW - 1.3, .7, .3, wallM, HW / 2 + .65, .35, HD + .15, house);
   B(.3, .7, HD * 2 + .3, wallM, HW + .15, .35, 0, house);
-  for (const z of [-HD, HD]) B(HW * 2 + .4, .18, .34, trim, 0, z < 0 ? WH : .75, z + (z < 0 ? -.15 : .15), house);
-  // внутренние перегородки с проёмами
-  B(.25, WH * .78, HD - 2.6, wallM, 0, WH * .39, -HD + (HD - 2.6) / 2, house); B(.25, WH * .78, 1.2, wallM, 0, WH * .39, -.6, house);
-  B(.25, 1.4, HD - 2.6, wallM, 0, .7, HD - (HD - 2.6) / 2, house);
-  B(HW - 3, WH * .78, .25, wallM, -HW + (HW - 3) / 2, WH * .39, 0, house);
-  B(HW - 3, 1.4, .25, wallM, HW - (HW - 3) / 2, .7, 0, house);
-  // окна на задней стене: за ними — Город подписчиков
+  B(HW * 2 + .4, .18, .34, trim, 0, WH, -HD - .15, house);
+  for (const [x0, z0, x1, z1, hi] of WALLS) { const h = hi ? WH * .8 : 1.4, len = Math.hypot(x1 - x0, z1 - z0); B(x0 === x1 ? .25 : len, h, x0 === x1 ? len : .25, wallM, (x0 + x1) / 2, h / 2, (z0 + z1) / 2, house); B(x0 === x1 ? .3 : len, .12, x0 === x1 ? len : .3, trim, (x0 + x1) / 2, h + .06, (z0 + z1) / 2, house) }
+  // двери: створка на петлях открывается, когда жилец рядом
+  const doorM = mat('#8a5a3a', { roughness: .55 });
+  for (const [dx, dz, ax] of DOORS) { const piv = new THREE.Group(); const w = 2.5; if (ax === 'z') piv.position.set(dx, 0, dz - w / 2); else piv.position.set(dx - w / 2, 0, dz); house.add(piv);
+    const leaf = B(ax === 'z' ? .12 : w, 3.2, ax === 'z' ? w : .12, doorM, ax === 'z' ? 0 : w / 2, 1.6, ax === 'z' ? w / 2 : 0, piv); B(ax === 'z' ? .2 : .18, .18, ax === 'z' ? .18 : .2, mat('#ffc65c', { metalness: .8, roughness: .3 }), ax === 'z' ? .1 : w - .3, 1.5, ax === 'z' ? w - .3 : .1, piv);
+    for (const s2 of [0, w]) B(ax === 'z' ? .3 : .15, 3.4, ax === 'z' ? .15 : .3, trim, ax === 'z' ? 0 : s2, 1.7, ax === 'z' ? s2 : 0, piv);
+    DOORM.push({ piv, cx: dx, cz: dz, ax, a: 0 }) }
   const view = tex((x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, NIGHT ? '#0d0a2e' : '#7cc4ff'); g.addColorStop(1, NIGHT ? '#3a2a6a' : '#d8efff'); x.fillStyle = g; x.fillRect(0, 0, w, h); let X = 0; while (X < w) { const bw = 18 + Math.random() * 30, bh = 40 + Math.random() * 110; x.fillStyle = NIGHT ? '#151033' : '#8aa0c8'; x.fillRect(X, h - bh, bw, bh); x.fillStyle = '#ffc65c'; for (let yy = h - bh + 8; yy < h - 6; yy += 14) for (let xx = X + 4; xx < X + bw - 6; xx += 10) if (Math.random() < (NIGHT ? .45 : .12)) x.fillRect(xx, yy, 5, 7); X += bw + 4 } }, 256, 160);
-  for (const x of [-7, 6]) { const fr = B(4.2, 2.6, .2, trim, x, 2.4, -HD + .05, house); const gl = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 2.2), new THREE.MeshBasicMaterial({ map: view, toneMapped: false })); gl.position.set(x, 2.4, -HD + .17); house.add(gl); B(.12, 2.2, .1, trim, x, 2.4, -HD + .2, house) }
-  // фото-рамка с ником и постер города
+  for (const x of [-10.7, 6.6]) { B(4.2, 2.6, .2, trim, x, 2.4, -HD + .05, house); const gl = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 2.2), new THREE.MeshBasicMaterial({ map: view, toneMapped: false })); gl.position.set(x, 2.4, -HD + .17); house.add(gl); B(.12, 2.2, .1, trim, x, 2.4, -HD + .2, house) }
   const me = ME();
   const card = tex((x, w, h) => { x.fillStyle = '#2b2266'; x.fillRect(0, 0, w, h); x.fillStyle = '#ffc65c'; x.font = 'bold 30px sans-serif'; x.textAlign = 'center'; x.fillText('@' + (me && me.nick || 'житель'), w / 2, 70); x.fillStyle = '#e9e4ff'; x.font = '22px sans-serif'; x.fillText('мой дом в Городе', w / 2, 112); x.fillText('подписчиков', w / 2, 140); x.font = '60px serif'; x.fillText('🏡', w / 2, 220) }, 256, 256);
   const fc = B(1.9, 1.9, .12, '#7a4a2a', -HW + .1, 2.6, -2.2, house); fc.rotation.y = Math.PI / 2;
   const fp = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), new THREE.MeshBasicMaterial({ map: card })); fp.position.set(-HW + .2, 2.6, -2.2); fp.rotation.y = Math.PI / 2; house.add(fp);
   const post = tex((x, w, h) => { x.fillStyle = '#ff6b4a'; x.fillRect(0, 0, w, h); x.fillStyle = '#fff'; x.font = 'bold 34px sans-serif'; x.textAlign = 'center'; x.fillText('ГОРОД', w / 2, 70); x.fillText('ПОДПИСЧИКОВ', w / 2, 110); x.font = '22px sans-serif'; x.fillText('@gorod.podpischikov001', w / 2, 230); x.font = '70px serif'; x.fillText('🏙', w / 2, 190) }, 256, 256);
-  const pp = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshStandardMaterial({ map: post })); pp.position.set(-HW + .2, 2.5, 4); pp.rotation.y = Math.PI / 2; house.add(pp);
-  // подписи комнат на полу
-  for (const [t, x, z] of [['Кухня', -6, -1.2], ['Спальня', 6, -1.2], ['Гостиная', -6, 1.2], ['Ванная', 6, 1.2]]) { const s = tex((c, w, h) => { c.font = 'bold 44px sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(43,34,102,.35)'; c.fillText(t, w / 2, 60) }, 256, 80); const m = new THREE.Mesh(new THREE.PlaneGeometry(4, 1.25), new THREE.MeshBasicMaterial({ map: s, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, .03, z); house.add(m) }
-  // уютный свет
-  for (const [x, z] of [[-6, -4], [6, -4], [-6, 4], [6, 4]]) { const l = new THREE.PointLight('#ffd9a0', NIGHT ? 22 : 6, 14, 1.6); l.position.set(x, 3.6, z); house.add(l) }
+  const pp = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshStandardMaterial({ map: post })); pp.position.set(-2.2, 2.6, -HD + .2); house.add(pp);
+  for (const [t, x, z] of ROOMS) { const s = tex((c, w, h) => { c.font = 'bold 44px sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(43,34,102,.3)'; c.fillText(t, w / 2, 60) }, 256, 80); const m = new THREE.Mesh(new THREE.PlaneGeometry(4, 1.25), new THREE.MeshBasicMaterial({ map: s, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, .04, z + (z < 0 ? 3.6 : -3.2)); house.add(m) }
+  for (const [, x, z] of ROOMS) { const l = new THREE.PointLight('#ffd9a0', NIGHT ? 22 : 6, 15, 1.6); l.position.set(x, 3.6, z); house.add(l) }
 }
+function doorsTick(dt) { for (const d of DOORM) { const near = Math.hypot(hero.position.x - d.cx, hero.position.z - d.cz) < 2.8; d.a += ((near ? 1.45 : 0) - d.a) * Math.min(1, dt * 6); d.piv.rotation.y = d.ax === 'z' ? -d.a : d.a } }
 
 // ---------- мебель ----------
 const FB = {
@@ -92,6 +102,14 @@ const FB = {
   chef: g => { B(4.4, 1.8, 1.4, '#2b2266', 0, .9, 0, g); B(4.5, .12, 1.5, '#e9e4ff', 0, 1.86, 0, g, { roughness: .2 }); for (let i = 0; i < 4; i++) C(.25, .25, .04, '#333', -1.4 + i * .9, 1.95, 0, g); B(4.4, .8, .7, '#2b2266', 0, 3.4, -.35, g); return 1.4 },
   piano: g => { B(2.6, 1, 2, '#111', 0, 1.3, 0, g, { roughness: .15 }); B(2.4, .1, .5, '#fff', 0, 1.35, 1.1, g); for (const [x, z] of [[-1.1, -.8], [1.1, -.8], [0, .8]]) C(.08, .08, .9, '#111', x, .45, z, g); B(1.2, .6, .5, '#111', 0, .3, 2, g); return 2 },
   fireplace: g => { B(3, 3, 1, '#9a4a3a', 0, 1.5, 0, g); B(1.8, 1.4, .3, '#1a0a0a', 0, .8, .4, g); const f = new THREE.Mesh(new THREE.ConeGeometry(.5, 1, 8), new THREE.MeshBasicMaterial({ color: '#ff8a2a' })); f.position.set(0, .7, .45); f.name = 'flame'; g.add(f); const l = new THREE.PointLight('#ff8a3a', 14, 10); l.position.set(0, 1.2, 1.2); l.name = 'fire'; g.add(l); return 1 },
+  arcade: g => { B(1.6, 3.4, 1.2, '#2b2266', 0, 1.7, 0, g); const s = new THREE.Mesh(new THREE.PlaneGeometry(1.2, .9), new THREE.MeshBasicMaterial({ color: '#7dff8a' })); s.position.set(0, 2.5, .61); s.name = 'screen'; g.add(s); B(1.5, .2, .6, '#ff6b4a', 0, 1.7, .7, g); for (const x of [-.3, .3]) { C(.05, .05, .25, '#111', x, 1.9, .75, g, 6); const b = new THREE.Mesh(new THREE.SphereGeometry(.09, 8, 6), mat(x < 0 ? '#e8433a' : '#ffc65c')); b.position.set(x, 2.03, .75); g.add(b) } B(1.7, .3, 1.3, '#ffc65c', 0, 3.5, 0, g, { emissive: '#aa7a00', emissiveIntensity: .5 }); return 1.2 },
+  throne: g => { const gm = mat('#ffc65c', { metalness: .85, roughness: .25, emissive: '#5a3a00', emissiveIntensity: .3 }); B(1.8, .6, 1.6, gm, 0, .3, 0, g); B(1.6, .25, 1.4, '#c0392b', 0, .72, 0, g); B(1.8, 3.4, .3, gm, 0, 1.9, -.7, g); B(1.5, 2.6, .1, '#c0392b', 0, 2, -.53, g); for (const x of [-.9, .9]) B(.25, 1, 1.4, gm, x, 1, 0, g); for (let i = 0; i < 3; i++) { const sp = new THREE.Mesh(new THREE.ConeGeometry(.15, .5, 5), gm); sp.position.set(-.6 + i * .6, 3.8, -.7); g.add(sp) } return 1.6 },
+  neon: g => { const me = ME(); const t = tex((x, w, h) => { x.fillStyle = 'rgba(0,0,0,0)'; x.clearRect(0, 0, w, h); x.font = 'bold 64px Unbounded,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#ff4fd8'; x.shadowBlur = 24; x.fillStyle = '#ffd1f6'; x.fillText('@' + ((me && me.nick) || 'житель'), w / 2, h / 2) }, 1024, 160); const m = new THREE.Mesh(new THREE.PlaneGeometry(5, .8), new THREE.MeshBasicMaterial({ map: t, transparent: true, toneMapped: false })); m.position.set(0, 3, .02); g.add(m); const l = new THREE.PointLight('#ff4fd8', 8, 7); l.position.set(0, 3, 1); g.add(l); return 0 },
+  goldtv: g => { const gm = mat('#ffc65c', { metalness: .85, roughness: .25 }); B(5, .8, 1.1, gm, 0, .4, 0, g); B(4.8, 2.7, .14, gm, 0, 2.3, 0, g); const s = new THREE.Mesh(new THREE.PlaneGeometry(4.5, 2.4), new THREE.MeshBasicMaterial({ color: '#4fc3ff' })); s.position.set(0, 2.3, .08); s.name = 'screen'; g.add(s); return 1.1 },
+  sauna: g => { const w = mat('#c08a5a', { roughness: .8 }); B(3, 3.4, .15, w, 0, 1.7, -1.4, g); B(.15, 3.4, 3, w, -1.45, 1.7, 0, g); B(.15, 3.4, 3, w, 1.45, 1.7, 0, g); B(3, .15, 3, w, 0, 3.4, 0, g); B(2.6, .2, 1, w, 0, .9, -.8, g); const st = new THREE.Mesh(new THREE.SphereGeometry(.4, 8, 6), mat('#7a7a7a')); st.position.set(1, .4, .8); g.add(st); const l = new THREE.PointLight('#ff9a4a', 5, 5); l.position.set(0, 2.5, 0); g.add(l); return 3 },
+  wardrobe: g => { B(2.6, 3.8, 1.1, '#7a4a2a', 0, 1.9, 0, g); B(.05, 3.4, .02, '#4a2a14', 0, 1.9, .56, g); for (const x of [-.25, .25]) B(.08, .5, .08, '#ffc65c', x, 2, .6, g); return 1.1 },
+  desk: g => { B(2.6, .12, 1.3, '#a0703a', 0, 1.5, 0, g); for (const [x, z] of [[-1.2, -.55], [1.2, -.55], [-1.2, .55], [1.2, .55]]) B(.1, 1.5, .1, '#5a3a24', x, .75, z, g); B(.8, .1, .8, '#2b2266', 0, .9, 1.1, g); B(.8, 1, .1, '#2b2266', 0, 1.4, 1.5, g); const lp = C(.18, .25, .5, '#ffc65c', -.9, 1.85, -.3, g, 10, { emissive: '#aa7a00' }); return 1.3 },
+  dining: g => { B(3.6, 2, .9, '#3a3a5a', 0, 1, 0, g); B(3.8, .12, 1.1, '#e9e4ff', 0, 2.06, 0, g, { roughness: .2 }); for (const x of [-1.2, 0, 1.2]) { C(.3, .3, .1, '#c0392b', x, 1.4, .95, g, 12); C(.05, .05, 1.35, '#888', x, .7, .95, g, 6) } return .9 },
 };
 const furn = new THREE.Group(); scene.add(furn);
 const OBJ = new Map();
@@ -107,7 +125,7 @@ function addObj(k, x, z, r) {
 function spot(g) { const d = (g.userData.d || 1) / 2 + 1.1, r = g.rotation.y; return new THREE.Vector3(g.position.x + Math.sin(r) * d, 0, g.position.z + Math.cos(r) * d) }
 
 // ---------- житель ----------
-let hero = makeHero(LIFE() && LIFE().look); hero.position.set(-3, 0, 4); hero.rotation.order = 'YXZ'; scene.add(hero);
+let hero = makeHero(LIFE() && LIFE().look); hero.position.set(0, 0, 7); hero.rotation.order = 'YXZ'; scene.add(hero);
 function rebuildHero(look) { const p = hero.position.clone(), r = hero.rotation.y; scene.remove(hero); dispose(hero); hero = makeHero(look); hero.rotation.order = 'YXZ'; hero.position.copy(p); hero.rotation.y = r; scene.add(hero) }
 let doing = null, bubble = null, path = [], busy = false;
 hero.rotation.order = 'YXZ';
@@ -115,13 +133,12 @@ function say(e) { if (bubble) hero.remove(bubble); const c = document.createElem
 
 
 // ---------- проходы: стены и мебель не проходим ----------
-const CS = .5, NX = 48, NZ = 32; let GRID = new Uint8Array(NX * NZ);
+const CS = .5, NX = 64, NZ = 40; let GRID = new Uint8Array(NX * NZ);
 const ci = (x, z) => [Math.floor((x + HW) / CS), Math.floor((z + HD) / CS)];
 const cc = (i, j) => new THREE.Vector3(-HW + (i + .5) * CS, 0, -HD + (j + .5) * CS);
 function wallBlocked(x, z) {
   if (Math.abs(x) > HW - .7 || Math.abs(z) > HD - .7) return true;
-  if (Math.abs(x) < .55 && ((z < -2.6) || (z > -1.2 && z < .45) || z > 2.6)) return true; // перегородка x=0, проёмы z -2.6..-1.2 и 0..2.6
-  if (Math.abs(z) < .55 && ((x < -3) || x > 3)) return true; // перегородка z=0, проёмы x -3..0 и 0..3
+  for (const [x0, z0, x1, z1] of WALLS) { if (x0 === x1) { if (Math.abs(x - x0) < .55 && z > Math.min(z0, z1) - .3 && z < Math.max(z0, z1) + .3) return true } else if (Math.abs(z - z0) < .55 && x > Math.min(x0, x1) - .3 && x < Math.max(x0, x1) + .3) return true }
   return false;
 }
 function rebuildGrid() {
@@ -183,6 +200,12 @@ function plan(g) {
     case 'jacuzzi': return { app: F(0, 3), at: F(0, .3), y: .55 - seatOf() + .1, rot: r + Math.PI, pose: 'sit', anim: 'bath' };
     case 'shower': return { app: F(-.55, 2.3), via: F(-.55, 1.0), at: F(-.3, -.1), y: .2, rot: r, pose: 'stand', anim: 'shower' };
     case 'fridge': case 'stove': case 'chef': return { app: F(0, (g.userData.d || 1.4) / 2 + 1.1), at: F(0, (g.userData.d || 1.4) / 2 + 1.1), y: 0, rot: r + Math.PI, pose: 'stand', anim: k === 'fridge' ? 'fridge' : 'cook', then: OBJ.get('table') ? 'table' : null, prop: k === 'fridge' ? '🥪' : '🍲' };
+    case 'throne': return { ...seat(0, .1, .85, 0), anim: 'relax' };
+    case 'goldtv': if (sofa) { const sp = plan(sofa); return { ...sp, face: g.position, anim: 'watch' } } return { app: F(0, 4), at: F(0, 3.2), y: -seatOf() + .55, rot: r + Math.PI, pose: 'sit', anim: 'watch' };
+    case 'arcade': return { app: F(0, 1.9), at: F(0, 1.7), y: 0, rot: r + Math.PI, pose: 'stand', anim: 'game' };
+    case 'sauna': return { app: F(0, 2.6), via: F(0, 1.2), at: F(0, -.6), y: .95 - seatOf() + .05, rot: r, pose: 'sit', anim: 'relax' };
+    case 'desk': return { app: F(0, 2.4), at: F(0, 1.15), y: .9 - seatOf() + .05, rot: r + Math.PI, pose: 'sit', anim: 'type' };
+    case 'dining': return { app: F(0, 1.9), at: F(0, 1.75), y: 0, rot: r + Math.PI, pose: 'stand', anim: 'eat', prop: '🥤' };
     case 'phone': return { app: F(.9, .9), at: F(.9, .9), y: 0, rot: r - Math.PI / 4 + Math.PI, pose: 'stand', anim: 'phone', prop: '📱' };
     case 'guitar': return { app: F(.2, 1.6), at: F(.2, 1.4), y: -seatOf() + .55, rot: r, pose: 'sit', anim: 'guitar', prop: '🎸' };
     case 'books': return { app: F(0, 1.7), at: F(0, 1.6), y: 0, rot: r, pose: 'stand', anim: 'read', prop: '📖' };
@@ -220,7 +243,7 @@ function hud() {
 
 // ---------- камера и ввод ----------
 const FK = () => dist <= 28 ? .95 : (innerWidth < innerHeight ? .5 : .2);
-let ang = .5, dist = innerWidth < innerHeight ? 48 : 38, BUILD = false, sel = null, drag = false;
+let ang = .5, dist = innerWidth < innerHeight ? 58 : 44, BUILD = false, sel = null, drag = false;
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function setPtr(e) { ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, cam) }
 let sx = 0, sy = 0, lx = null;
@@ -239,19 +262,20 @@ addEventListener('pointerup', e => {
   $('om').classList.add('hidden');
   const p = new THREE.Vector3(); if (ray.ray.intersectPlane(ground, p) && !busy) walkTo(new THREE.Vector3(Math.max(-HW + 1, Math.min(HW - 1, p.x)), 0, Math.max(-HD + 1, Math.min(HD - 1, p.z))));
 });
-$('gl').addEventListener('wheel', e => dist = Math.max(18, Math.min(52, dist + e.deltaY * .03)));
-$('zi').onclick = () => dist = Math.max(18, dist - 5); $('zo').onclick = () => dist = Math.min(52, dist + 5);
+$('gl').addEventListener('wheel', e => dist = Math.max(18, Math.min(66, dist + e.deltaY * .03)));
+$('zi').onclick = () => dist = Math.max(18, dist - 5); $('zo').onclick = () => dist = Math.min(66, dist + 5);
 
 function menu(g, x, y) {
   const k = g.userData.k, f = CAT && CAT.furn[k]; if (!f) return;
   const eff = Object.entries(f[4]).map(([n, v]) => `${NI[n][0]} +${v}`).join(' ');
   const cd = (LIFE().cd || {})[k], left = cd ? 600 - (Date.now() / 1000 - cd) : 0;
+  if (k === 'wardrobe') { $('om').innerHTML = `<b>${f[0]} ${f[1]}</b><small>Здесь твоя одежда и аксессуары</small><button id="use">Открыть гардероб</button>`; $('om').style.left = Math.min(innerWidth - 220, Math.max(10, x - 100)) + 'px'; $('om').style.top = Math.max(70, y - 130) + 'px'; $('om').classList.remove('hidden'); $('use').onclick = () => { $('om').classList.add('hidden'); $('lookb').click() }; return }
   $('om').innerHTML = `<b>${f[0]} ${f[1]}</b>${eff ? `<small>${eff}</small><button id="use" ${left > 0 ? 'disabled' : ''}>${left > 0 ? 'Через ' + Math.ceil(left / 60) + ' мин' : USE[k] || 'Использовать'}</button>` : '<small>Украшение дома</small>'}`;
   $('om').style.left = Math.min(innerWidth - 220, Math.max(10, x - 100)) + 'px'; $('om').style.top = Math.max(70, y - 130) + 'px'; $('om').classList.remove('hidden');
   if ($('use')) $('use').onclick = () => act(g);
 }
-const USE = { fridge: 'Перекусить', stove: 'Приготовить ужин', chef: 'Готовить как шеф', table: 'Поесть за столом', bed: 'Поспать', kingbed: 'Спать как король', sofa: 'Отдохнуть', shower: 'Принять душ', bath: 'Полежать в ванне', jacuzzi: 'В джакузи', tv: 'Смотреть ТВ', cinema: 'Смотреть кино', pc: 'Листать Instagram', console: 'Играть', guitar: 'Сыграть', piano: 'Сыграть на рояле', books: 'Почитать', aquarium: 'Кормить рыбок', fireplace: 'Греться у камина', phone: 'Позвонить подписчикам' };
-const EMO = { fridge: '🍕', stove: '🍳', chef: '🥘', table: '🍽', bed: '💤', kingbed: '👑', sofa: '🛋', shower: '🫧', bath: '🛁', jacuzzi: '♨️', tv: '📺', cinema: '🍿', pc: '📱', console: '🎮', guitar: '🎸', piano: '🎹', books: '📖', aquarium: '🐠', fireplace: '🔥', phone: '📞' };
+const USE = { arcade: 'Играть в автомат', throne: 'Сесть на трон', goldtv: 'Смотреть золотой ТВ', sauna: 'Попариться', desk: 'Поработать', dining: 'Выпить коктейль', fridge: 'Перекусить', stove: 'Приготовить ужин', chef: 'Готовить как шеф', table: 'Поесть за столом', bed: 'Поспать', kingbed: 'Спать как король', sofa: 'Отдохнуть', shower: 'Принять душ', bath: 'Полежать в ванне', jacuzzi: 'В джакузи', tv: 'Смотреть ТВ', cinema: 'Смотреть кино', pc: 'Листать Instagram', console: 'Играть', guitar: 'Сыграть', piano: 'Сыграть на рояле', books: 'Почитать', aquarium: 'Кормить рыбок', fireplace: 'Греться у камина', phone: 'Позвонить подписчикам' };
+const EMO = { arcade: '🕹', throne: '👑', goldtv: '📺', sauna: '🧖', desk: '✍️', dining: '🥤', fridge: '🍕', stove: '🍳', chef: '🥘', table: '🍽', bed: '💤', kingbed: '👑', sofa: '🛋', shower: '🫧', bath: '🛁', jacuzzi: '♨️', tv: '📺', cinema: '🍿', pc: '📱', console: '🎮', guitar: '🎸', piano: '🎹', books: '📖', aquarium: '🐠', fireplace: '🔥', phone: '📞' };
 // ---------- ремонт ----------
 function select(g) { if (sel) sel.traverse(o => o.material && o.material.emissive && o.userData.em0 !== undefined && o.material.emissive.setHex(o.userData.em0)); sel = g; $('bsel').classList.toggle('hidden', !g); if (g) { g.traverse(o => { if (o.material && o.material.emissive) { o.userData.em0 = o.material.emissive.getHex(); o.material = o.material.clone(); o.material.emissive.setHex(0x5a3a00) } }); $('bname').textContent = CAT.furn[g.userData.k][0] + ' ' + CAT.furn[g.userData.k][1] } }
 $('rot').onclick = () => sel && (sel.rotation.y = (sel.rotation.y + Math.PI / 2) % (Math.PI * 2));
@@ -259,11 +283,11 @@ $('stow').onclick = () => { if (!sel) return; OBJ.delete(sel.userData.k); furn.r
 function layout() { return [...OBJ.values()].map(g => [g.userData.k, g.position.x, g.position.z, +g.rotation.y.toFixed(2)]) }
 $('build').onclick = () => { BUILD = true; document.body.classList.add('bm'); $('om').classList.add('hidden'); drawer() };
 $('bdone').onclick = async () => { BUILD = false; select(null); rebuildGrid(); document.body.classList.remove('bm'); await P.call('life/save', { furn: layout(), wall: '#' + wallM.color.getHexString(), floor: LIFE().floor }); };
-const WALLS = ['#f3e3c8', '#e9e4ff', '#cfe8d8', '#ffd9cf', '#bfd7ff', '#3b3170', '#ffffff', '#f6e7a8'], FLOORS = ['#b98a5a', '#8a5a3a', '#d8b98a', '#6a6a7a', '#c9a0a0', '#e0d0b0'];
+const WALLC = ['#f3e3c8', '#e9e4ff', '#cfe8d8', '#ffd9cf', '#bfd7ff', '#3b3170', '#ffffff', '#f6e7a8'], FLOORS = ['#b98a5a', '#8a5a3a', '#d8b98a', '#6a6a7a', '#c9a0a0', '#e0d0b0'];
 function drawer() {
   const L = LIFE(), placed = new Set(OBJ.keys()), F = CAT.furn;
   const own = L.own.filter(k => !placed.has(k)), buy = Object.keys(F).filter(k => !L.own.includes(k));
-  $('dr').innerHTML = `<div class="sw"><span>Стены</span>${WALLS.map(c => `<i data-w="${c}" style="background:${c}"></i>`).join('')}</div><div class="sw"><span>Пол</span>${FLOORS.map(c => `<i data-f="${c}" style="background:${c}"></i>`).join('')}</div>` +
+  $('dr').innerHTML = `<div class="sw"><span>Стены</span>${WALLC.map(c => `<i data-w="${c}" style="background:${c}"></i>`).join('')}</div><div class="sw"><span>Пол</span>${FLOORS.map(c => `<i data-f="${c}" style="background:${c}"></i>`).join('')}</div>` +
     (own.length ? `<h3>На складе</h3><div class="row">${own.map(k => `<button class="fi" data-p="${k}"><em>${F[k][0]}</em>${F[k][1].split(':')[0]}<b>Поставить</b></button>`).join('')}</div>` : '') +
     `<h3>Купить мебель</h3><div class="row">${buy.map(k => { const f = F[k], eff = Object.entries(f[4]).map(([n, v]) => NI[n][0] + '+' + v).join(' '); return `<button class="fi ${f[3] ? 'st' : ''}" data-b="${k}"><em>${f[0]}</em>${f[1].split(':')[0]}<small>${eff || 'декор'}</small><b>${f[3] ? f[3] + ' ⭐' : f[2].toLocaleString('ru') + ' 🪙'}</b></button>` }).join('')}</div>`;
   document.querySelectorAll('[data-w]').forEach(i => i.onclick = () => { L.wall = i.dataset.w; wallM.color.set(L.wall) });
@@ -273,15 +297,25 @@ function drawer() {
 }
 
 // ---------- образ ----------
-const LN = { g: 'Пол', sk: 'Кожа', hc: 'Цвет волос', hs: 'Причёска', sh: 'Одежда', pa: 'Брюки', ac: 'Аксессуар' };
-const ACN = { '': 'нет', cap: '🧢 кепка', glasses: '👓 очки', crown: '👑 корона (VIP)', headphones: '🎧 наушники', tubeteika: 'тюбетейка' };
-let draft = null;
-$('lookb').onclick = () => {
-  draft = { ...LIFE().look }; const V = CAT.lookv; $('lk').classList.remove('hidden');
-  const draw = () => { $('lkb').innerHTML = Object.keys(LN).map(k => `<div class="lr"><span>${LN[k]}</span><div>${V[k].map(v => k === 'g' ? `<button data-k="g" data-v="${v}" class="${draft.g === v ? 'on' : ''}">${v === 'm' ? 'Парень' : 'Девушка'}</button>` : k === 'hs' ? `<button data-k="hs" data-v="${v}" class="${draft.hs === v ? 'on' : ''}">${['Короткая', 'Длинная', 'Ёжик', 'Хвост', 'Ирокез'][v]}</button>` : k === 'ac' ? `<button data-k="ac" data-v="${v}" class="${draft.ac === v ? 'on' : ''}">${ACN[v]}</button>` : `<i data-k="${k}" data-v="${v}" class="${draft[k] === v ? 'on' : ''}" style="background:${v}"></i>`).join('')}</div></div>`).join('');
-    document.querySelectorAll('#lkb [data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; draft[k] = k === 'hs' ? +b.dataset.v : b.dataset.v; rebuildHero(draft); draw() }) };
-  draw();
-};
+const LN = { g: 'Пол', sk: 'Кожа', hc: 'Цвет волос', hs: 'Причёска', sh: 'Цвет одежды', pa: 'Цвет брюк' };
+const SLOTN = [['body', '🧍 Тело'], ['ot', '👕 Одежда'], ['ac', '🧢 Голова'], ['fc', '🕶 Лицо'], ['bk', '🪽 Спина'], ['au', '✨ Аура']];
+let draft = null, LTAB = 'body';
+function lookDraw() {
+  const V = CAT.lookv, W = CAT.wearc || {}, own = new Set([...((LIFE().wear) || []), ...(CAT.freew || [])]);
+  let h = `<div class="ltabs">${SLOTN.map(([k, n]) => `<button data-lt="${k}" class="${LTAB === k ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  if (LTAB === 'body') h += Object.keys(LN).map(k => `<div class="lr"><span>${LN[k]}</span><div>${V[k].map(v => k === 'g' ? `<button data-k="g" data-v="${v}" class="${draft.g === v ? 'on' : ''}">${v === 'm' ? 'Парень' : 'Девушка'}</button>` : k === 'hs' ? `<button data-k="hs" data-v="${v}" class="${draft.hs === v ? 'on' : ''}">${['Короткая', 'Длинная', 'Ёжик', 'Хвост', 'Ирокез'][v]}</button>` : `<i data-k="${k}" data-v="${v}" class="${draft[k] === v ? 'on' : ''}" style="background:${v}"></i>`).join('')}</div></div>`).join('');
+  else { const items = Object.entries(W).filter(([, w]) => w[2] === LTAB);
+    h += `<div class="wg">${LTAB !== 'ot' ? `<button class="wi ${!draft[LTAB] ? 'on' : ''}" data-w=""><em>🚫</em>Без${LTAB === 'ac' ? ' головного убора' : ''}</button>` : ''}${items.map(([k, w]) => { const o = own.has(k), on = draft[LTAB] === k || (LTAB === 'ot' && !draft.ot && k === 'casual'); return `<button class="wi ${on ? 'on' : ''} ${w[4] ? 'st' : ''}" data-w="${k}"><em>${w[0]}</em>${w[1]}<b>${o ? (on ? 'Надето' : 'Надеть') : w[4] ? w[4] + ' ⭐' : w[3].toLocaleString('ru') + ' 🪙'}</b></button>` }).join('')}</div>`;
+    if (LTAB === 'ot') h += `<p class="hint">Цвет повседневной одежды меняется во вкладке «Тело»</p>` }
+  $('lkb').innerHTML = h;
+  document.querySelectorAll('[data-lt]').forEach(b => b.onclick = () => { LTAB = b.dataset.lt; lookDraw() });
+  document.querySelectorAll('#lkb [data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; draft[k] = k === 'hs' ? +b.dataset.v : b.dataset.v; rebuildHero(draft); lookDraw() });
+  document.querySelectorAll('[data-w]').forEach(b => b.onclick = async () => { const k = b.dataset.w; if (!k) { draft[LTAB] = ''; rebuildHero(draft); lookDraw(); return } const w = W[k];
+    if (own.has(k)) { draft[w[2]] = k === 'casual' ? '' : k; rebuildHero(draft); lookDraw(); return }
+    if (w[4]) { P.buy('w_' + k); return }
+    const j = await P.call('wear/buy', { k }); if (j && j.me) { draft[w[2]] = k; rebuildHero(draft); lookDraw(); P.HAP && P.HAP('medium') } });
+}
+$('lookb').onclick = () => { draft = { ...LIFE().look }; $('lk').classList.remove('hidden'); lookDraw() };
 $('lksave').onclick = async () => { const j = await P.call('life/look', { look: draft }); $('lk').classList.add('hidden'); if (j && j.me) { rebuildHero(LIFE().look); P.postLook && P.postLook() } };
 $('lkx').onclick = () => { $('lk').classList.add('hidden'); rebuildHero(LIFE().look) };
 $('exit').onclick = () => P.closeLife && P.closeLife();
@@ -311,6 +345,7 @@ function loop(now) {
     else U.arms.forEach((a, i) => a.rotation.x = -.6 + Math.sin(t * 3 + i) * .1);
   }
   if (!doing || doing.anim !== 'shower') DROPS.visible = false;
+  doorsTick(dt);
   if (bubble) bubble.position.y = 4.1 + Math.sin(t * 4) * .1;
   hero.userData.ring.material.opacity = .5 + .3 * Math.sin(t * 4);
   for (const g of furn.children) g.traverse(o => { if (o.name === 'screen') o.material.color.setHSL((t * .05 + g.position.x * .01) % 1, .6, .55); if (o.name === 'flame') o.scale.y = .8 + Math.sin(t * 12) * .25; if (o.name === 'fish') o.position.x = Math.sin(t * .8 + o.position.y * 3) * 1; if (o.name === 'water') o.position.y = .95 + Math.sin(t * 3) * .03 });

@@ -29,6 +29,8 @@ body.bm .tools,body.bm .bar #mood{display:none}
 #lkb{overflow:auto;padding:12px}.lr{margin-bottom:10px}.lr>span{display:block;font-size:12px;color:var(--dim);font-weight:800;margin-bottom:5px}.lr div{display:flex;flex-wrap:wrap;gap:6px}
 .lr i{width:30px;height:30px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.2)}.lr i.on{border-color:var(--win)}
 .lr button{border:0;border-radius:11px;padding:7px 10px;font-size:12px;font-weight:800;background:var(--sky);color:var(--moon)}.lr button.on{background:var(--win);color:#3b2300}
+#lk{max-height:62vh}.ltabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;scrollbar-width:none}.ltabs button{flex:0 0 auto;border:0;border-radius:12px;padding:8px 11px;font-weight:900;font-size:13px;background:var(--sky);color:var(--moon)}.ltabs button.on{background:var(--win);color:#3b2300}
+.wg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.wi{border:0;border-radius:14px;background:var(--sky);color:var(--moon);padding:8px 4px;font-size:11px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:92px}.wi em{font-style:normal;font-size:28px}.wi b{color:var(--win);font-size:11px}.wi.on{outline:3px solid var(--mint)}.wi.st{background:linear-gradient(160deg,#4a2a8a,#2b2266);outline:2px solid var(--win)}.wi.st.on{outline:3px solid var(--mint)}.hint{font-size:12px;color:var(--dim);margin:8px 2px 0}
 #lk .ft{display:flex;gap:8px;padding:10px 12px calc(12px + env(safe-area-inset-bottom))}#lk .ft button.n{background:var(--sky2);color:var(--moon)}
 #load{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ink);font-family:Unbounded,sans-serif;font-size:16px;color:var(--win)}#load div{font-size:56px;margin-bottom:8px}
 </style></head><body>
@@ -36,7 +38,7 @@ body.bm .tools,body.bm .bar #mood{display:none}
 <canvas id="gl"></canvas>
 <div class="bar"><div id="needs"></div><div id="mood"></div></div>
 <div class="zm"><button class="tb" id="zi">＋</button><button class="tb" id="zo">－</button></div>
-<div class="tools"><button class="tb x" id="exit">⬅ Меню</button><button class="tb" id="lookb">👕 Образ</button><button class="tb go" id="build">🛠 Ремонт</button></div>
+<div class="tools"><button class="tb x" id="exit">⬅ Меню</button><button class="tb" id="lookb">👕 Гардероб</button><button class="tb go" id="build">🛠 Ремонт</button></div>
 <div id="om" class="hidden"></div>
 <div id="bm"><div id="bsel" class="hidden"><span id="bname"></span><button id="rot">⟳ Повернуть</button><button id="stow">📦 Убрать</button></div><div id="dr"></div><button class="tb go" id="bdone">✓ Готово</button></div>
 <div id="lk" class="hidden"><div id="lkb"></div><div class="ft"><button class="n" id="lkx">Отмена</button><button id="lksave">Сохранить образ</button></div></div>

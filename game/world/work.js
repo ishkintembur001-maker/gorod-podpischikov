@@ -76,7 +76,7 @@ function Hospital() {
   const pts = []; let spawnT = 1.5;
   function spawn() { const bed = beds.find(b => !b.userData.p); if (!bed) return; const need = pick(MEDS); const g = makeHero(rndLook()); g.rotation.order = 'YXZ'; g.position.set(HW - 1.5, 0, HD - 1.5); scene.add(g);
     const max = (rk >= 4 ? 28 : 20) - Math.min(6, (performance.now() - T0) / 15000); const pt = { g, bed, need, state: 'walk', pat: max, max }; bed.userData.p = pt; pts.push(pt);
-    const ring = bubble(need[1] + ' ' + need[2], '#fff', '#1b1446', 3.4); ring.position.y = 4.8; ring.visible = false; g.add(ring); pt.b = ring }
+    const ring = bubble(need[1] + ' ' + need[2], '#fff', '#1b1446', 4.2); ring.position.y = 4.8; ring.visible = false; g.add(ring); pt.b = ring }
   function leave(pt, ok) { pt.state = 'leave'; pt.bed.userData.p = null; pt.g.rotation.x = 0; pt.g.position.set(pt.bed.position.x + 1.8, 0, pt.bed.position.z + 1); pt.g.remove(pt.b); const b = bubble(ok ? '😊 Спасибо!' : '😠 Долго!', ok ? '#5ee6b0' : '#ff6b4a', '#1b1446', 2.6); b.position.y = 4.4; pt.g.add(b); play(pt.g, ok ? 'Victory' : 'Walk', { once: ok }); setTimeout(() => play(pt.g, 'Walk'), ok ? 1200 : 0) }
   // тап
   addEventListener('pointerup', e => { if (!RUN) return; const o = tapObj(e, [...SLOTS, ...beds]); if (o) { o.userData.tap(); return } setRay(e); const p = new THREE.Vector3(); if (ray.ray.intersectPlane(ground, p)) goto(new THREE.Vector3(Math.max(-HW + 1.5, Math.min(HW - 1, p.x)), 0, Math.max(-HD + 5, Math.min(HD - 1, p.z)))) });
@@ -86,6 +86,7 @@ function Hospital() {
   return (t, dt) => {
     if (path) { const d = path.p.clone().sub(me.position); d.y = 0; const L = d.length(); if (L > .15) { me.position.addScaledVector(d.normalize(), Math.min(L, 9 * dt)); me.rotation.y = Math.atan2(d.x, d.z); walk(me, t, true) } else { const cb = path.cb; path = null; walk(me, t, false); cb && cb() } } else if (!busy) walk(me, t, false);
     YT.position.y = 5.4 + Math.sin(t * 4) * .2;
+    { const por = innerWidth < innerHeight; const tp = por ? new THREE.Vector3(me.position.x * .55 + 13, 19, me.position.z * .55) : new THREE.Vector3(me.position.x * .6, 16, me.position.z * .5 + 13); cam.position.lerp(tp, .06); cam.lookAt(por ? me.position.x * .55 - 4 : me.position.x * .6, 0, por ? me.position.z * .55 : me.position.z * .5 + 1) }
     if (RUN && (spawnT -= dt) <= 0) { spawn(); spawnT = Math.max(2.8, 6 - (performance.now() - T0) / 20000) }
     for (let i = pts.length - 1; i >= 0; i--) { const pt = pts[i], g = pt.g;
       if (pt.state === 'walk') { const tg = new THREE.Vector3(pt.bed.position.x + 1.8, 0, pt.bed.position.z + 1); const d = tg.clone().sub(g.position); d.y = 0; if (d.length() > .2) { g.position.addScaledVector(d.normalize(), Math.min(d.length(), 6 * dt)); g.rotation.y = Math.atan2(d.x, d.z); walk(g, t, true) } else { pt.state = 'bed'; play(g, 'Idle'); g.rotation.set(-Math.PI / 2, 0, 0); g.position.set(pt.bed.position.x, 1.3, pt.bed.position.z + 1.75); pt.b.visible = true; pt.b.position.set(0, 2.2, -1.2) } }
@@ -152,14 +153,14 @@ function Football() {
       if (Math.abs(ball.position.z) > FH) { BV.z = -BV.z * .6; ball.position.z = Math.sign(ball.position.z) * FH }
       if (Math.abs(ball.position.x) > FW + .6) { if (Math.abs(ball.position.z) < 3.5 && RUN) goal(ball.position.x > 0 ? 0 : 1); else { BV.x = -BV.x * .5; ball.position.x = Math.sign(ball.position.x) * FW } } }
     scene.traverse(o => { if (o.userData.fan) { if (o.userData.jump > 0) { o.userData.jump -= dt; o.position.y = 3.2 + Math.abs(Math.sin(t * 12 + o.position.x)) * .7 } else o.position.y = 3.2 + Math.abs(Math.sin(t * 2 + o.position.x)) * .1 } });
-    const cx = THREE.MathUtils.clamp(ball.position.x, -FW + 8, FW - 8); cam.position.lerp(new THREE.Vector3(cx, 30, ball.position.z * .5 + 26), .08); cam.lookAt(cx, 0, ball.position.z * .5);
+    const cx = THREE.MathUtils.clamp(ball.position.x, -FW + 5, FW - 5); cam.position.lerp(new THREE.Vector3(cx, 21, ball.position.z * .6 + 18), .08); cam.lookAt(cx, 0, ball.position.z * .6 + 1);
   };
 }
 
 // =================================================================== КАССЫ (парк и ТЦ)
 function Cashier(kind) {
   const rk = RK().r, park = kind === 'park';
-  cam.position.set(7, 10, 15); cam.lookAt(0, 2, 2);
+  if (innerWidth < innerHeight) { cam.position.set(4.5, 7.5, 11.5); cam.lookAt(0, 2.4, 1.6) } else { cam.position.set(6, 7, 12); cam.lookAt(0, 2, 2) }
   const gr = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), M(park ? '#5bad44' : '#d8d0c4')); gr.rotation.x = -Math.PI / 2; gr.receiveShadow = true; scene.add(gr);
   let wheel = null, cars = [];
   if (park) { scene.background = new THREE.Color('#9fd3ff');
