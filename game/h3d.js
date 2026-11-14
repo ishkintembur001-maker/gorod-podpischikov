@@ -43,7 +43,7 @@ class House{constructor(el){this.el=el;const r=this.r=new THREE.WebGLRenderer({a
   if(it.has('lights'))for(let k=0;k<16;k++)sph(g,.1,new THREE.MeshStandardMaterial({color:[0xff4f4f,0xffd34d,0x4fc3ff,0x7dff8a][k%4],emissive:[0xff4f4f,0xffd34d,0x4fc3ff,0x7dff8a][k%4],emissiveIntensity:1.5}),-W/2+k*W/15,top-.05,hz+D/2+.15,0);
   if(it.has('solar'))for(let k=0;k<3;k++){const p=box(g,1.2,.06,1.6,M(0x24406e,{metalness:.6,roughness:.3}),-W*.25+k*1.3,top+.9,hz+1.1);p.rotation.x=-.5}
   if(it.has('satellite')){const s=sph(g,.45,M(0xdddddd),-W*.32,top+1.2,hz-1.6,1);s.scale.z=.3}
-  const yard=[[-7.5,6],[7.5,6],[-8.5,2],[8.5,2],[-6,9],[6,9],[-9,-3],[9,-3],[-4,10],[4,10],[-9.5,8],[9.5,8]];let yi=0;const slot=()=>yard[yi++%yard.length];
+  const yard=[[-7.5,6],[7.5,6],[-8.5,2],[8.5,2],[-6,9],[6,9],[-9,-3],[9,-3],[-4,10],[4,10],[-9.5,8],[9.5,8]];let yi=0;const BUSY=(x,z,m=1.3)=>(it.has('pool')&&x>-7.8-m&&x<-3.2+m&&z>3.9-m&&z<7.1+m)||(it.has('fountain')&&Math.hypot(x-5,z-5.5)<1.6+m),FREE=yard.filter(([x,z])=>!BUSY(x,z)),slot=()=>FREE[yi++%FREE.length];
   if(it.has('fence')){const fm=M(0xf2f2f2);for(let x=-10.5;x<=10.5;x+=1.5){box(g,.15,.9,.15,fm,x,.45,10.8,false);box(g,.15,.9,.15,fm,x,.45,-8.8,false)}for(let z=-8.8;z<=10.8;z+=1.5){box(g,.15,.9,.15,fm,-10.8,.45,z,false);box(g,.15,.9,.15,fm,10.8,.45,z,false)}box(g,21.6,.12,.1,fm,0,.75,10.8,false)}
   if(it.has('garden')){const [x,z]=slot();tree(g,x,z);tree(g,x+1.8,z-1.4,0x4fa83f,.8)}
   if(it.has('sakura')){const [x,z]=slot();tree(g,x,z,0xf4a3c6,1.1)}
@@ -66,11 +66,11 @@ class House{constructor(el){this.el=el;const r=this.r=new THREE.WebGLRenderer({a
   {const VEH=['bike','scooter','moto'];let vi=0;const lastT={v:null};
    [...it].filter(k=>VEH.includes(k)).forEach(k=>{const v=item(k);v.position.set(6.8-vi*1.4,0,8.2);v.rotation.y=-.3;vi++;g.add(v)});
    const pets=[...it].filter(k=>EMO[k]&&!VEH.includes(k));
-   pets.forEach((k,i)=>{const p=pet(k,this);const cx=-5+i*2.4,cz=3.5+(i%2)*2;p.position.set(cx,0,cz);g.add(p);let tx=cx,tz=cz,wait=Math.random()*3,last=null;
+   pets.forEach((k,i)=>{const p=pet(k,this);let cx=-5+i*2.4,cz=3.5+(i%2)*2;if(BUSY(cx,cz,.6)){cx=-1+i*.8;cz=8.5}p.position.set(cx,0,cz);g.add(p);let tx=cx,tz=cz,wait=Math.random()*3,last=null;
     this.anim.push(t=>{const dt=last==null?0:Math.min(.05,t-last);last=t;const U=p.userData;if(U.mix)U.mix.update(dt);
      const dx=tx-p.position.x,dz=tz-p.position.z,L=Math.hypot(dx,dz);
      if(L>.15){const sp=(k==='horse'||k==='unicorn'?1.4:1)*dt;p.position.x+=dx/L*Math.min(L,sp);p.position.z+=dz/L*Math.min(L,sp);let ry=Math.atan2(dx,dz),c=p.rotation.y;while(ry-c>Math.PI)ry-=6.283;while(c-ry>Math.PI)ry+=6.283;p.rotation.y=c+(ry-c)*Math.min(1,dt*5);petPlay(p,'walk');if(!U.mix)p.position.y=Math.abs(Math.sin(t*8))*.08}
-     else{wait-=dt;if(!U.mix)p.position.y=0;petPlay(p,Math.sin(i*7+Math.floor(t/6))>.3?'eat':'idle');if(wait<=0){wait=2+Math.random()*4;tx=Math.max(-7,Math.min(7,cx+(Math.random()-.5)*5));tz=Math.max(1.5,Math.min(7.5,cz+(Math.random()-.5)*3))}}})});
+     else{wait-=dt;if(!U.mix)p.position.y=0;petPlay(p,Math.sin(i*7+Math.floor(t/6))>.3?'eat':'idle');if(wait<=0){wait=2+Math.random()*4;for(let tr=0;tr<12;tr++){tx=Math.max(-7,Math.min(7,cx+(Math.random()-.5)*5));tz=Math.max(1.5,Math.min(7.5,cz+(Math.random()-.5)*3));if(!BUSY(tx,tz,.6))break;tx=p.position.x;tz=p.position.z}}}})});
   }
   {[...it].filter(k=>hasFx(k)).forEach(k=>{for(let i=0;i<14;i++){const sp=fxMesh(k);g.add(sp);const x0=(Math.random()-.5)*18,z0=(Math.random()-.5)*16,o=Math.random()*10,sp2=.6+Math.random()*.6;
      const fall=k!=='fx_fly'&&k!=='fx_bfly';this.anim.push(t=>{const u=(t*sp2+o)%10;sp.position.set(x0+Math.sin(t+o)*(fall?.5:1.5),fall?14-u*1.4:2+Math.sin(t*1.3+o)*1.5+o*.3,z0+Math.cos(t*.8+o)*(fall?.4:1.2));sp.rotation.set(t*1.3+o,t*.9+o,0);if(k==='fx_bfly')sp.scale.x=.4+Math.abs(Math.sin(t*12+o))})}})}
