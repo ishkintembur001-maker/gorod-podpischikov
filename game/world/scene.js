@@ -37,6 +37,7 @@ const PEOPLE=[
  {n:'nurbekovnaii_',txt:'3 этажа и чёрная Тесла',c:34,set:{fl:3,f:[]},tesla:1},
  {n:'susedmichal',txt:'радужная крыша и море цветов 🌈',c:35,set:{fl:2,roof:'rainbow',f:['flowers','garden']},rainbow:1}];
 const SHOW=['ramazan__179','temburhan','kamila_vekua','sumaia09072015','baatyr6700','mekenovaanel','viktoriia97117','polli_2903','nurbekovnaii_','susedmichal'].map(n=>PEOPLE.find(p=>p.n===n));SHOW[2].txt='снова с нами! золотая крыша 👑';
+try{const j=await fetch('/api/res').then(r=>r.json());for(const x of (j.res||[]))if(!window.RESIDENTS.find(q=>q.n===x.n))window.RESIDENTS.push({n:x.n,g:'m',fl:1,z:'any',f:[],roof:'',wall:'',friend:'',an:{},cc:''})}catch(e){}
 for(const p of [...P23,...PEOPLE]){const r=window.RESIDENTS.find(q=>q.n===p.n);if(r)Object.assign(r,{an:{}},p.set);else window.RESIDENTS.push({n:p.n,g:'m',roof:'',wall:'',friend:'',an:{},cc:'',z:'any',...p.set})}
 const ROWS=Math.ceil((window.RESIDENTS.length+60)/36)+1;
 window.FIXED={};P23.forEach((p,i)=>window.FIXED[p.n]=[P23C[i],ROWS-2]);PEOPLE.forEach(p=>window.FIXED[p.n]=[p.c,ROWS-(p.r||2)]);
