@@ -4,57 +4,71 @@ import { makeHero, walk, play, tickHeroes, dispose } from './hero.js';
 const P = parent, $ = id => document.getElementById(id);
 const ME = () => P.ME, LIFE = () => P.ME && P.ME.life;
 let CAT = null;
-const HW = 16, HD = 10, WH = 4.2; // половина ширины/глубины дома, высота стен
+const HW = 16, HD = 15, WH = 4.2; // половина ширины/глубины дома, высота стен
 
 // ---------- сцена ----------
 const R = new THREE.WebGLRenderer({ canvas: $('gl'), antialias: true });
 R.setPixelRatio(Math.min(1.7, devicePixelRatio)); R.setSize(innerWidth, innerHeight);
 R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap;
 R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.1; R.outputColorSpace = THREE.SRGBColorSpace;
-const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b1446');
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#1b1446'); scene.fog = new THREE.Fog('#1b1446', 70, 150);
 const cam = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, .5, 400);
 addEventListener('resize', () => { R.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix() });
 const hour = (new Date().getUTCHours() + 3) % 24, NIGHT = (hour >= 20 || hour < 6) && !/day=1/.test(location.search);
 scene.add(new THREE.HemisphereLight(NIGHT ? '#8a86d8' : '#fff4e0', '#3a2a50', NIGHT ? .55 : .9));
 const sun = new THREE.DirectionalLight(NIGHT ? '#9fb0ff' : '#fff1d6', NIGHT ? .5 : 1.6);
 sun.position.set(-14, 26, 18); sun.castShadow = true; sun.shadow.mapSize.set(1536, 1536);
-Object.assign(sun.shadow.camera, { left: -18, right: 18, top: 14, bottom: -14, near: 1, far: 70 }); sun.shadow.bias = -.0006; scene.add(sun);
+Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 20, bottom: -20, near: 1, far: 70 }); sun.shadow.bias = -.0006; scene.add(sun);
 const mat = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: .75, ...o });
 function B(w, h, d, c, x, y, z, p, o) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), c.isMaterial ? c : mat(c, o)); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; p.add(m); return m }
 function C(rt, rb, h, c, x, y, z, p, seg = 20, o) { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), c.isMaterial ? c : mat(c, o)); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; p.add(m); return m }
 
+// ---------- двор: вокруг дома трава, дорожка, деревья, забор — нет пустоты ----------
+{ const yard = new THREE.Group(); scene.add(yard);
+  const gt = tex((x, w, h) => { x.fillStyle = NIGHT ? '#1f4a2c' : '#5fae4e'; x.fillRect(0, 0, w, h); for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(${NIGHT ? '20,60,30' : '40,120,40'},${Math.random() * .5})`; x.fillRect(Math.random() * w, Math.random() * h, 2, 5) } });
+  gt.wrapS = gt.wrapT = THREE.RepeatWrapping; gt.repeat.set(30, 30);
+  const gr = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), mat('#fff', { map: gt, roughness: 1 })); gr.rotation.x = -Math.PI / 2; gr.position.y = -.31; gr.receiveShadow = true; yard.add(gr);
+  B(3, .05, 40, '#d8c6a0', 0, -.28, HD + 20, yard);
+  const fm = mat('#f7f1e6'); for (let x = -28; x <= 28; x += 2) for (const z of [-HD - 8, HD + 9]) if (Math.abs(x) > 2 || z < 0) B(.25, 1.4, .25, fm, x, .4, z, yard);
+  for (const z of [-HD - 8, HD + 9]) { B(25.6, .15, .1, fm, -15, .9, z, yard); B(25.6, .15, .1, fm, 15, .9, z, yard) }
+  for (const x of [-28, 28]) B(.1, .15, 2 * HD + 17, fm, x, .9, .5, yard);
+  const lf = mat(NIGHT ? '#2d6a3a' : '#3f9a48'), tr = mat('#6a4428');
+  for (const [x, z, s] of [[-22, -18, 1.2], [-23, -6, 1], [-21, 6, 1.3], [-23, 16, 1], [22, -17, 1.1], [23, -4, 1.3], [21, 8, 1], [22, 18, 1.2], [-9, 21, .9], [9, 22, 1.1], [-14, -21, 1], [12, -21, .9]]) { C(.3 * s, .4 * s, 2 * s, tr, x, s, z, yard, 8); const t = new THREE.Mesh(new THREE.IcosahedronGeometry(1.8 * s, 0), lf); t.position.set(x, 2.9 * s, z); t.castShadow = true; yard.add(t) }
+  for (const [x, z] of [[-4, HD + 3], [4, HD + 3], [-6, HD + 6], [6, HD + 6]]) { const b = new THREE.Mesh(new THREE.IcosahedronGeometry(.8, 0), mat('#4fae5a')); b.position.set(x, .4, z); yard.add(b) }
+}
 // ---------- дом ----------
 const house = new THREE.Group(); scene.add(house);
 let floorM, wallM;
 function tex(fn, w = 256, h = 256) { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t }
 // планировка: 6 комнат, перегородки с дверными проёмами
 const X1 = -HW / 3 * 1, X2 = HW / 3 * 1, XA = -HW + (HW * 2) / 3, XB = -HW + (HW * 4) / 3; // XA=-5.33, XB=5.33
-const WALLS = [ // [x0,z0,x1,z1,высокая]
-  [XA, -HD, XA, -6.3, 1], [XA, -3.7, XA, 0, 1], [XB, -HD, XB, -6.3, 1], [XB, -3.7, XB, 0, 1],
-  [XA, 0, XA, 3.7, 0], [XA, 6.3, XA, HD, 0], [XB, 0, XB, 3.7, 0], [XB, 6.3, XB, HD, 0],
-  [-HW, 0, -1.3, 0, 1], [1.3, 0, 9.4, 0, 1], [12, 0, HW, 0, 1]];
-const DOORS = [[XA, -5, 'z'], [XB, -5, 'z'], [0, 0, 'x'], [10.7, 0, 'x']];
-const ROOMS = [['Кухня', -10.7, -5], ['Гостиная', 0, -5], ['Спальня', 10.7, -5], ['Ванная', -10.7, 5], ['Прихожая', 0, 5], ['Кабинет', 10.7, 5]];
+const WALLS = [ // [x0,z0,x1,z1,высокая] — 9 комнат 3×3
+  [XA, -HD, XA, -11.3, 1], [XA, -8.7, XA, -5, 1], [XA, -5, XA, -1.3, 0], [XA, 1.3, XA, 8.7, 0], [XA, 11.3, XA, HD, 0],
+  [XB, -HD, XB, -11.3, 1], [XB, -8.7, XB, -5, 1], [XB, -5, XB, -1.3, 0], [XB, 1.3, XB, 8.7, 0], [XB, 11.3, XB, HD, 0],
+  [-HW, -5, -12, -5, 1], [-9.37, -5, -1.3, -5, 1], [1.3, -5, HW, -5, 1],
+  [-HW, 5, -12, 5, 0], [-9.37, 5, -1.3, 5, 0], [1.3, 5, 9.37, 5, 0], [11.97, 5, HW, 5, 0]];
+const DOORS = [[XA, -10, 'z'], [XB, -10, 'z'], [XA, 0, 'z'], [XB, 0, 'z'], [XA, 10, 'z'], [XB, 10, 'z'], [-10.67, -5, 'x'], [0, -5, 'x'], [-10.67, 5, 'x'], [0, 5, 'x'], [10.67, 5, 'x']];
+const ROOMS = [['Кухня', -10.7, -10], ['Гостиная', 0, -10], ['Спальня', 10.7, -10], ['Столовая', -10.7, 0], ['Холл', 0, 0], ['Игровая', 10.7, 0], ['Ванная', -10.7, 10], ['Прихожая', 0, 10], ['Кабинет', 10.7, 10]];
 let DOORM = [];
 function buildHouse() {
   house.clear(); DOORM = [];
   const L = LIFE();
   const wood = tex((x, w, h) => { x.fillStyle = L.floor; x.fillRect(0, 0, w, h); for (let i = 0; i < 8; i++) { x.fillStyle = `rgba(0,0,0,${.05 + (i % 3) * .03})`; x.fillRect(0, i * 32, w, 2); x.fillStyle = `rgba(255,255,255,${.03 * (i % 2)})`; x.fillRect((i * 97) % w, i * 32 + 2, 90, 30) } });
-  wood.wrapS = wood.wrapT = THREE.RepeatWrapping; wood.repeat.set(5, 3);
+  wood.wrapS = wood.wrapT = THREE.RepeatWrapping; wood.repeat.set(5, 4.5);
   floorM = mat('#ffffff', { map: wood, roughness: .6 });
   const fl = new THREE.Mesh(new THREE.BoxGeometry(HW * 2, .3, HD * 2), floorM); fl.position.y = -.15; fl.receiveShadow = true; fl.name = 'floor'; house.add(fl);
   const tile = tex((x, w, h) => { x.fillStyle = '#e9f3f7'; x.fillRect(0, 0, w, h); x.strokeStyle = '#b9cdd6'; x.lineWidth = 4; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, h); x.moveTo(0, i * 64); x.lineTo(w, i * 64); x.stroke() } });
   tile.wrapS = tile.wrapT = THREE.RepeatWrapping; tile.repeat.set(3, 3);
-  const bt = new THREE.Mesh(new THREE.PlaneGeometry(XA + HW - .3, HD - .3), mat('#fff', { map: tile, roughness: .3 })); bt.rotation.x = -Math.PI / 2; bt.position.set((-HW + XA) / 2, .02, HD / 2); bt.receiveShadow = true; house.add(bt);
+  const bt = new THREE.Mesh(new THREE.PlaneGeometry(XA + HW - .3, 9.7), mat('#fff', { map: tile, roughness: .3 })); bt.rotation.x = -Math.PI / 2; bt.position.set((-HW + XA) / 2, .02, 10); bt.receiveShadow = true; house.add(bt);
   const chk = tex((x, w, h) => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = (i + j) % 2 ? '#f2efe6' : '#3a3a4a'; x.fillRect(i * 32, j * 32, 32, 32) } }); chk.wrapS = chk.wrapT = THREE.RepeatWrapping; chk.repeat.set(3, 2.5);
-  const kt = new THREE.Mesh(new THREE.PlaneGeometry(XA + HW - .3, HD - .3), mat('#fff', { map: chk, roughness: .35 })); kt.rotation.x = -Math.PI / 2; kt.position.set((-HW + XA) / 2, .02, -HD / 2); kt.receiveShadow = true; house.add(kt);
+  const kt = new THREE.Mesh(new THREE.PlaneGeometry(XA + HW - .3, 9.7), mat('#fff', { map: chk, roughness: .35 })); kt.rotation.x = -Math.PI / 2; kt.position.set((-HW + XA) / 2, .02, -10); kt.receiveShadow = true; house.add(kt);
   const mat2 = tex((x, w, h) => { x.fillStyle = '#7a3a2a'; x.fillRect(0, 0, w, h); x.fillStyle = '#c9a24e'; x.font = 'bold 40px sans-serif'; x.textAlign = 'center'; x.fillText('ДОБРО ПОЖАЛОВАТЬ', w / 2, 80) }, 512, 128);
   const dm = new THREE.Mesh(new THREE.PlaneGeometry(3.4, .9), new THREE.MeshStandardMaterial({ map: mat2 })); dm.rotation.x = -Math.PI / 2; dm.position.set(0, .03, HD - .8); house.add(dm);
   wallM = mat(L.wall, { roughness: .9 });
   const trim = mat('#ffffff', { roughness: .5 });
   B(HW * 2 + .4, WH, .3, wallM, 0, WH / 2, -HD - .15, house);
   B(.3, WH, HD * 2 + .3, wallM, -HW - .15, WH / 2, 0, house);
-  B(HW * 2 + .4, .7, .3, wallM, -HW / 2 - .7, .35, HD + .15, house); B(HW - 1.3, .7, .3, wallM, HW / 2 + .65, .35, HD + .15, house);
+  B(HW - 1.3, .7, .3, wallM, -HW / 2 - .65, .35, HD + .15, house); B(HW - 1.3, .7, .3, wallM, HW / 2 + .65, .35, HD + .15, house);
   B(.3, .7, HD * 2 + .3, wallM, HW + .15, .35, 0, house);
   B(HW * 2 + .4, .18, .34, trim, 0, WH, -HD - .15, house);
   for (const [x0, z0, x1, z1, hi] of WALLS) { const h = hi ? WH * .8 : 1.4, len = Math.hypot(x1 - x0, z1 - z0); B(x0 === x1 ? .25 : len, h, x0 === x1 ? len : .25, wallM, (x0 + x1) / 2, h / 2, (z0 + z1) / 2, house); B(x0 === x1 ? .3 : len, .12, x0 === x1 ? len : .3, trim, (x0 + x1) / 2, h + .06, (z0 + z1) / 2, house) }
@@ -68,17 +82,18 @@ function buildHouse() {
   for (const x of [-10.7, 6.6]) { B(4.2, 2.6, .2, trim, x, 2.4, -HD + .05, house); const gl = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 2.2), new THREE.MeshBasicMaterial({ map: view, toneMapped: false })); gl.position.set(x, 2.4, -HD + .17); house.add(gl); B(.12, 2.2, .1, trim, x, 2.4, -HD + .2, house) }
   const me = ME();
   const card = tex((x, w, h) => { x.fillStyle = '#2b2266'; x.fillRect(0, 0, w, h); x.fillStyle = '#ffc65c'; x.font = 'bold 30px sans-serif'; x.textAlign = 'center'; x.fillText('@' + (me && me.nick || 'житель'), w / 2, 70); x.fillStyle = '#e9e4ff'; x.font = '22px sans-serif'; x.fillText('мой дом в Городе', w / 2, 112); x.fillText('подписчиков', w / 2, 140); x.font = '60px serif'; x.fillText('🏡', w / 2, 220) }, 256, 256);
-  const fc = B(1.9, 1.9, .12, '#7a4a2a', -HW + .1, 2.6, -2.2, house); fc.rotation.y = Math.PI / 2;
-  const fp = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), new THREE.MeshBasicMaterial({ map: card })); fp.position.set(-HW + .2, 2.6, -2.2); fp.rotation.y = Math.PI / 2; house.add(fp);
+  const fc = B(1.9, 1.9, .12, '#7a4a2a', -HW + .1, 2.6, -9.5, house); fc.rotation.y = Math.PI / 2;
+  const fp = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), new THREE.MeshBasicMaterial({ map: card })); fp.position.set(-HW + .2, 2.6, -9.5); fp.rotation.y = Math.PI / 2; house.add(fp);
   const post = tex((x, w, h) => { x.fillStyle = '#ff6b4a'; x.fillRect(0, 0, w, h); x.fillStyle = '#fff'; x.font = 'bold 34px sans-serif'; x.textAlign = 'center'; x.fillText('ГОРОД', w / 2, 70); x.fillText('ПОДПИСЧИКОВ', w / 2, 110); x.font = '22px sans-serif'; x.fillText('@gorod.podpischikov001', w / 2, 230); x.font = '70px serif'; x.fillText('🏙', w / 2, 190) }, 256, 256);
   const pp = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.8), new THREE.MeshStandardMaterial({ map: post })); pp.position.set(-2.2, 2.6, -HD + .2); house.add(pp);
-  for (const [t, x, z] of ROOMS) { const s = tex((c, w, h) => { c.font = 'bold 44px sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(43,34,102,.3)'; c.fillText(t, w / 2, 60) }, 256, 80); const m = new THREE.Mesh(new THREE.PlaneGeometry(4, 1.25), new THREE.MeshBasicMaterial({ map: s, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, .04, z + (z < 0 ? 3.6 : -3.2)); house.add(m) }
+  for (const [t, x, z] of ROOMS) { const s = tex((c, w, h) => { c.font = 'bold 44px sans-serif'; c.textAlign = 'center'; c.fillStyle = 'rgba(43,34,102,.3)'; c.fillText(t, w / 2, 60) }, 256, 80); const m = new THREE.Mesh(new THREE.PlaneGeometry(4, 1.25), new THREE.MeshBasicMaterial({ map: s, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, .04, z + 3.4); house.add(m) }
   for (const [, x, z] of ROOMS) { const l = new THREE.PointLight('#ffd9a0', NIGHT ? 22 : 6, 15, 1.6); l.position.set(x, 3.6, z); house.add(l) }
 }
 function doorsTick(dt) { for (const d of DOORM) { const near = Math.hypot(hero.position.x - d.cx, hero.position.z - d.cz) < 2.8; d.a += ((near ? 1.45 : 0) - d.a) * Math.min(1, dt * 6); d.piv.rotation.y = d.ax === 'z' ? -d.a : d.a } }
 
 // ---------- мебель ----------
 const FB = {
+  toilet: g => { B(1, .9, .5, '#f4f7f9', 0, .95, -.55, g, { roughness: .25 }); C(.42, .32, .5, '#f4f7f9', 0, .25, .1, g, 20, { roughness: .25 }); C(.46, .46, .08, '#e2e8ec', 0, .54, .12, g, 20); B(.9, .06, .45, '#e2e8ec', 0, 1.42, -.55, g); B(.12, .05, .05, '#a0a8b0', .3, 1.48, -.55, g); B(.5, .4, .12, '#f0f0f0', .9, .9, -.75, g); return 1.4 },
   fridge: g => { B(1.8, 3.6, 1.4, '#eef2f5', 0, 1.8, 0, g, { roughness: .3, metalness: .2 }); B(1.82, .05, 1.42, '#c7cfd6', 0, 2.5, 0, g); B(.08, .9, .1, '#8a96a0', .7, 3, .72, g); B(.08, 1.2, .1, '#8a96a0', .7, 1.4, .72, g); return 1.4 },
   bed: g => { B(3.2, .6, 4.6, '#7a4a2a', 0, .3, 0, g); B(3.2, 1.8, .3, '#7a4a2a', 0, .9, -2.2, g); B(3, .45, 4.2, '#f7f3ea', 0, .8, .1, g); B(3.05, .25, 2.6, '#6a4fd0', 0, 1.05, .9, g); B(1.2, .3, .7, '#ffffff', -.75, 1.15, -1.5, g); B(1.2, .3, .7, '#ffffff', .75, 1.15, -1.5, g); return 4.6 },
   shower: g => { B(2.4, .2, 2.4, '#dfe9ee', 0, .1, 0, g); const gm = new THREE.MeshStandardMaterial({ color: '#bfe6ff', transparent: true, opacity: .3, roughness: .05 }); B(1.1, 3.4, .06, gm, .65, 1.9, 1.2, g); B(.06, 3.4, 2.4, gm, 1.2, 1.9, 0, g); B(.06, 3.4, 2.4, gm, -1.2, 1.9, 0, g); C(.05, .05, 3.6, '#a0a8b0', -.9, 2, -1, g); C(.3, .3, .1, '#a0a8b0', 0, 3.7, -.6, g); B(.1, 3.4, .1, '#a0a8b0', .1, 1.9, 1.2, g); return 2.4 },
@@ -125,7 +140,7 @@ function addObj(k, x, z, r) {
 function spot(g) { const d = (g.userData.d || 1) / 2 + 1.1, r = g.rotation.y; return new THREE.Vector3(g.position.x + Math.sin(r) * d, 0, g.position.z + Math.cos(r) * d) }
 
 // ---------- житель ----------
-let hero = makeHero(LIFE() && LIFE().look); hero.position.set(0, 0, 7); hero.rotation.order = 'YXZ'; scene.add(hero);
+let hero = makeHero(LIFE() && LIFE().look); hero.position.set(0, 0, 11); hero.rotation.order = 'YXZ'; scene.add(hero);
 function rebuildHero(look) { const p = hero.position.clone(), r = hero.rotation.y; scene.remove(hero); dispose(hero); hero = makeHero(look); hero.rotation.order = 'YXZ'; hero.position.copy(p); hero.rotation.y = r; scene.add(hero) }
 let doing = null, bubble = null, path = [], busy = false;
 hero.rotation.order = 'YXZ';
@@ -133,7 +148,7 @@ function say(e) { if (bubble) hero.remove(bubble); const c = document.createElem
 
 
 // ---------- проходы: стены и мебель не проходим ----------
-const CS = .5, NX = 64, NZ = 40; let GRID = new Uint8Array(NX * NZ);
+const CS = .5, NX = 64, NZ = 60; let GRID = new Uint8Array(NX * NZ);
 const ci = (x, z) => [Math.floor((x + HW) / CS), Math.floor((z + HD) / CS)];
 const cc = (i, j) => new THREE.Vector3(-HW + (i + .5) * CS, 0, -HD + (j + .5) * CS);
 function wallBlocked(x, z) {
@@ -189,6 +204,7 @@ function plan(g) {
   const sofa = OBJ.get('sofa');
   switch (k) {
     case 'sofa': return { ...seat(0, .25, .9, 0), anim: 'relax' };
+    case 'toilet': return { ...seat(0, .12, .58, 0), anim: 'relax' };
     case 'tv': if (sofa) { const sp = plan(sofa); return { ...sp, face: g.position, anim: 'watch' } } return { app: F(0, 4), at: F(0, 3.2), y: -seatOf() + .55, rot: r + Math.PI, pose: 'sit', anim: 'watch' };
     case 'cinema': return { app: F(-1.2, 4.6), at: F(-1.2, 3.05), y: .85 - seatOf() + .1, rot: r + Math.PI, pose: 'sit', anim: 'watch', prop: '🍿' };
     case 'pc': return { app: F(0, 2.3), at: F(0, 1.15), y: 1 - seatOf() + .05, rot: r + Math.PI, pose: 'sit', anim: 'type' };
@@ -213,23 +229,26 @@ function plan(g) {
   }
 }
 async function standUp(p) { if (hero.userData.acts) play(hero, 'Idle'); pose('stand'); hold(null); if (p && p.via) await glide(p.via, 0, null, 0, 400); await glide(p ? p.app : hero.position, 0, null, 0, 450) }
-async function act(g) {
+async function act(g, ai = 0) {
   if (busy) return; busy = true; $('om').classList.add('hidden');
-  const k = g.userData.k, p = plan(g);
+  const k = g.userData.k, p = plan(g), AX = CAT.actx && CAT.actx[k] && CAT.actx[k][ai];
+  if (k === 'fridge') { p.prop = ['🥤', '🥪', '🍲'][ai]; if (ai < 2) p.then = null }
+  if (AX && ai) { if (k === 'toilet' || k === 'phone') p.prop = AX[0]; if (k === 'pc') p.anim = 'type' }
   try {
     if (!(await walkTo(p.app))) { P.toast && P.toast('Не пройти — освободи проход в ремонте'); return }
     if (p.via) await glide(p.via, 0, Math.atan2(p.via.x - hero.position.x, p.via.z - hero.position.z), 0, 450);
     pose(p.pose); await glide(p.at, p.y, p.rot, p.rx || 0, 650);
     if (p.face) hero.rotation.y = Math.atan2(p.face.x - hero.position.x, p.face.z - hero.position.z);
-    doing = { k, anim: p.anim }; say(EMO[k] || '✨'); if (p.prop && !p.then) hold(p.prop); if (P.HAP) P.HAP('medium');
+    doing = { k, anim: p.anim }; say(AX ? AX[0] : EMO[k] || '✨'); if (p.prop && !p.then) hold(p.prop); if (P.HAP) P.HAP('medium');
     if (k === 'tv' || k === 'cinema') { const sc = (k === 'tv' ? g : g); sc.traverse(o => o.name === 'screen' && (o.material.color.set('#fff'))) }
     await sleep(p.then ? 1500 : 3000);
     if (p.then) { // взял еду — идём за стол есть
       hold(p.prop); doing = null; await standUp(p); const t = OBJ.get('table'), q = plan(t);
       if (await walkTo(q.app)) { pose('sit'); await glide(q.at, q.y, q.rot, 0, 650); doing = { k, anim: 'eat' }; say('😋'); hold(p.prop); await sleep(2600); await standUp(q) }
     }
-    const j = await P.call('life/act', { o: k }); if (bubble) { hero.remove(bubble); bubble = null }
+    const j = await P.call('life/act', { o: k, i: ai }); if (bubble) { hero.remove(bubble); bubble = null }
     doing = null; if (!p.then) await standUp(p); if (j && j.me) { hud(); P.HAP && P.HAP('light') }
+    if (k === 'pc' && ai === 1 && P.closeLife) { setTimeout(() => { P.closeLife(); P.show && P.show('work'); P.toast && P.toast('💼 Вакансии города — выбирай работу!') }, 300) }
   } finally { doing = null; busy = false; if (POSE !== 'stand') await standUp(null); hero.rotation.x = 0; hero.position.y = 0; hold(null) }
 }
 
@@ -242,8 +261,8 @@ function hud() {
 }
 
 // ---------- камера и ввод ----------
-const FK = () => dist <= 28 ? .95 : (innerWidth < innerHeight ? .5 : .2);
-let ang = .5, dist = innerWidth < innerHeight ? 58 : 44, BUILD = false, sel = null, drag = false;
+const FK = () => dist <= 30 ? .95 : dist <= 46 ? .8 : .55;
+let ang = .5, dist = innerWidth < innerHeight ? 40 : 34, BUILD = false, sel = null, drag = false;
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 function setPtr(e) { ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, cam) }
 let sx = 0, sy = 0, lx = null;
@@ -270,12 +289,15 @@ function menu(g, x, y) {
   const eff = Object.entries(f[4]).map(([n, v]) => `${NI[n][0]} +${v}`).join(' ');
   const cd = (LIFE().cd || {})[k], left = cd ? 600 - (Date.now() / 1000 - cd) : 0;
   if (k === 'wardrobe') { $('om').innerHTML = `<b>${f[0]} ${f[1]}</b><small>Здесь твоя одежда и аксессуары</small><button id="use">Открыть гардероб</button>`; $('om').style.left = Math.min(innerWidth - 220, Math.max(10, x - 100)) + 'px'; $('om').style.top = Math.max(70, y - 130) + 'px'; $('om').classList.remove('hidden'); $('use').onclick = () => { $('om').classList.add('hidden'); $('lookb').click() }; return }
-  $('om').innerHTML = `<b>${f[0]} ${f[1]}</b>${eff ? `<small>${eff}</small><button id="use" ${left > 0 ? 'disabled' : ''}>${left > 0 ? 'Через ' + Math.ceil(left / 60) + ' мин' : USE[k] || 'Использовать'}</button>` : '<small>Украшение дома</small>'}`;
-  $('om').style.left = Math.min(innerWidth - 220, Math.max(10, x - 100)) + 'px'; $('om').style.top = Math.max(70, y - 130) + 'px'; $('om').classList.remove('hidden');
-  if ($('use')) $('use').onclick = () => act(g);
+  const AX = CAT.actx && CAT.actx[k], cdl = ck => { const c = (LIFE().cd || {})[ck]; return c ? 600 - (Date.now() / 1000 - c) : 0 };
+  const btn = (i, lab, ck, ef) => { const l = cdl(ck); return `<button class="ua" data-i="${i}" ${l > 0 ? 'disabled' : ''}>${lab}${ef ? `<small>${ef}</small>` : ''}${l > 0 ? `<small>через ${Math.ceil(l / 60)} мин</small>` : ''}</button>` };
+  const efs = e => Object.entries(e).map(([n, v]) => `${NI[n][0]}+${v}`).join(' ');
+  $('om').innerHTML = `<b>${f[0]} ${f[1]}</b>` + (AX ? AX.map((a, i) => btn(i, a[0] + ' ' + a[1], i ? k + '.' + i : k, efs(a[2]))).join('') : eff ? btn(0, USE[k] || 'Использовать', k, eff) : '<small>Украшение дома</small>');
+  $('om').style.left = Math.min(innerWidth - 230, Math.max(10, x - 110)) + 'px'; $('om').style.top = Math.max(70, Math.min(innerHeight - 90 - (AX ? AX.length : 1) * 52, y - 150)) + 'px'; $('om').classList.remove('hidden');
+  $('om').querySelectorAll('.ua').forEach(b => b.onclick = () => act(g, +b.dataset.i));
 }
-const USE = { arcade: 'Играть в автомат', throne: 'Сесть на трон', goldtv: 'Смотреть золотой ТВ', sauna: 'Попариться', desk: 'Поработать', dining: 'Выпить коктейль', fridge: 'Перекусить', stove: 'Приготовить ужин', chef: 'Готовить как шеф', table: 'Поесть за столом', bed: 'Поспать', kingbed: 'Спать как король', sofa: 'Отдохнуть', shower: 'Принять душ', bath: 'Полежать в ванне', jacuzzi: 'В джакузи', tv: 'Смотреть ТВ', cinema: 'Смотреть кино', pc: 'Листать Instagram', console: 'Играть', guitar: 'Сыграть', piano: 'Сыграть на рояле', books: 'Почитать', aquarium: 'Кормить рыбок', fireplace: 'Греться у камина', phone: 'Позвонить подписчикам' };
-const EMO = { arcade: '🕹', throne: '👑', goldtv: '📺', sauna: '🧖', desk: '✍️', dining: '🥤', fridge: '🍕', stove: '🍳', chef: '🥘', table: '🍽', bed: '💤', kingbed: '👑', sofa: '🛋', shower: '🫧', bath: '🛁', jacuzzi: '♨️', tv: '📺', cinema: '🍿', pc: '📱', console: '🎮', guitar: '🎸', piano: '🎹', books: '📖', aquarium: '🐠', fireplace: '🔥', phone: '📞' };
+const USE = { arcade: 'Играть в автомат', throne: 'Сесть на трон', goldtv: 'Смотреть золотой ТВ', sauna: 'Попариться', desk: 'Поработать', dining: 'Выпить коктейль', fridge: 'Перекусить', stove: 'Приготовить ужин', chef: 'Готовить как шеф', table: 'Поесть за столом', bed: 'Поспать', kingbed: 'Спать как король', sofa: 'Отдохнуть', shower: 'Принять душ', bath: 'Полежать в ванне', jacuzzi: 'В джакузи', tv: 'Смотреть ТВ', cinema: 'Смотреть кино', pc: 'Листать Instagram', toilet: 'Сходить в туалет', console: 'Играть', guitar: 'Сыграть', piano: 'Сыграть на рояле', books: 'Почитать', aquarium: 'Кормить рыбок', fireplace: 'Греться у камина', phone: 'Позвонить подписчикам' };
+const EMO = { arcade: '🕹', throne: '👑', goldtv: '📺', sauna: '🧖', desk: '✍️', dining: '🥤', fridge: '🍕', stove: '🍳', chef: '🥘', table: '🍽', bed: '💤', kingbed: '👑', sofa: '🛋', shower: '🫧', bath: '🛁', jacuzzi: '♨️', tv: '📺', cinema: '🍿', pc: '📱', toilet: '🚽', console: '🎮', guitar: '🎸', piano: '🎹', books: '📖', aquarium: '🐠', fireplace: '🔥', phone: '📞' };
 // ---------- ремонт ----------
 function select(g) { if (sel) sel.traverse(o => o.material && o.material.emissive && o.userData.em0 !== undefined && o.material.emissive.setHex(o.userData.em0)); sel = g; $('bsel').classList.toggle('hidden', !g); if (g) { g.traverse(o => { if (o.material && o.material.emissive) { o.userData.em0 = o.material.emissive.getHex(); o.material = o.material.clone(); o.material.emissive.setHex(0x5a3a00) } }); $('bname').textContent = CAT.furn[g.userData.k][0] + ' ' + CAT.furn[g.userData.k][1] } }
 $('rot').onclick = () => sel && (sel.rotation.y = (sel.rotation.y + Math.PI / 2) % (Math.PI * 2));
@@ -358,4 +380,4 @@ function loop(now) {
   buildHouse(); placeAll(); rebuildGrid(); hud(); $('load').remove(); requestAnimationFrame(loop);
   setInterval(hud, 30000);
 })();
-window.hud = hud; window.__hero = () => hero; window.__st = () => (doing ? doing.anim : '') + '|' + POSE; window.__act = k => OBJ.get(k) && act(OBJ.get(k));
+window.hud = hud; window.__hero = () => hero; window.__st = () => (doing ? doing.anim : '') + '|' + POSE; window.__act = (k, i) => OBJ.get(k) && act(OBJ.get(k), i); window.__menu = k => OBJ.get(k) && menu(OBJ.get(k), 180, 400);
