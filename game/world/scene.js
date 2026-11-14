@@ -164,7 +164,7 @@ const BAL=[];{const p=PEOPLE.find(p=>p.balloons);const h=p&&p.h;if(h){const r=rn
 // ---- fisherman house: pier, boat, fisherman ----
 const FISH={};{const p=PEOPLE.find(p=>p.fish);const h=p&&p.h;if(h){const rv=WORLD.river;const xb=rv.x+rv.w/2;const wood=MAT(0x8b5a2b),dw=MAT(0x6b4220);
   const wk=mesh(new THREE.BoxGeometry(h.x-7.4-xb,0.2,2),wood,(h.x-7.4+xb)/2,0.12,h.z);
-  const pier=mesh(new THREE.BoxGeometry(11,0.35,3.2),wood,xb-5.2,0.55,h.z);for(const dx of [-10,-6,-2])for(const dz of [-1.4,1.4])mesh(new THREE.CylinderGeometry(0.18,0.18,1.6,6),dw,xb+dx,0.1,h.z+dz);
+  const pier=mesh(new THREE.BoxGeometry(11,0.35,3.2),wood,xb-5.2,0.55,h.z);FISH.pz=h.z;FISH.px0=xb-10.6;for(const dx of [-10,-6,-2])for(const dz of [-1.4,1.4])mesh(new THREE.CylinderGeometry(0.18,0.18,1.6,6),dw,xb+dx,0.1,h.z+dz);
   const boat=new THREE.Group();mesh(new THREE.BoxGeometry(5.2,0.9,2),MAT(0x2d6cdf),0,0.3,0,boat);mesh(new THREE.BoxGeometry(4.6,0.12,1.6),MAT(0xc89a5a),0,0.72,0,boat);mesh(new THREE.ConeGeometry(1,1.6,4),MAT(0x2d6cdf),3.1,0.3,0,boat).rotation.z=-Math.PI/2;boat.position.set(xb-6,0,h.z+3.2);scene.add(boat);FISH.boat=boat;
   const fm=new THREE.Mesh(AG.person('#e07a2a','#e0b08a','#2b3a55'),M.vc);fm.scale.setScalar(1.3);fm.position.set(xb-9.6,0.72,h.z-0.6);fm.rotation.y=-Math.PI/2;fm.castShadow=true;scene.add(fm);
   mesh(new THREE.CylinderGeometry(0.35,0.4,0.15,10),MAT(0xc9a24e),xb-9.6,3.25,h.z-0.6);
@@ -361,7 +361,8 @@ function bubbleS(text){const K=2,F=`bold ${44*K}px Arial,"Helvetica Neue","Apple
  x.strokeStyle='#ffc65c';x.lineWidth=4*K;x.beginPath();x.roundRect(2*K,2*K,W-10*K,H-12*K,24*K);x.stroke();x.font=F;x.fillStyle='#1d1450';x.textAlign='center';x.textBaseline='middle';lines.forEach((l,i)=>x.fillText(l,(W-6*K)/2,18*K+LH/2+i*LH,W-30*K));
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false}));s.renderOrder=11;const sc=1/(78*K);s.scale.set(W*sc,(H+24*K)*sc,1);s.center.set(.5,0);return s}
 function say(g,text){if(!g)return;if(g.userData.bub)g.remove(g.userData.bub);const b=bubbleS(text);b.position.y=5.4;g.add(b);g.userData.bub=b;g.userData.bubT=performance.now()+6000}
-function logChat(n,t){CLOG.push({n,t});while(CLOG.length>4)CLOG.shift();const el=document.getElementById('clog');if(el)el.innerHTML=CLOG.map(c=>`<div><b>@${c.n.replace(/[<>&]/g,'')}</b> ${c.t.replace(/[<>&]/g,'')}</div>`).join('')}
+function logChat(n,t){if(n)CLOG.push({n,t,ts:Date.now()});while(CLOG.length>4)CLOG.shift();const el=document.getElementById('clog');if(el)el.innerHTML=CLOG.filter(c=>Date.now()-c.ts<30000).slice(-3).map(c=>`<div><b>@${c.n.replace(/[<>&]/g,'')}</b> ${c.t.replace(/[<>&]/g,'')}</div>`).join('')}
+setInterval(()=>logChat(),5000);
 const PHR=['Привет! 👋','Как дела?','Го дружить! 🤝','Пошли в парк 🎡','Классный город!','Кто на стадион? ⚽','Зайди ко мне в гости 🏠','Спасибо! ❤️'];
 {const p=document.getElementById('sayp');p.innerHTML=PHR.map(t=>`<button>${t}</button>`).join('')+'<form id="sayf"><input id="sayi" maxlength="80" placeholder="Напиши всем рядом…" autocomplete="off"><button>➤</button></form>';
  const send=t=>{t=t.trim();if(!t)return;SENDSY=t;say(ME,t);logChat(myNick,t);sendPos();parent.postMessage({t:'hap'},'*');p.classList.add('hidden');
@@ -392,7 +393,10 @@ const pk=(a,u)=>a[Math.floor(u*a.length)%a.length];
 const SBOX=[[HS.x,HS.z,11.8,6.8],[PS.x,PS.z,12,7],[MALL.x,MALL.z,15.8,9.8],[FB.x,FB.z+35,36,5.5],[FB.x,FB.z-35,36,5.5],[FB.x,FB.z-44.6,16,1],[PK.x-32,PK.z+22,7.4,2.4],[PK.x+20,PK.z-7,2,1.6],
   [VP.x,VP.z-47.8,64,.6],[VP.x-64,VP.z,.6,48],[VP.x+64,VP.z,.6,48],[VP.x-36,VP.z+47.8,28,.6],[VP.x+36,VP.z+47.8,28,.6]];
 const SCIR=[[PK.x,PK.z,8.4],[PK.x+44,PK.z-14,7.6],[PK.x-50,PK.z,10]];
-function solid(x,z){for(const h of (WORLD.houses||[]))if(Math.abs(x-h.x)<7.9&&Math.abs(z-h.z)<7.9)return true;for(const b of SBOX)if(Math.abs(x-b[0])<b[2]&&Math.abs(z-b[1])<b[3])return true;for(const c of SCIR)if(Math.hypot(x-c[0],z-c[1])<c[2])return true;return false}
+// река: по воде ходить нельзя — только по мостам и пирсу рыбака
+function onBridge(x,z){const rv=WORLD.river;if(!rv)return false;if(Math.abs(x-rv.x)>rv.w/2+1.2)return false;for(const bz of rv.br)if(Math.abs(z-bz)<2.6)return true;if(FISH.pz!==undefined&&Math.abs(z-FISH.pz)<1.5&&x>FISH.px0)return true;return false}
+function inWater(x,z){const rv=WORLD.river;return rv&&Math.abs(x-rv.x)<rv.w/2+.4&&!onBridge(x,z)}
+function solid(x,z){if(inWater(x,z))return true;for(const h of (WORLD.houses||[]))if(Math.abs(x-h.x)<7.9&&Math.abs(z-h.z)<7.9)return true;for(const b of SBOX)if(Math.abs(x-b[0])<b[2]&&Math.abs(z-b[1])<b[3])return true;for(const c of SCIR)if(Math.hypot(x-c[0],z-c[1])<c[2])return true;return false}
 // камера не уходит за дома и здания: если между тобой и камерой стена — камера подъезжает ближе
 let CAMK=1,CAMUP=0;const OCCB=[[HS.x,HS.z,11.5,6.5,13],[PS.x,PS.z,11.5,6.5,12],[MALL.x,MALL.z,15.5,9.5,12],[FB.x,FB.z+35,35,5,9],[FB.x,FB.z-35,35,5,9],[FB.x,FB.z-44.6,16,1,21],[PK.x-50,PK.z,9,9,12]];
 function occT(ax,ay,az,bx,by,bz){let best=1;const px=ax,pz=az;const test=(x,z,hx,hz,h)=>{if(Math.abs(x-px)>90||Math.abs(z-pz)>90)return;let t0=0,t1=1;for(const [o,d,lo,hi] of [[ax,bx-ax,x-hx,x+hx],[ay,by-ay,0,h],[az,bz-az,z-hz,z+hz]]){if(Math.abs(d)<1e-6){if(o<lo||o>hi)return;continue}let u=(lo-o)/d,v=(hi-o)/d;if(u>v)[u,v]=[v,u];t0=Math.max(t0,u);t1=Math.min(t1,v);if(t0>t1)return}if(t0>.02&&t0<best)best=t0};
@@ -475,7 +479,7 @@ const T0=performance.now();let QL=0,LOWN=0;function perf(now){FR++;if(now-FPT>30
 document.getElementById('fs').onclick=()=>parent.postMessage({t:'back'},'*');
 const t0=performance.now();let last=t0;const camP=new THREE.Vector3(ME.position.x,30,ME.position.z+34);
 function loop(now){requestAnimationFrame(loop);const t=(now-t0)/1000,dt=Math.min(.05,(now-last)/1000);last=now;
- lifeTick(t,dt);const RD=rideTick(t);const L_=RD?0:Math.hypot(joy.x,joy.y),U=ME.userData;if(L_>.1){const sp=16*Math.min(1,L_),ca=Math.cos(camAng),sa=Math.sin(camAng);const dx=joy.x*ca+joy.y*sa,dz=-joy.x*sa+joy.y*ca;{const nx=ME.position.x+dx*sp*dt,nz=ME.position.z+dz*sp*dt,was=solid(ME.position.x,ME.position.z);if(was||!solid(nx,nz)){ME.position.x=nx;ME.position.z=nz}else if(!solid(nx,ME.position.z))ME.position.x=nx;else if(!solid(ME.position.x,nz))ME.position.z=nz}ME.rotation.y=Math.atan2(dx,dz);hwalk(ME,t,true)}else hwalk(ME,t,false);
+ lifeTick(t,dt);const RD=rideTick(t);const L_=RD?0:Math.hypot(joy.x,joy.y),U=ME.userData;if(L_>.1){const sp=16*Math.min(1,L_),ca=Math.cos(camAng),sa=Math.sin(camAng);const dx=joy.x*ca+joy.y*sa,dz=-joy.x*sa+joy.y*ca;{if(inWater(ME.position.x,ME.position.z)){const rv=WORLD.river;ME.position.x=rv.x+(ME.position.x<rv.x?-1:1)*(rv.w/2+1.5)}ME.position.y=onBridge(ME.position.x,ME.position.z)?.95:0;const nx=ME.position.x+dx*sp*dt,nz=ME.position.z+dz*sp*dt,was=solid(ME.position.x,ME.position.z);if(was||!solid(nx,nz)){ME.position.x=nx;ME.position.z=nz}else if(!solid(nx,ME.position.z))ME.position.x=nx;else if(!solid(ME.position.x,nz))ME.position.z=nz}ME.rotation.y=Math.atan2(dx,dz);hwalk(ME,t,true)}else hwalk(ME,t,false);
  U.ring.material.opacity=.5+.3*Math.sin(t*4);
  {const px=ME.position.x,pz=ME.position.z,sa=Math.sin(camAng),ca=Math.cos(camAng);const k1=occT(px,3,pz,px+sa*camDist*.86,camDist*.82,pz+ca*camDist*.86);CAMUP+=((k1<1?1:0)-CAMUP)*.06;const H=RIDE&&RIDE.k==='carousel'?6.5:camDist*(.82+.45*CAMUP),hz=camDist*(.86-.4*CAMUP);const cx=px+sa*hz,cz=pz+ca*hz;const k=occT(px,3,pz,cx,H,cz);CAMK+=((k<1?Math.max(.82,k*.95):1)-CAMK)*.08;
  camP.lerp(new THREE.Vector3(ME.position.x+(cx-ME.position.x)*CAMK,3+(H-3)*CAMK,ME.position.z+(cz-ME.position.z)*CAMK),.1)}camera.position.copy(camP);camera.lookAt(ME.position.x,3,ME.position.z);

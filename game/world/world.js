@@ -29,9 +29,9 @@ export function buildWorld(residents){
   WORLD.streets=streets;for(const s of streets){const tex=T.paving.clone();tex.needsUpdate=true;tex.repeat.set(s.w/8,s.d/8);const m=new THREE.Mesh(new THREE.PlaneGeometry(s.w,s.d),new THREE.MeshLambertMaterial({map:tex}));m.rotation.x=-Math.PI/2;m.position.set(s.x,0.03,s.z);m.receiveShadow=true;scene.add(m)}
   {const tex=T.plaza.clone();tex.needsUpdate=true;const w=px1-px0+ST,d=pz1-pz0+ST;tex.repeat.set(w/9,d/9);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshLambertMaterial({map:tex}));m.rotation.x=-Math.PI/2;m.position.set((px0+px1)/2,0.06,(pz0+pz1)/2);m.receiveShadow=true;scene.add(m)}
   // river on the left
-  const rvx=ox-46,rvw=30;{const tex=T.water;tex.repeat.set(4,140);const m=new THREE.Mesh(new THREE.PlaneGeometry(rvw,4000),M.water);m.rotation.x=-Math.PI/2;m.position.set(rvx,0.05,0);scene.add(m);WORLD.river={x:rvx,w:rvw,mesh:m};
+  const rvx=ox-46,rvw=30;{const tex=T.water;tex.repeat.set(4,140);const m=new THREE.Mesh(new THREE.PlaneGeometry(rvw,4000),M.water);m.rotation.x=-Math.PI/2;m.position.set(rvx,0.05,0);scene.add(m);WORLD.river={x:rvx,w:rvw,mesh:m,br:[]};
     const bank=[];for(let z=-2000;z<2000;z+=4)for(const sx of [-1,1])bank.push({x:rvx+sx*(rvw/2+0.8),y:0.25,z,sx:1.8,sy:0.5,sz:4.1,c:0x9c958a});inst(BX,new THREE.MeshLambertMaterial({map:T.stone}),bank,{cast:false});
-    const br=[];for(let b=0;b<=Math.ceil(rows/2);b++){const z=oz+rowZ(b*2)-ST/2;for(let k=-7;k<=7;k++)br.push({x:rvx+k*2.2,y:0.9,z,sx:2.0,sy:0.25,sz:6});br.push({x:rvx,y:1.6,z:z-3,sx:rvw+6,sy:0.25,sz:0.25});br.push({x:rvx,y:1.6,z:z+3,sx:rvw+6,sy:0.25,sz:0.25})}inst(BX,M.wood,br);
+    const br=[];for(let b=0;b<=Math.ceil(rows/2);b++){const z=oz+rowZ(b*2)-ST/2;WORLD.river.br.push(z);for(let k=-7;k<=7;k++)br.push({x:rvx+k*2.2,y:0.9,z,sx:2.0,sy:0.25,sz:6});br.push({x:rvx,y:1.6,z:z-3,sx:rvw+6,sy:0.25,sz:0.25});br.push({x:rvx,y:1.6,z:z+3,sx:rvw+6,sy:0.25,sz:0.25})}inst(BX,M.wood,br);
     const road={x:(rvx+ox-ST)/2,w:(ox-ST)-(rvx)+4};}
   // forest & mountains
   const pines=[];const trees=[];
