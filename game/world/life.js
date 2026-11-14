@@ -2,7 +2,8 @@
 import * as THREE from './three.js';
 import { makeHero, walk, play, tickHeroes, dispose } from './hero.js';
 const P = parent, $ = id => document.getElementById(id);
-const ME = () => P.ME, LIFE = () => P.ME && P.ME.life;
+const GUEST = new URLSearchParams(location.search).get('guest'); let GL = null;
+const ME = () => P.ME, HOME = () => P.ME && P.ME.life, LIFE = () => GUEST ? GL : HOME();
 let CAT = null;
 const HW = 16, HD = 15, WH = 4.2; // половина ширины/глубины дома, высота стен
 
@@ -149,7 +150,7 @@ function addObj(k, x, z, r) {
 function spot(g) { const d = (g.userData.d || 1) / 2 + 1.1, r = g.rotation.y; return new THREE.Vector3(g.position.x + Math.sin(r) * d, 0, g.position.z + Math.cos(r) * d) }
 
 // ---------- житель ----------
-let hero = makeHero(LIFE() && LIFE().look); hero.position.set(0, 0, 11); hero.rotation.order = 'YXZ'; scene.add(hero);
+let hero = makeHero(HOME() && HOME().look); hero.position.set(0, 0, 11); hero.rotation.order = 'YXZ'; scene.add(hero);
 function rebuildHero(look) { const p = hero.position.clone(), r = hero.rotation.y; scene.remove(hero); dispose(hero); hero = makeHero(look); hero.rotation.order = 'YXZ'; hero.position.copy(p); hero.rotation.y = r; scene.add(hero) }
 let doing = null, bubble = null, path = [], busy = false;
 hero.rotation.order = 'YXZ';
@@ -261,7 +262,7 @@ async function act(g, ai = 0) {
       hold(p.prop); doing = null; await standUp(p); const t = OBJ.get('table'), q = plan(t);
       if (await walkTo(q.app)) { pose('sit'); await glide(q.at, q.y, q.rot, 0, 650); doing = { k, anim: 'eat' }; say('😋'); hold(p.prop); await sleep(2600); await standUp(q) }
     }
-    const j = await P.call('life/act', { o: k, i: ai }); if (bubble) { hero.remove(bubble); bubble = null }
+    const j = GUEST ? null : await P.call('life/act', { o: k, i: ai }); if (bubble) { hero.remove(bubble); bubble = null }
     doing = null; if (!p.then) await standUp(p); if (j && j.me) { hud(); P.HAP && P.HAP('light') }
     if (k === 'pc' && ai === 1 && P.closeLife) { setTimeout(() => { P.closeLife(); P.show && P.show('work'); P.toast && P.toast('💼 Вакансии города — выбирай работу!') }, 300) }
   } finally { doing = null; busy = false; if (POSE !== 'stand') await standUp(null); hero.rotation.x = 0; hero.position.y = 0; hold(null) }
@@ -270,7 +271,7 @@ async function act(g, ai = 0) {
 // ---------- потребности ----------
 const NI = { food: ['🍗', 'Еда'], sleep: ['😴', 'Сон'], fun: ['🎉', 'Веселье'], soc: ['💬', 'Общение'], hyg: ['🛁', 'Чистота'] };
 function hud() {
-  const L = LIFE(); if (!L) return;
+  const L = HOME(); if (!L) return;
   $('needs').innerHTML = Object.entries(NI).map(([k, [e, n]]) => { const v = Math.round(L.n[k]), c = v > 60 ? 'var(--mint)' : v > 30 ? 'var(--win)' : 'var(--tile)'; return `<div class="nd" title="${n}"><div class="rg" style="--v:${v};--c:${c}"><span>${e}</span></div><small>${n}</small></div>` }).join('');
   const m = L.mood; $('mood').innerHTML = `<b>${m >= 70 ? '😄' : m >= 40 ? '🙂' : '😟'} ${m}%</b><small>${L.k > 1 ? 'доход ×1.25' : L.k < 1 ? 'доход ×0.8' : 'доход обычный'}</small>`;
 }
@@ -304,13 +305,14 @@ function menu(g, x, y) {
   const k = g.userData.k, f = CAT && CAT.furn[k]; if (!f) return;
   const eff = Object.entries(f[4]).map(([n, v]) => `${NI[n][0]} +${v}`).join(' ');
   const cd = (LIFE().cd || {})[k], left = cd ? 600 - (Date.now() / 1000 - cd) : 0;
+  if (GUEST && k === 'wardrobe') { P.toast && P.toast('👕 Это гардероб друга'); return }
   if (k === 'wardrobe') { $('om').innerHTML = `<b>${f[0]} ${f[1]}</b><small>Здесь твоя одежда и аксессуары</small><button id="use">Открыть гардероб</button>`; $('om').style.left = Math.min(innerWidth - 220, Math.max(10, x - 100)) + 'px'; $('om').style.top = Math.max(70, y - 130) + 'px'; $('om').classList.remove('hidden'); $('use').onclick = () => { $('om').classList.add('hidden'); $('lookb').click() }; return }
   const AX = CAT.actx && CAT.actx[k], cdl = ck => { const c = (LIFE().cd || {})[ck]; return c ? 600 - (Date.now() / 1000 - c) : 0 };
   const btn = (i, lab, ck, ef) => { const l = cdl(ck); return `<button class="ua" data-i="${i}" ${l > 0 ? 'disabled' : ''}>${lab}${ef ? `<small>${ef}</small>` : ''}${l > 0 ? `<small>через ${Math.ceil(l / 60)} мин</small>` : ''}</button>` };
   const efs = e => Object.entries(e).map(([n, v]) => `${NI[n][0]}+${v}`).join(' ');
   $('om').innerHTML = `<b>${f[0]} ${f[1]}</b>` + (AX ? AX.map((a, i) => btn(i, a[0] + ' ' + a[1], i ? k + '.' + i : k, efs(a[2]))).join('') : eff ? btn(0, USE[k] || 'Использовать', k, eff) : '<small>Украшение дома</small>');
   $('om').style.left = Math.min(innerWidth - 230, Math.max(10, x - 110)) + 'px'; $('om').style.top = Math.max(70, Math.min(innerHeight - 90 - (AX ? AX.length : 1) * 52, y - 150)) + 'px'; $('om').classList.remove('hidden');
-  $('om').insertAdjacentHTML('beforeend', '<button class="ua mv">✋ Переставить / повернуть</button>'); $('om').querySelector('.mv').onclick = () => moveMode(g);
+  if (!GUEST) { $('om').insertAdjacentHTML('beforeend', '<button class="ua mv">✋ Переставить / повернуть</button>'); $('om').querySelector('.mv').onclick = () => moveMode(g) }
   $('om').querySelectorAll('.ua:not(.mv)').forEach(b => b.onclick = () => act(g, +b.dataset.i));
 }
 const USE = { arcade: 'Играть в автомат', throne: 'Сесть на трон', goldtv: 'Смотреть золотой ТВ', sauna: 'Попариться', desk: 'Поработать', dining: 'Выпить коктейль', fridge: 'Перекусить', stove: 'Приготовить ужин', chef: 'Готовить как шеф', table: 'Поесть за столом', bed: 'Поспать', kingbed: 'Спать как король', sofa: 'Отдохнуть', shower: 'Принять душ', bath: 'Полежать в ванне', jacuzzi: 'В джакузи', tv: 'Смотреть ТВ', cinema: 'Смотреть кино', pc: 'Листать Instagram', toilet: 'Сходить в туалет', armchair: 'Посидеть в кресле', coffee: 'Сварить кофе', treadmill: 'Пробежка', easel: 'Порисовать', robot: 'Запустить уборку', goldtoilet: 'Посидеть на золотом', dj: 'Включить DJ-сет', telescope: 'Смотреть на звёзды', console: 'Играть', guitar: 'Сыграть', piano: 'Сыграть на рояле', books: 'Почитать', aquarium: 'Кормить рыбок', fireplace: 'Греться у камина', phone: 'Позвонить подписчикам' };
@@ -397,8 +399,14 @@ function loop(now) {
 }
 (async () => {
   const j = await P.call('rels'); CAT = j || { furn: {}, lookv: {} };
+  if (GUEST) { const q = await P.call('guest', { nick: GUEST }); if (!q || !q.g) { P.closeLife && P.closeLife(); return } GL = q.g;
+    $('lookb').style.display = 'none'; $('build').textContent = '💬 Чат'; $('build').onclick = () => P.openChat && P.openChat(GUEST);
+    const fr = makeHero(GL.look); fr.position.set(2.4, 0, 8); fr.rotation.y = Math.PI * .85; scene.add(fr);
+    const c = document.createElement('canvas'); c.width = 512; c.height = 96; const x = c.getContext('2d'); x.fillStyle = 'rgba(30,20,70,.85)'; x.beginPath(); x.roundRect(30, 6, 452, 84, 40); x.fill(); x.fillStyle = '#ffc65c'; x.font = 'bold 44px sans-serif'; x.textAlign = 'center'; x.fillText('@' + GL.nick + ' · хозяин', 256, 62);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false })); sp.scale.set(5.2, 1, 1); sp.position.y = 4.6; fr.add(sp);
+    hero.position.set(0, 0, 12); P.toast && P.toast('🏠 Ты в гостях у @' + GL.nick + ' — всё можно трогать!') }
   buildHouse(); placeAll(); rebuildGrid(); hud(); $('load').remove(); requestAnimationFrame(loop);
   setInterval(hud, 30000);
-  setInterval(() => { if (BUILD || !LIFE()) return; for (const [k, x, z, r] of LIFE().furn) if (!OBJ.has(k)) { addObj(k, x, z, r); rebuildGrid() } }, 3000);
+  setInterval(() => { if (GUEST || BUILD || !LIFE()) return; for (const [k, x, z, r] of LIFE().furn) if (!OBJ.has(k)) { addObj(k, x, z, r); rebuildGrid() } }, 3000);
 })();
 window.hud = hud; window.__hero = () => hero; window.__st = () => (doing ? doing.anim : '') + '|' + POSE; window.__act = (k, i) => OBJ.get(k) && act(OBJ.get(k), i); window.__menu = k => OBJ.get(k) && menu(OBJ.get(k), 180, 400);
