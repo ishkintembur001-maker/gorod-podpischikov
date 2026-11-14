@@ -23,7 +23,7 @@ const C = (r1, r2, h, c, x, y, z, p, s = 16) => mk(new THREE.CylinderGeometry(r1
 function tex(fn, w = 512, h = 128) { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t }
 function sign(text, w, h, bg, fg, x, y, z, p = scene) { const t = tex((g, W, H) => { g.fillStyle = bg; g.fillRect(0, 0, W, H); g.fillStyle = fg; g.font = `900 ${H * .55}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, W / 2, H / 2 + 4) }, 1024, Math.round(1024 * h / w)); const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })); m.position.set(x, y, z); p.add(m); return m }
 const NPC = (look, x, z, ry) => { const h = makeHero({ g: 'm', sk: '#e0b08a', hc: '#222', hs: 1, ...look }); h.position.set(x, 0, z); h.rotation.y = ry; scene.add(h); play(h, 'Idle'); return h };
-const me = makeHero(myLook()); me.position.set(0, 0, 11); me.rotation.y = Math.PI; scene.add(me); play(me, 'Idle');
+let me = makeHero(myLook()); me.position.set(0, 0, 11); me.rotation.y = Math.PI; scene.add(me); play(me, 'Idle');
 { const t = tex((g, W, H) => { g.fillStyle = '#ffc65c'; g.beginPath(); g.roundRect(30, 6, W - 60, 74, 37); g.fill(); g.fillStyle = '#3b2300'; g.font = '900 52px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('ТЫ', W / 2, 45) }, 256, 90); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); s.scale.set(1.8, .63, 1); s.position.y = 4.4; s.renderOrder = 5; me.add(s) }
 const bubbles = [];
 function emo(g, e) { const t = tex((x, W, H) => { x.font = '96px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(e, W / 2, H / 2) }, 128, 128); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); s.scale.set(1.4, 1.4, 1); s.position.copy(g.position).add(new THREE.Vector3(0, 4.2, 0)); s.renderOrder = 6; scene.add(s); bubbles.push({ s, t0: performance.now() }) }
@@ -79,7 +79,7 @@ if (V === 'cinema') {
     if (mate) { mate.position.y = 0; emo(mate, who === 'girl' ? '💖' : '🤝') } P.toast && P.toast(j.msg); play(me, 'Victory', { once: true }); await wait(1500); if (mate) { scene.remove(mate) } me.position.set(0, 0, 11); play(me, 'Idle'); busy = false; $('bar0').classList.remove('hidden') }
 }
 // =================== БУРГЕРНАЯ ===================
-else {
+else if (V === 'burger') {
   $('ttl').firstChild.textContent = '🍔 Бургер Город'; $('st').textContent = 'закажи у кассы и садись за стол';
   const ft = tex((g, W, H) => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { g.fillStyle = (i + j) % 2 ? '#f4efe4' : '#d62828'; g.fillRect(i * W / 8, j * H / 8, W / 8, H / 8) } }, 256, 256); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(4, 5);
   const fl = new THREE.Mesh(new THREE.PlaneGeometry(22, 26), new THREE.MeshStandardMaterial({ map: ft, roughness: .5 })); fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true; scene.add(fl);
@@ -108,6 +108,50 @@ else {
     for (let i = 0; i < 5; i++) { await wait(1200); emo(me, ['😋', '🍔', '😍', '🤤', '👍'][i]); if (i === 2) tray.children.forEach((c, k) => { if (k > 0 && k % 2) c.visible = false }) }
     scene.remove(tray); play(me, 'StandUp', { once: true }); setCam(CAM.p0, CAM.l0); await wait(900); me.position.y = 0; P.toast && P.toast(j.msg); for (const k in Q) Q[k] = 0; await goTo(0, 11); me.rotation.y = Math.PI; play(me, 'Idle'); busy = false; $('bar0').classList.remove('hidden') }
   tick = t => { };
+}
+
+// =================== ТЦ: БУТИК + СУПЕРМАРКЕТ ===================
+if (V === 'mall') {
+  $('ttl').firstChild.textContent = '🛍 ТЦ «Город»'; $('st').textContent = 'одежда · продукты · подарки';
+  { const ft = tex((g, W, H) => { for (let i = 0; i < 16; i++) for (let j = 0; j < 16; j++) { g.fillStyle = (i + j) % 2 ? '#efeaf6' : '#e2dcef'; g.fillRect(i * W / 16, j * H / 16, W / 16, H / 16) } }, 512, 512); const fl = new THREE.Mesh(new THREE.PlaneGeometry(26, 26), new THREE.MeshStandardMaterial({ map: ft, roughness: .35 })); fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true; scene.add(fl) }
+  B(26, 7, .4, '#f6f1ff', 0, 3.5, -13); B(.4, 7, 26, '#ffe3ef', -13, 3.5, 0); B(.4, 7, 26, '#e3f6ea', 13, 3.5, 0); B(.3, 3, 12, '#d9d0ee', 0, 1.5, -7);
+  // --- бутик
+  B(12, .06, 12, '#ffd0e2', -6.5, .03, -6); sign('👕 БУТИК «СТИЛЬ»', 9, 1.4, '#ff6fa8', '#fff', -6.5, 5.2, -12.75);
+  for (const z of [-10, -6.5, -3]) { C(.06, .06, 5, '#c0c0c8', -9.5, 2.6, z).rotation.z = Math.PI / 2; for (const x of [-11.5, -11, -10.5]) { C(.05, .05, 2.6, '#c0c0c8', x === -11 ? -12 : x === -10.5 ? -7 : -12, 1.3, z) } for (let i = 0; i < 8; i++) B(.5, 1.3, .08, ['#e8433a', '#3a8fd8', '#2bb24c', '#f2c230', '#8a4dff', '#ff6fa8', '#222', '#fff'][(i + z * 3 | 0) & 7], -11.8 + i * .6, 1.9, z).rotation.y = Math.PI / 2 }
+  const mirror = mk(new THREE.PlaneGeometry(3, 4.6), new THREE.MeshStandardMaterial({ color: '#cfe8ff', metalness: .9, roughness: .08 }), -12.75, 2.6, 3); mirror.rotation.y = Math.PI / 2; B(.2, 5, 3.4, '#b9a46a', -12.85, 2.6, 3);
+  B(2.4, 4, 2.4, '#8a4dff', -11.5, 2, 8.5); B(.06, 3.4, 2, '#ff6fa8', -10.27, 1.9, 8.5);
+  const mann = [[{ ac: 'cowboy', bk: 'backpack', sh: '#e8433a' }, -4, -11], [{ ac: 'tophat', ot: 'classic', g: 'f', hs: 1 }, -7, -11], [{ ac: 'headphones', fc: 'sunglasses', sh: '#3a8fd8' }, -10, -11]].map(([lk, x, z]) => { C(.9, .9, .3, '#fff', x, .15, z); const h = NPC({ sk: '#f0f0f0', hc: '#f0f0f0', pa: '#2b3a55', ...lk }, x, z, 0); h.position.y = .3; return h });
+  const shopGirl = NPC({ sh: '#ff6fa8', pa: '#2b3a55', g: 'f', hs: 1 }, -4, -2, Math.PI / 2);
+  // --- супермаркет
+  sign('🛒 СУПЕРМАРКЕТ', 9, 1.4, '#2bb24c', '#fff', 6.5, 5.2, -12.75);
+  const PC = ['#e8433a', '#f2c230', '#3a8fd8', '#2bb24c', '#ff8a3a', '#8a4dff', '#fff', '#a0522d'];
+  const SH = []; for (const z of [-9, -5, -1]) { B(8, 2.6, 1.1, '#f4f4f8', 7, 1.3, z); for (const y of [.7, 1.5, 2.3]) { B(8, .06, 1.2, '#d0d0d8', 7, y - .3, z); for (let i = 0; i < 14; i++) B(.38, .5, .5, PC[(i * 3 + (y * 10 | 0) + (z | 0)) & 7], 3.4 + i * .55, y, z + (i % 2 ? .25 : -.25)) } SH.push([5, z + 1.6], [9, z + 1.6]) }
+  for (let i = 0; i < 4; i++) { B(2.2, 3.6, 1.2, '#dfe8f0', 3.5 + i * 2.4, 1.8, -12.2); const gl = mk(new THREE.PlaneGeometry(1.9, 3), new THREE.MeshStandardMaterial({ color: '#9fd8ff', emissive: '#5ab0ff', emissiveIntensity: .35, transparent: true, opacity: .7 }), 3.5 + i * 2.4, 1.9, -11.58) }
+  B(3, .9, 1.6, '#a0522d', 11, .45, 4); for (let i = 0; i < 10; i++) mk(new THREE.SphereGeometry(.25, 10, 8), ['#e8433a', '#f2c230', '#2bb24c', '#ff8a3a'][i & 3], 9.9 + (i % 5) * .55, 1.15, 3.6 + (i > 4 ? .7 : 0));
+  B(4, 1.2, 1.4, '#2bb24c', 8, .6, 8); B(4.2, .1, 1.6, '#fff', 8, 1.25, 8); B(.8, .5, .5, '#333', 7, 1.55, 8); const cashier = NPC({ sh: '#2bb24c', pa: '#1c1c1c', ac: 'cap', g: 'f', hs: 1 }, 8, 9.6, Math.PI);
+  sign('КАССА', 2.4, .6, '#fff', '#2bb24c', 8, 2.6, 8.72);
+  const cart = new THREE.Group(); B(1.1, .7, .8, '#c0c8d8', 0, 1.1, 0, cart); B(1.1, .06, .8, '#8890a0', 0, .7, 0, cart); for (const [x, z] of [[-.45, -.3], [.45, -.3], [-.45, .3], [.45, .3]]) C(.1, .1, .1, '#333', x, .1, z, cart, 8); C(.04, .04, 1.2, '#8890a0', 0, 1.5, .45, cart).rotation.z = Math.PI / 2; cart.position.set(0, 0, 1.3);
+  let WC = {}, GR = {}, BAG = {};
+  const reMe = () => { const p = me.position.clone(), r = me.rotation.y, kids = me.children.filter(c => c.isSprite); scene.remove(me); dispose(me); me = makeHero(myLook()); me.position.copy(p); me.rotation.y = r; kids.forEach(k => me.add(k)); scene.add(me); play(me, 'Idle') };
+  (async () => { const [r, m] = await Promise.all([P.call('rels'), P.call('mall', { a: 'bag' })]); WC = (r && r.wearc) || {}; GR = (m && m.groc) || {}; BAG = (m && m.bag) || {} })();
+  $('bar0').innerHTML = `<button class="sec b" id="mw">👕 Одежда<small>бутик</small></button><button class="sec b" id="mg">🛒 Продукты<small>супермаркет</small></button><button class="sec b" id="mb">🧺 Сумка</button><button class="sec b" id="mp">🎁 Другу</button>`;
+  const clothes = () => { const own = new Set([...((ME().life || {}).wear || []), 'cap', 'glasses', 'casual']); const L = Object.entries(WC).filter(([k, w]) => w[3] > 0 || w[4]);
+    openP(`<h2>👕 Бутик «Стиль»</h2><p style="color:var(--dim)">Купленное сразу надевается. ⭐ — уникальные вещи за Stars</p><div class="wk" style="grid-template-columns:repeat(4,1fr);max-height:46vh;overflow:auto">${L.map(([k, w]) => `<button data-w="${k}" style="font-size:24px!important;${own.has(k) ? 'opacity:.5' : ''}">${w[0]}<small>${w[1]}</small><small style="color:${w[4] ? '#ffd34d' : 'var(--mint)'}">${own.has(k) ? '✅ есть' : w[4] ? '⭐ ' + w[4] : w[3] + ' 🪙'}</small></button>`).join('')}</div><button class="go2" id="px">Закрыть</button>`);
+    $('px').onclick = closeP; panel.querySelectorAll('[data-w]').forEach(b => b.onclick = async () => { const k = b.dataset.w, w = WC[k]; if (own.has(k)) { P.toast && P.toast('Уже есть — надеть можно дома в «Образе»'); return } if (w[4]) { P.buy && P.buy('w_' + k); return } if (busy) return; busy = true; closeP(); $('bar0').classList.add('hidden');
+      await goTo(-9.5, -8.2); me.rotation.y = Math.PI; play(me, 'PickUp', { once: true }); await wait(900); const j = await P.call('wear/buy', { k }); if (!j || !j.me) { busy = false; $('bar0').classList.remove('hidden'); return } coins();
+      await goTo(-10.8, 3); me.rotation.y = -Math.PI / 2; setCam([-4, 5, 3], [-11, 2.4, 3]); reMe(); emo(me, '✨'); play(me, 'Victory', { once: true }); await wait(2200); emo(me, w[0]); P.toast && P.toast(j.msg); await wait(1200); setCam(CAM.p0, CAM.l0); busy = false; $('bar0').classList.remove('hidden') }) };
+  const Q = {}; const groc = () => { const tot = Object.entries(Q).reduce((a, [k, c]) => a + c * (GR[k] ? GR[k][2] : 0), 0), n = Object.values(Q).reduce((a, c) => a + c, 0);
+    openP(`<h2>🛒 Супермаркет</h2><p style="color:var(--dim)">Покупки кладутся в 🧺 сумку — используй когда захочешь или подари другу</p><div style="max-height:44vh;overflow:auto">${Object.entries(GR).map(([k, g]) => `<div class="mi">${g[0]} <b>${g[1]}<br><small style="color:var(--dim)">${Object.entries(g[3]).map(([q, v]) => ({ food: 'еда', sleep: 'бодрость', fun: 'веселье', soc: 'общение', hyg: 'чистота' })[q] + ' +' + v).join(' · ')}</small></b><span style="color:var(--mint)">${g[2]} 🪙</span><span class="q"><button data-m="${k}" data-d="-1">−</button>${Q[k] || 0}<button data-m="${k}" data-d="1">+</button></span></div>`).join('')}</div><button class="go1" id="go">${n ? '🛒 Купить ' + n + ' шт. за ' + tot + ' 🪙' : 'Положи продукты в тележку'}</button><button class="go2" id="px">Закрыть</button>`);
+    panel.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { const k = b.dataset.m; const c = Math.max(0, Math.min(9, (Q[k] || 0) + +b.dataset.d)); if (c + Object.values(Q).reduce((a, x) => a + x, 0) - (Q[k] || 0) > 20) return; Q[k] = c; HAP('light'); groc() }); $('px').onclick = closeP; $('go').onclick = () => { if (n) shop() } };
+  async function shop() { if (busy) return; const items = []; for (const k in Q) for (let i = 0; i < Q[k]; i++) items.push(k); busy = true; closeP(); $('bar0').classList.add('hidden'); me.add(cart); play(me, 'Walk_Carry'); setCam([7, 14, 14], [7, 0, -3]);
+    const stops = SH.slice().sort(() => Math.random() - .5).slice(0, Math.min(3, Math.max(1, Math.ceil(items.length / 3)))); const ks = [...new Set(items)];
+    for (let i = 0; i < stops.length; i++) { await goTo(...stops[i]); me.rotation.y = Math.PI; emo(me, GR[ks[i % ks.length]][0]); await wait(700) }
+    await goTo(8, 6.4); me.rotation.y = 0; emo(cashier, '🧾'); play(cashier, 'PickUp', { once: true }); await wait(1100);
+    const j = await P.call('mall', { a: 'buy', items }); me.remove(cart); play(me, 'Idle'); if (j && j.bag) { BAG = j.bag; coins(); emo(me, '😊'); P.toast && P.toast(j.msg); for (const k in Q) Q[k] = 0 } setCam(CAM.p0, CAM.l0); await goTo(0, 11); me.rotation.y = Math.PI; busy = false; $('bar0').classList.remove('hidden') }
+  const bag = () => { const E = Object.entries(BAG); openP(`<h2>🧺 Моя сумка</h2>${E.length ? `<div style="max-height:46vh;overflow:auto">${E.map(([k, c]) => `<div class="mi">${GR[k] ? GR[k][0] : '🎁'} <b>${GR[k] ? GR[k][1] : k}<br><small style="color:var(--dim)">×${c}</small></b><span class="q"><button data-u="${k}" style="width:auto!important;padding:6px 10px!important">Использовать</button></span></div>`).join('')}</div>` : '<p>Пусто. Купи что-нибудь в супермаркете 🛒</p>'}<button class="go1" id="gf">🎁 Подарить другу</button><button class="go2" id="px">Закрыть</button>`);
+    $('px').onclick = closeP; $('gf').onclick = () => { closeP(); P.openGift && P.openGift() }; panel.querySelectorAll('[data-u]').forEach(b => b.onclick = async () => { const j = await P.call('mall', { a: 'use', k: b.dataset.u }); if (j && j.bag) { BAG = j.bag; emo(me, GR[b.dataset.u][0]); play(me, 'PickUp', { once: true }); P.toast && P.toast(j.msg); bag() } }) };
+  $('mw').onclick = clothes; $('mg').onclick = groc; $('mb').onclick = bag; $('mp').onclick = () => P.openGift && P.openGift();
+  tick = t => { mann.forEach((h, i) => h.rotation.y = Math.sin(t * .4 + i) * .5) };
 }
 CAM.p0 = CAM.p.toArray(); CAM.l0 = CAM.l.toArray();
 
@@ -146,4 +190,4 @@ function loop(now) { requestAnimationFrame(loop); const dt = Math.min(.05, (now 
   for (let i = bubbles.length - 1; i >= 0; i--) { const b = bubbles[i], k = (now - b.t0) / 1600; b.s.position.y += dt * .8; b.s.material.opacity = 1 - k; if (k >= 1) { scene.remove(b.s); bubbles.splice(i, 1) } }
   cp.lerp(CAM.p, .06); cl.lerp(CAM.l, .08); cam.position.copy(cp); cam.lookAt(cl); R.render(scene, cam) }
 preload(myLook()); requestAnimationFrame(loop);
-setTimeout(() => !WK && P.toast && P.toast(V === 'cinema' ? '🎬 Купи билет и выбери, с кем пойдёшь' : '🍔 Жми «Заказать еду» — и за стол!'), 700);
+setTimeout(() => !WK && P.toast && P.toast(V === 'mall' ? '🛍 Бутик слева, супермаркет справа' : V === 'cinema' ? '🎬 Купи билет и выбери, с кем пойдёшь' : '🍔 Жми «Заказать еду» — и за стол!'), 700);
