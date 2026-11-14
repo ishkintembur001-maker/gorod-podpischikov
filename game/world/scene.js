@@ -409,12 +409,23 @@ const anchor=(par,x,y,z)=>{const o=new THREE.Object3D();o.position.set(x,y,z);pa
 const A_WHEEL=anchor(FW.cabs[0],0,-2.4,0),A_CAR=anchor(CARR,Math.cos(0)*7,1.2,Math.sin(0)*7),A_SW=anchor(SW[1],0,-5.1,0);
 const SPOTS=[['wheel','🎡 Прокатиться на колесе обозрения',PK.x+44,PK.z-14+9,6,14,A_WHEEL],['carousel','🎠 Покататься на карусели',PK.x-50,PK.z+12,6,10,A_CAR],['swing','🪁 Покачаться на качелях',PK.x-32,PK.z+25.5,5,8,A_SW],
  ['fountain','⛲ Бросить монетку в фонтан',PK.x,PK.z+10,4.5,4,null],['icecream','🍦 Купить мороженое',PK.x+20,PK.z-3.6,3.5,3,null],['bench','🪑 Посидеть на лавочке',PK.x-20,PK.z-4.6,3.5,6,null]];
+// ---------- река: рыбалка, посидеть у воды, блинчики ----------
+{const xL=RV.x-RV.w/2;SPOTS.push(['fishE','🎣 Порыбачить с набережной',xL-1.8,EZ+36,3.5,0,null],['rsit','🌅 Посидеть у реки',xL-3.5,EZ+4,3,8,null],['stones','🪨 Пускать блинчики',xL-2.4,EZ-20,3.5,5,null]);if(FISH.pz!==undefined)SPOTS.push(['fishP','🎣 Порыбачить с пирса',FISH.px0+2.2,FISH.pz,4,0,null])}
+const ROD=new THREE.Group();{const st=new THREE.Mesh(new THREE.CylinderGeometry(.04,.06,3.4,8),MAT(0x6b4220));st.position.set(.45,2.6,1.2);st.rotation.x=1.05;ROD.add(st);const bob=new THREE.Group();mesh(new THREE.SphereGeometry(.18,10,8),MAT(0xe8433a),0,.1,0,bob);mesh(new THREE.SphereGeometry(.12,10,8),MAT(0xffffff),0,.28,0,bob);bob.position.set(.45,0,6.5);ROD.add(bob);ROD.userData.bob=bob;
+ const ln=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,1,4),new THREE.MeshBasicMaterial({color:0xeeeeee}));ROD.add(ln);ROD.userData.ln=ln}
+window.__spots=SPOTS;let FISHING=null;const fishb=document.getElementById('fishb');
+function rodLine(){const tip=new THREE.Vector3(.45,4.05,2.7),b=ROD.userData.bob.position.clone();const ln=ROD.userData.ln,d=b.clone().sub(tip);ln.position.copy(tip).addScaledVector(d,.5);ln.scale.y=d.length();ln.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize())}
+function startFishing(sp){const [k,,x,z]=sp;RIDE={k:'fish',anc:null,end:Infinity,x,z};act.style.display='none';ME.position.set(x,onBridge(x,z)?.95:0,z);ME.rotation.y=Math.atan2(RV.x-x,0);ME.add(ROD);ROD.userData.bob.position.y=.1-ME.position.y;rodLine();hplay(ME,'Interact',{once:true});parent.postMessage({t:'hap'},'*');
+ FISHING={ph:'wait',t:performance.now()+2500+Math.random()*4500};fishb.textContent='🎣 Ждём поклёвку…';fishb.className='wait'}
+function endFishing(ok){if(!FISHING)return;parent.postMessage({t:'fish',ok:ok?1:0},'*');showEmo(ME,ok?'🐟':'💨');if(ok)hplay(ME,'Victory',{once:true});fishb.className='hidden';FISHING=null;setTimeout(()=>{ME.remove(ROD);if(RIDE&&RIDE.k==='fish'){RIDE=null;NEAR=undefined;hplay(ME,'Idle')}},1400)}
+fishb.onclick=()=>{if(!FISHING)return;if(FISHING.ph==='bite')endFishing(true);else{fishb.textContent='Рано! Рыба испугалась 💨';endFishing(false)}};
+function fishTick(t){if(!FISHING)return;const n=performance.now(),b=ROD.userData.bob;if(FISHING.ph==='wait'){b.position.y=.1-ME.position.y+Math.sin(t*3)*.05;if(n>FISHING.t){FISHING.ph='bite';FISHING.t=n+1500;fishb.textContent='🐟 ТЯНИ!';fishb.className='bite';parent.postMessage({t:'hap'},'*')}}else if(FISHING.ph==='bite'){b.position.y=.1-ME.position.y-.25+Math.sin(t*25)*.15;if(n>FISHING.t){fishb.textContent='Сорвалась… 💨';endFishing(false)}}rodLine()}
 let RIDE=null;const _rv=new THREE.Vector3();
-function startSpot(sp){const [k,lab,x,z,,dur,anc]=sp;RIDE={k,anc,end:performance.now()/1000+dur,x,z};parent.postMessage({t:'park',a:k},'*');parent.postMessage({t:'hap'},'*');act.style.display='none';
+function startSpot(sp){if(sp[0].startsWith('fish')){startFishing(sp);return}const [k,lab,x,z,,dur,anc]=sp;RIDE={k,anc,end:performance.now()/1000+dur,x,z};parent.postMessage({t:'park',a:k},'*');parent.postMessage({t:'hap'},'*');act.style.display='none';
  if(anc||k==='bench')hplay(ME,'SitDown',{once:true});else hplay(ME,'Victory',{once:true});
- const E={wheel:'🎡',carousel:'🎠',swing:'😆',fountain:'🪙',icecream:'🍦',bench:'😌'}[k];showEmo(ME,E);
- if(k==='bench'){ME.position.set(BENCH.position.x,.55,BENCH.position.z+.1);ME.rotation.y=0}else if(!anc){ME.rotation.y=Math.atan2((k==='fountain'?PK.x:KIOSK.position.x)-ME.position.x,(k==='fountain'?PK.z:KIOSK.position.z)-ME.position.z)}}
-function rideTick(t){if(!RIDE)return false;const T=performance.now()/1000;if(RIDE.anc){RIDE.anc.getWorldPosition(_rv);ME.position.copy(_rv);ME.rotation.y=RIDE.k==='swing'?Math.PI:RIDE.k==='carousel'?-CARR.rotation.y:0;if(RIDE.k==='carousel')ME.position.y+=Math.sin(t*3)*.4}
+ const E={rsit:'🌅',stones:'🪨',wheel:'🎡',carousel:'🎠',swing:'😆',fountain:'🪙',icecream:'🍦',bench:'😌'}[k];showEmo(ME,E);
+ if(k==='bench'){ME.position.set(BENCH.position.x,.55,BENCH.position.z+.1);ME.rotation.y=0}else if(k==='rsit'){ME.position.set(x,.55,z);ME.rotation.y=Math.PI/2}else if(k==='stones'){ME.rotation.y=Math.PI/2}else if(!anc){ME.rotation.y=Math.atan2((k==='fountain'?PK.x:KIOSK.position.x)-ME.position.x,(k==='fountain'?PK.z:KIOSK.position.z)-ME.position.z)}}
+function rideTick(t){if(!RIDE)return false;if(RIDE.k==='fish'){fishTick(t);return true}const T=performance.now()/1000;if(RIDE.anc){RIDE.anc.getWorldPosition(_rv);ME.position.copy(_rv);ME.rotation.y=RIDE.k==='swing'?Math.PI:RIDE.k==='carousel'?-CARR.rotation.y:0;if(RIDE.k==='carousel')ME.position.y+=Math.sin(t*3)*.4}
  if(RIDE.k==='fountain'&&Math.random()<.05)showEmo(ME,['✨','🙏','🪙'][Math.floor(Math.random()*3)]);
  if(T>RIDE.end){ME.position.set(RIDE.x,0,RIDE.z);hplay(ME,'Idle');RIDE=null;NEAR=undefined}return true}
 

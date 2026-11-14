@@ -72,12 +72,17 @@ function accessory(L) {
   if (ac === 'horns') { for (const x of [-.28, .28]) { const h = m(new THREE.ConeGeometry(.1, .45, 10), M2('#c0392b', { emissive: '#400' }), x, .35, .1); h.rotation.z = -x * 1.2 } }
   if (ac === 'wizard') { m(new THREE.CylinderGeometry(.9, .9, .05, 24), M2('#3a2a8a'), 0, 0, 0); const c = m(new THREE.ConeGeometry(.5, 1.4, 18), M2('#3a2a8a'), 0, .7, 0); c.rotation.z = .15; for (let i = 0; i < 4; i++) m(new THREE.OctahedronGeometry(.07), M2('#ffd34d', { emissive: '#aa8800' }), Math.cos(i * 1.6) * .35, .4 + i * .2, Math.sin(i * 1.6) * .3) }
   if (fc === 'glasses' || fc === 'sunglasses') { const mat = fc === 'glasses' ? M2('#111') : M2('#0a0a0a', { metalness: .6, roughness: .1 }); for (const x of [-.2, .2]) { const r = fc === 'glasses' ? m(new THREE.TorusGeometry(.14, .03, 6, 14), mat, x, -.57, .55) : m(new THREE.BoxGeometry(.3, .16, .05), mat, x, -.57, .56) } m(new THREE.BoxGeometry(.14, .03, .03), mat, 0, -.55, .56) }
+  if (ac === 'panama') { m(new THREE.CylinderGeometry(.85, .95, .08, 24), M2('#c9b07a'), 0, -.02, 0); m(new THREE.CylinderGeometry(.5, .56, .4, 20), M2('#c9b07a'), 0, .18, 0); m(new THREE.CylinderGeometry(.57, .57, .1, 20), M2('#5a7a3a'), 0, .06, 0); m(new THREE.BoxGeometry(.06, .25, .02), M2('#ff6a2a'), .45, .2, .3) }
+  if (ac === 'beret') { const b = m(new THREE.CylinderGeometry(.62, .55, .18, 24), M2('#c0392b'), .08, .05, 0); b.rotation.z = -.2; m(new THREE.SphereGeometry(.06, 8, 6), M2('#c0392b'), .1, .17, 0) }
+  if (ac === 'pirate') { const h = m(new THREE.CylinderGeometry(.55, .6, .4, 3), M2('#1a1a1a'), 0, .2, 0); h.rotation.y = Math.PI / 2; h.scale.set(1.6, 1, 1); m(new THREE.CircleGeometry(.14, 12), M2('#ffffff'), 0, .25, .5); m(new THREE.BoxGeometry(.5, .04, .02), M2('#ffd34d'), 0, .05, .48) }
+  if (ac === 'viking') { m(new THREE.SphereGeometry(.6, 18, 10, 0, 6.3, 0, 1.6), M2('#9aa3ad', { metalness: .8, roughness: .3 }), 0, -.12, 0); m(new THREE.TorusGeometry(.6, .05, 6, 24), M2('#b8862a', { metalness: .8 }), 0, -.12, 0).rotation.x = Math.PI / 2; for (const x of [-1, 1]) { const h = m(new THREE.ConeGeometry(.12, .7, 10), M2('#f4ead2'), x * .62, .2, 0); h.rotation.z = -x * .9 } }
   if (fc === 'mask') { m(new THREE.BoxGeometry(.8, .2, .1), M2('#1a1a8a'), 0, -.57, .54) }
   return g;
 }
 function backItem(L) {
   const g = new THREE.Group(), M2 = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: .6, side: THREE.DoubleSide, ...o }); const bk = L.bk;
   if (bk === 'backpack') { const b = new THREE.Mesh(new THREE.BoxGeometry(.8, .9, .4), M2('#2b8a4a')); b.position.set(0, 0, -.45); g.add(b) }
+  if (bk === 'rod' || bk === 'rod_gold') { const gold = bk === 'rod_gold', rm = M2(gold ? '#ffc65c' : '#6b4220', gold ? { metalness: .9, roughness: .2, emissive: '#6a4a00' } : {}); const r = new THREE.Mesh(new THREE.CylinderGeometry(.03, .05, 3, 8), rm); r.position.set(.25, .4, -.48); r.rotation.z = -.5; g.add(r); const rl = new THREE.Mesh(new THREE.CylinderGeometry(.12, .12, .1, 12), M2(gold ? '#fff3a0' : '#333')); rl.position.set(.05, .05, -.5); rl.rotation.x = Math.PI / 2; g.add(rl) }
   if (bk === 'cape') { const c = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.8, 1, 6), M2('#c0392b')); c.position.set(0, -.6, -.42); c.rotation.x = .12; c.name = 'cape'; g.add(c) }
   if (bk && bk.startsWith('wings')) { const col = bk === 'wings_angel' ? ['#ffffff', '#fff3d0'] : bk === 'wings_demon' ? ['#2a0a1a', '#8a1a2a'] : ['#4fc3ff', '#ff6fb5'];
     for (const s of [-1, 1]) { const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.bezierCurveTo(s * .6, .9, s * 1.6, 1, s * 1.8, .3); sh.bezierCurveTo(s * 1.4, -.2, s * .8, -.7, 0, -.3); const w = new THREE.Mesh(new THREE.ShapeGeometry(sh), M2(col[0], { emissive: col[1], emissiveIntensity: .25 })); w.position.set(s * .1, .1, -.42); w.rotation.y = s * .45; w.name = 'wing' + s; g.add(w) } }
@@ -85,7 +90,7 @@ function backItem(L) {
 }
 function auraItem(L) {
   const au = L.au; if (!au) return null; const g = new THREE.Group(); g.name = 'aura';
-  const col = { aura_gold: '#ffd34d', aura_fire: '#ff6a2a', aura_love: '#ff5a8a', aura_snow: '#bfe8ff' }[au] || '#ffd34d';
+  const col = { aura_gold: '#ffd34d', aura_fire: '#ff6a2a', aura_love: '#ff5a8a', aura_snow: '#bfe8ff', aura_water: '#3ac8ff' }[au] || '#ffd34d';
   const ring = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.5, 40), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .55, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.y = .06; g.add(ring);
   const pm = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .9 });
   for (let i = 0; i < 14; i++) { const p = new THREE.Mesh(au === 'aura_snow' ? new THREE.OctahedronGeometry(.09) : new THREE.SphereGeometry(.08, 6, 4), pm); p.userData.a = i / 14 * 6.283; p.userData.h = Math.random() * 3.4; g.add(p) }
