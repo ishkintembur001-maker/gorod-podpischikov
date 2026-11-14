@@ -395,7 +395,7 @@ function drawer() {
 
 // ---------- образ ----------
 const LN = { g: 'Пол', sk: 'Кожа', hc: 'Цвет волос', hs: 'Причёска', sh: 'Цвет одежды', pa: 'Цвет брюк' };
-const SLOTN = [['body', '🧍 Тело'], ['ot', '👕 Одежда'], ['ac', '🧢 Голова'], ['fc', '🕶 Лицо'], ['bk', '🪽 Спина'], ['au', '✨ Аура']];
+const SLOTN = [['body', '🧍 Тело'], ['ot', '👕 Одежда'], ['ac', '🧢 Голова'], ['fc', '🕶 Лицо'], ['bk', '🪽 Спина'], ['au', '✨ Аура'], ['fl', '🚩 Флаг']];
 let draft = null, LTAB = 'body';
 function lookDraw() {
   const V = CAT.lookv, W = CAT.wearc || {}, own = new Set([...((LIFE().wear) || []), ...(CAT.freew || [])]);

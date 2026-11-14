@@ -81,6 +81,15 @@ function accessory(L) {
   if (fc === 'mask') { m(new THREE.BoxGeometry(.8, .2, .1), M2('#1a1a8a'), 0, -.57, .54) }
   return g;
 }
+
+const FLD = { ru: [['#fff', '#0039a6', '#d52b1e']], kz: ['#00afca', 'sun', '#fec50c'], kg: ['#e8112d', 'sun', '#ffef00'], uz: [['#0099b5', '#fff', '#1eb53a']], tj: [['#cc0000', '#fff', '#006600'], 'dot', '#f8c300'], az: [['#00b5e2', '#ef3340', '#509e2f'], 'cres', '#fff'], tr: ['#e30a17', 'cres', '#fff'], dag: [['#1e9e3a', '#1c5fb8', '#d52b1e']], che: [['#1e9e3a', '#1e9e3a', '#1e9e3a', '#fff', '#d52b1e', '#d52b1e']], ing: [['#1e9e3a', '#fff', '#fff', '#fff', '#1e9e3a'], 'sun', '#d52b1e'], am: [['#d90012', '#0033a0', '#f2a800']], by: [['#cf101a', '#cf101a', '#007d2c']], city: ['#5b3fd8', 'txt', '🏙'], pirate: ['#111', 'txt', '☠️'] };
+const FLT = {};
+function flagTex(k) { if (FLT[k]) return FLT[k]; const d = FLD[k] || FLD.city, c = document.createElement('canvas'); c.width = 192; c.height = 128; const g = c.getContext('2d');
+  if (Array.isArray(d[0])) { const n = d[0].length; d[0].forEach((col, i) => { g.fillStyle = col; g.fillRect(0, i * 128 / n, 192, 128 / n + 1) }) } else { g.fillStyle = d[0]; g.fillRect(0, 0, 192, 128) }
+  if (d[1] === 'sun') { g.fillStyle = d[2]; g.beginPath(); g.arc(96, 64, 26, 0, 7); g.fill() } else if (d[1] === 'dot') { g.fillStyle = d[2]; g.beginPath(); g.arc(96, 64, 10, 0, 7); g.fill() } else if (d[1] === 'cres') { g.fillStyle = d[2]; g.beginPath(); g.arc(80, 64, 26, 0, 7); g.fill(); g.fillStyle = k === 'tr' ? '#e30a17' : '#ef3340'; g.beginPath(); g.arc(88, 64, 21, 0, 7); g.fill(); g.fillStyle = d[2]; g.beginPath(); g.arc(118, 64, 8, 0, 7); g.fill() } else if (d[1] === 'txt') { g.font = '80px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(d[2], 96, 68) }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return FLT[k] = t }
+function flagItem(L) { const g = new THREE.Group(); const k = String(L.fl).replace('flag_', ''); const p = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 3.4, 8), new THREE.MeshStandardMaterial({ color: '#c9c9d4', metalness: .6, roughness: .3 })); p.position.set(.35, .9, -.5); g.add(p);
+  const f = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1, 6, 1), new THREE.MeshStandardMaterial({ map: flagTex(k), side: THREE.DoubleSide, roughness: .8 })); f.position.set(1.1, 2.1, -.5); f.name = 'flag'; g.add(f); return g }
 function backItem(L) {
   const g = new THREE.Group(), M2 = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: .6, side: THREE.DoubleSide, ...o }); const bk = L.bk;
   if (bk === 'backpack') { const b = new THREE.Mesh(new THREE.BoxGeometry(.8, .9, .4), M2('#2b8a4a')); b.position.set(0, 0, -.45); g.add(b) }
@@ -119,6 +128,7 @@ export function makeHero(look = {}, me = true) {
     if (head && (L.ac || L.fc)) { const a = accessory(L); head.getWorldScale(ws); a.scale.setScalar(1 / ws.x); a.position.y = .7 / ws.y; head.add(a) }
     let torso = null; model.traverse(o => { if (o.isBone && /^(torso|chest|spine2?)$/i.test(o.name) && !torso) torso = o });
     if (torso && L.bk) { const bkI = backItem(L); torso.getWorldScale(ws); bkI.scale.setScalar(1 / ws.x); bkI.position.y = .5 / ws.y; torso.add(bkI); g.userData.back = bkI }
+    if (torso && L.fl) { const fI = flagItem(L); torso.getWorldScale(ws); fI.scale.setScalar(1 / ws.x); fI.position.y = .3 / ws.y; torso.add(fI) }
     const au = auraItem(L); if (au) { g.add(au); AURAS.add(au) }
     Object.assign(g.userData, { model, mix, acts, seatH, cur: null }); MIXERS.add(mix); play(g, g.userData.anim || 'Idle');
   });
