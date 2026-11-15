@@ -61,7 +61,8 @@ let me = makeHero({ ...((ME().life || {}).look || {}), vh: '' }); me.position.se
 const TORCH = new THREE.Group(); { const h = new THREE.Mesh(new THREE.CylinderGeometry(.06, .08, 1.1, 8), new THREE.MeshLambertMaterial({ color: '#5a3a1a' })); h.position.y = .55; TORCH.add(h); const f = new THREE.Mesh(new THREE.ConeGeometry(.2, .55, 8), new THREE.MeshBasicMaterial({ color: '#ffb040' })); f.position.y = 1.3; TORCH.add(f); TORCH.userData.f = f } TORCH.position.set(-.45, 1.1, .3); TORCH.rotation.x = .3; me.add(TORCH);
 const TL = new THREE.PointLight('#ffa050', 220, 38, 1.2); TL.position.set(0, 3.2, .5); me.add(TL);
 let HP = 100, dead = false, lastHit = 0;
-const WPN = { w_knife: ['🔪', 'Нож', 1, 2.4, .45], w_bow: ['🏹', 'Лук', 2, 15, .9], w_sword: ['⚔️', 'Меч', 3, 3.2, .7], w_lbow: ['🎯', 'Длинный лук', 4, 19, 1], w_elf: ['🍃', 'Эльфийский лук', 5, 19, .7], w_skard: ['🗡', 'Клинок Скарда', 6, 3.6, .6] };
+const WPN = { w_knife: ['🔪', 'Нож', 1, 2.4, .45], w_bow: ['🏹', 'Лук', 2, 15, .9], w_sword: ['⚔️', 'Меч', 3, 3.2, .7], w_lbow: ['🎯', 'Длинный лук', 4, 19, 1], w_elf: ['🍃', 'Эльфийский лук', 5, 19, .7], w_skard: ['🗡', 'Клинок Скарда', 6, 3.6, .6], w_shadow: ['🌑', 'Кинжал тени', 4, 2.6, .3], w_flame: ['🔥', 'Меч пламени', 7, 3.6, .6], w_hunt: ['🏹', 'Лук охотника', 8, 22, .6], w_legend: ['🌟', 'Гроза Скарда', 10, 4.2, .5] };
+const HAS = k => ((ME().life || {}).wear || []).includes(k);
 const owned = () => Object.keys(WPN).filter(k => ((ME().life || {}).wear || []).includes(k));
 let wi = 0; const curW = () => { const o = owned(); return o.length ? WPN[o[wi % o.length]] : null };
 function wBtn() { const w = curW(); $('wsw').innerHTML = w ? w[0] + '<br><small style="font-size:10px">' + w[1] + '</small>' : '✋'; }
@@ -121,8 +122,8 @@ function attack() {
 function kill(s) { SP.splice(SP.indexOf(s), 1); const g = s.g; g.rotation.z = Math.PI; g.position.y = .3; DEAD.push({ s, t: performance.now() }); popT({ s: '🕷 +12', m: '🕷 +35', l: '🕷 +90' }[s.kind]); api({ a: 'kill', s: s.kind }) }
 $('atk').onclick = attack;
 let torchT = 0;
-$('tor').onclick = () => { if (dead) return; const n = performance.now() / 1000; if (n < torchT) return; torchT = n + 2.5; HAP('medium'); TORCH.rotation.x = -1; setTimeout(() => TORCH.rotation.x = .3, 350); TL.intensity = 500; setTimeout(() => TL.intensity = 220, 600);
-  let k = 0; for (const s of [...SP]) { const d = s.g.position.distanceTo(me.position); if (d < 9) { if (s.kind === 'l') { s.st = 'chase'; continue } s.st = 'flee'; s.flee = n + 4; k++; if (s.kind === 's' && d < 4) { s.hp -= 1; sprite('🔥', s.g.position.clone().setY(1.2)); if (s.hp <= 0) kill(s) } } } if (k) popT('🔥 Пауки разбегаются!') };
+$('tor').onclick = () => { if (dead) return; const n = performance.now() / 1000; if (n < torchT) return; torchT = n + (HAS('i_torch') ? 1.2 : 2.5); HAP('medium'); TORCH.rotation.x = -1; setTimeout(() => TORCH.rotation.x = .3, 350); TL.intensity = 500; setTimeout(() => TL.intensity = 220, 600);
+  let k = 0; for (const s of [...SP]) { const d = s.g.position.distanceTo(me.position); if (d < (HAS('i_torch') ? 14 : 9)) { if (s.kind === 'l') { s.st = 'chase'; continue } s.st = 'flee'; s.flee = n + 4; k++; if (s.kind === 's' && d < 4) { s.hp -= 1; sprite('🔥', s.g.position.clone().setY(1.2)); if (s.hp <= 0) kill(s) } } } if (k) popT('🔥 Пауки разбегаются!') };
 $('back').onclick = () => P.closeWork && P.closeWork();
 const LEG = `<h2>📜 Легенда о Пещере Скарда</h2><p>Сто лет назад шахтёры Города искали серебро в горах за рекой. Однажды кирка пробила стену — и за ней открылась пещера, которой не было ни на одной карте.</p><p>Из темноты вышел паук размером с дом. Шахтёры назвали его <b>Скард</b>. Той ночью домой вернулись не все.</p><p>Вход завалили камнями, дорогу стёрли с карт, а детям запретили даже говорить о горе. Старики шепчутся: по ночам из-под земли слышен шорох тысяч лап…</p><p>Сто лет ни один житель Города не заходил внутрь. Пока не появились смельчаки — с факелами, ножами, мечами и луками.</p><p style="color:var(--win)">Свет факела пугает мелких пауков. Чёрных вдов огонь только злит. А Скарда можно одолеть только всем городом вместе.</p><button class="go1" id="px">🔥 Войти во тьму</button>`;
 const openLeg = () => { $('panel').innerHTML = LEG; $('panel').classList.remove('hidden'); $('px').onclick = () => $('panel').classList.add('hidden') };
@@ -137,19 +138,19 @@ const joy = { x: 0, y: 0 }; { const J = $('joy'), K = $('knob'); let id = null; 
 // ---------- цикл ----------
 let last = performance.now(), camA = Math.PI, flush = 0, shown = new Set();
 const cp = new THREE.Vector3(0, 10, 16);
-function hurt(dmg) { if (dead) return; HP = Math.max(0, HP - dmg); lastHit = performance.now(); hpUI(); $('vig').classList.add('hit'); setTimeout(() => $('vig').classList.remove('hit'), 250); HAP('heavy');
+function hurt(dmg) { if (dead) return; if (HAS('i_shield')) dmg *= .65; HP = Math.max(0, HP - dmg); lastHit = performance.now(); hpUI(); $('vig').classList.add('hit'); setTimeout(() => $('vig').classList.remove('hit'), 250); HAP('heavy');
   if (HP <= 0) { dead = true; play(me, 'Defeat', { once: true }); popT('🕸 Пауки утащили тебя…'); setTimeout(() => { me.position.set(0, 0, 6); HP = 100; hpUI(); dead = false; play(me, 'Idle'); toast('Ты очнулся у выхода из пещеры. Будь осторожнее!') }, 2600) } }
 function loop(now) {
   requestAnimationFrame(loop); const dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now;
   // движение
-  const L = Math.hypot(joy.x, joy.y); if (!dead && L > .1) { const sp = 7 * Math.min(1, L), ca = Math.cos(camA), sa = Math.sin(camA); const dx = -(joy.x * ca + joy.y * sa) , dz = -(-joy.x * sa + joy.y * ca); const nx = me.position.x + dx * sp * dt, nz = me.position.z + dz * sp * dt; if (walkable(nx, nz)) { me.position.x = nx; me.position.z = nz } else if (walkable(nx, me.position.z)) me.position.x = nx; else if (walkable(me.position.x, nz)) me.position.z = nz; me.rotation.y = Math.atan2(dx, dz); walk(me, t, true) } else walk(me, t, false);
+  const L = Math.hypot(joy.x, joy.y); if (!dead && L > .1) { const sp = 7 * (HAS('i_boots') ? 1.35 : 1) * Math.min(1, L), ca = Math.cos(camA), sa = Math.sin(camA); const dx = -(joy.x * ca + joy.y * sa) , dz = -(-joy.x * sa + joy.y * ca); const nx = me.position.x + dx * sp * dt, nz = me.position.z + dz * sp * dt; if (walkable(nx, nz)) { me.position.x = nx; me.position.z = nz } else if (walkable(nx, me.position.z)) me.position.x = nx; else if (walkable(me.position.x, nz)) me.position.z = nz; me.rotation.y = Math.atan2(dx, dz); walk(me, t, true) } else walk(me, t, false);
   if (me.position.z > 11 && !dead) { P.closeWork && P.closeWork(); return }
-  if (performance.now() - lastHit > 3000 && HP < 100) { HP = Math.min(100, HP + dt * 4); hpUI() }
-  TL.intensity += ((220 + Math.sin(t * 13) * 20 + Math.sin(t * 7.3) * 15) - TL.intensity) * .2; TORCH.userData.f.scale.y = 1 + Math.sin(t * 15) * .15;
+  if (performance.now() - lastHit > 3000 && HP < 100) { HP = Math.min(100, HP + dt * (HAS('i_ring') ? 12 : 4)); hpUI() }
+  TL.intensity += (((HAS('i_torch') ? 320 : 220) + Math.sin(t * 13) * 20 + Math.sin(t * 7.3) * 15) - TL.intensity) * .2; TORCH.userData.f.scale.y = 1 + Math.sin(t * 15) * .15;
   // пауки
   for (const s of SP) { const g = s.g, K = KIND[s.kind], d = g.position.distanceTo(me.position); let tx = null, tz = null, spd = 0;
     if (s.st === 'flee' && t > s.flee) s.st = 'idle';
-    if (s.st !== 'flee' && d < (s.kind === 'l' ? 14 : 10) && !dead) s.st = 'chase'; else if (s.st === 'chase' && (d > 22 || dead)) s.st = 'idle';
+    if (s.st !== 'flee' && d < (s.kind === 'l' ? 14 : 10) * (HAS('i_cloak') ? .55 : 1) && !dead) s.st = 'chase'; else if (s.st === 'chase' && (d > 22 || dead)) s.st = 'idle';
     if (s.st === 'chase') { tx = me.position.x; tz = me.position.z; spd = K[3]; if (d < 1.1 + K[0] * .9) { spd = 0; if (t > s.atk) { s.atk = t + 1.1; hurt(K[2]); g.userData.body.position.z = .3; setTimeout(() => g.userData.body.position.z = 0, 150) } } }
     else if (s.st === 'flee') { tx = g.position.x * 2 - me.position.x; tz = g.position.z * 2 - me.position.z; spd = K[3] * 1.3 }
     else { s.t -= dt; if (s.t < 0) { s.t = rnd(2, 5); s.wx = s.hx + rnd(-5, 5); s.wz = s.hz + rnd(-5, 5) } if (s.wx !== undefined && Math.hypot(s.wx - g.position.x, s.wz - g.position.z) > .5) { tx = s.wx; tz = s.wz; spd = 1.2 } }
