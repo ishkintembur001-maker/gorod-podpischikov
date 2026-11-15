@@ -387,7 +387,7 @@ async function setup(env,req){const f=await req.formData();const t=(f.get('token
   o.push(['menu',await tg(env,'setChatMenuButton',{menu_button:{type:'web_app',text:'🎮 Играть',web_app:{url:GAME}}})]);
   const ok=o.every(x=>x[1].ok);return H(`<body style="font-family:sans-serif;background:#1d1830;color:#fff;padding:24px"><h2>${ok?'✅ Игра подключена!':'⚠️ Что-то не так'}</h2><pre>${o.map(x=>x[0]+': '+(x[1].ok?'ok':x[1].description)).join('\n')}</pre><p>Теперь открой @${me.result.username} и отправь команду <b>/owner</b> — так бот запомнит, что ты владелец.</p></body>`)}
 
-const TOP10N=['aliakhmedov.05','csplayerdonk','boboewm.1','mar_keev48','bmzzi1','rakhimow.v7','rukiiat2089','lifi99875','sultan9090.14','gazixanov_686_'];for(const n of TOP10N)TITLES['t10_'+n.replace(/[^a-z0-9]/gi,'')]=['🏆','Топ-10 ноября · @'+n,0];
+const TOP10N=['temburhan','aliakhmedov.05','csplayerdonk','boboewm.1','mar_keev48','bmzzi1','rakhimow.v7','rukiiat2089','lifi99875','sultan9090.14','gazixanov_686_'];for(const n of TOP10N)TITLES['t10_'+n.replace(/[^a-z0-9]/gi,'')]=['🏆','Топ-10 ноября · @'+n,0];
 export default{async fetch(req,env,ctx){ENVG=env;if(ctx&&(!globalThis.__cr||Date.now()-globalThis.__cr>60000)){globalThis.__cr=Date.now();ctx.waitUntil(cron(env).catch(()=>{}))}const P=new URL(req.url).pathname;
   if(req.method==='OPTIONS')return new Response(null,{headers:{'access-control-allow-origin':'*','access-control-allow-headers':'content-type,x-init','access-control-allow-methods':'GET,POST'}});
   if(P==='/setup')return req.method==='POST'?setup(env,req):H(SETUP);
