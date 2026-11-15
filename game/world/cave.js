@@ -78,6 +78,9 @@ const TL = new THREE.PointLight('#ffa050', HASTORCH ? 220 : 90, HASTORCH ? 38 : 
 let HP = 100, dead = false, lastHit = 0;
 const WPN = { w_knife: ['🔪', 'Нож', 1, 2.4, .45], w_bow: ['🏹', 'Лук', 2, 15, .9], w_sword: ['⚔️', 'Меч', 3, 3.2, .7], w_lbow: ['🎯', 'Длинный лук', 4, 19, 1], w_elf: ['🍃', 'Эльфийский лук', 5, 19, .7], w_skard: ['🗡', 'Клинок Скарда', 6, 3.6, .6], w_shadow: ['🌑', 'Кинжал тени', 4, 2.6, .3], w_flame: ['🔥', 'Меч пламени', 7, 3.6, .6], w_hunt: ['🏹', 'Лук охотника', 8, 22, .6], w_legend: ['🌟', 'Гроза Скарда', 10, 4.2, .5] };
 const HAS = k => ((ME().life || {}).wear || []).includes(k);
+const FXA = k => { const f = ((ME().life || {}).fx || {})[k]; return f && f > Date.now() / 1000 };
+const ARMK = () => { let a = 0; for (const k of ((ME().life || {}).wear || [])) a = Math.max(a, { ar_leather: .15, ar_chain: .25, ar_plate: .35, ar_skard: .45, ar_gold: .5 }[k] || 0); return 1 - a };
+const HPM = () => FXA('hp') ? 150 : 100;
 const owned = () => Object.keys(WPN).filter(k => ((ME().life || {}).wear || []).includes(k));
 let wi = 0; const curW = () => { const o = owned(); return o.length ? WPN[o[wi % o.length]] : null };
 const WG = new THREE.Group(); WG.position.set(.42, 1.05, .3); me.add(WG);
@@ -86,7 +89,7 @@ function wModel() { WG.clear(); const o = owned(); const k = o.length ? o[wi % o
   else { const L = k === 'w_knife' || k === 'w_shadow' ? .55 : k === 'w_legend' ? 1.5 : 1.2; const bl = new THREE.Mesh(new THREE.BoxGeometry(.09, L, .025), steel); bl.position.y = L / 2 + .2; WG.add(bl); const gd = new THREE.Mesh(new THREE.BoxGeometry(.32, .06, .08), gold); gd.position.y = .2; WG.add(gd); const hd = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, .3, 6), wood); hd.position.y = .05; WG.add(hd); WG.userData.bow = 0; WG.userData.str = null } }
 function wBtn() { wModel(); if (me.userData && me.userData.att) { WG.userData.base = WG.userData.bow ? [Math.PI, Math.PI / 2, 0] : [Math.PI / 2 + .6, 0, 0]; WG.rotation.set(...WG.userData.base) } const w = curW(); $('wsw').innerHTML = w ? w[0] + '<br><small style="font-size:10px">' + w[1] + '</small>' : '✋'; }
 wBtn(); $('wsw').onclick = () => { wi++; wBtn(); HAP('light'); const w = curW(); toast(w ? 'В руке: ' + w[0] + ' ' + w[1] : 'Нет оружия — купи в Магазине → ⚔️ Пещера') };
-const hpUI = () => { $('hpi').style.width = HP + '%'; $('hpl').textContent = '❤️ ' + Math.round(HP) };
+const hpUI = () => { $('hpi').style.width = (HP / HPM() * 100) + '%'; $('hpl').textContent = '❤️ ' + Math.round(HP) + (HPM() > 100 ? ' / ' + HPM() : '') };
 
 // ---------- пауки ----------
 const legG = new THREE.CylinderGeometry(.05, .035, 1, 5);
@@ -136,7 +139,7 @@ function attack() {
   if (tp) me.rotation.y = Math.atan2(tp.x - me.position.x, tp.z - me.position.z);
   play(me, 'Punch', { once: true }); setTimeout(() => !dead && play(me, 'Idle'), 500); WG.userData.sw = performance.now(); if (!tp) popT(range > 5 ? '🏹 Нет цели — подойди ближе' : '⚔️ Нет паука рядом');
   const extra = range <= 5 && tgt ? SP.filter(x => x !== tgt && x.g.position.distanceTo(me.position) < range + KIND[x.kind][0]).slice(0, w[2] >= 3 ? 1 : 0) : [];
-  const hit = () => { if (toBoss) { bossN++; sprite('-' + w[2], BOSS.position.clone().add(new THREE.Vector3(rnd(-1, 1), 5, 0)), '#ff6a6a', 1.2); return } if (!tgt || !SP.includes(tgt)) return; tgt.hp -= w[2]; tgt.g.userData.mats[0].emissive.setHex(0x880000); setTimeout(() => tgt.g.userData.mats[0].emissive.setHex(0), 120); sprite('-' + w[2], tgt.g.position.clone().setY(2 * KIND[tgt.kind][0] + .5), '#ff6a6a'); tgt.st = 'chase'; if (tgt.hp <= 0) kill(tgt); for (const x of extra) { if (!SP.includes(x)) continue; x.hp -= Math.ceil(w[2] / 2); sprite('-' + Math.ceil(w[2] / 2), x.g.position.clone().setY(1.5), '#ffaa6a'); if (x.hp <= 0) kill(x) } };
+  const hit = () => { const dm = Math.ceil(w[2] * (FXA('str') ? 1.5 : 1)); if (toBoss) { bossN++; sprite('-' + dm, BOSS.position.clone().add(new THREE.Vector3(rnd(-1, 1), 5, 0)), '#ff6a6a', 1.2); return } if (!tgt || !SP.includes(tgt)) return; tgt.hp -= dm; tgt.g.userData.mats[0].emissive.setHex(0x880000); setTimeout(() => tgt.g.userData.mats[0].emissive.setHex(0), 120); sprite('-' + dm, tgt.g.position.clone().setY(2 * KIND[tgt.kind][0] + .5), '#ff6a6a'); tgt.st = 'chase'; if (tgt.hp <= 0) kill(tgt); for (const x of extra) { if (!SP.includes(x)) continue; x.hp -= Math.ceil(dm / 2); sprite('-' + Math.ceil(dm / 2), x.g.position.clone().setY(1.5), '#ffaa6a'); if (x.hp <= 0) kill(x) } };
   if (tp && range > 5) arrow(me.position.clone().setY(1.4), tp.clone().setY(toBoss ? 3 : .6), hit); else if (tp) hit();
 }
 function kill(s) { SP.splice(SP.indexOf(s), 1); const g = s.g; g.rotation.z = Math.PI; g.position.y = .3; DEAD.push({ s, t: performance.now() }); popT({ s: '🕷 +12', m: '🕷 +35', l: '🕷 +90' }[s.kind]); api({ a: 'kill', s: s.kind }) }
@@ -160,14 +163,14 @@ const joy = { x: 0, y: 0 }; { const J = $('joy'), K = $('knob'); let id = null; 
 // ---------- цикл ----------
 let last = performance.now(), camA = Math.PI, flush = 0, shown = new Set();
 const cp = new THREE.Vector3(0, 10, 16);
-function hurt(dmg) { if (dead) return; if (HAS('i_shield')) dmg *= .65; HP = Math.max(0, HP - dmg); lastHit = performance.now(); hpUI(); $('vig').classList.add('hit'); setTimeout(() => $('vig').classList.remove('hit'), 250); HAP('heavy');
-  if (HP <= 0) { dead = true; play(me, 'Defeat', { once: true }); popT('🕸 Пауки утащили тебя…'); setTimeout(() => { me.position.set(0, 0, 6); HP = 100; hpUI(); dead = false; play(me, 'Idle'); toast('Ты очнулся у выхода из пещеры. Будь осторожнее!') }, 2600) } }
+function hurt(dmg) { if (dead) return; if (HAS('i_shield')) dmg *= .65; dmg *= ARMK(); HP = Math.max(0, HP - dmg); lastHit = performance.now(); hpUI(); $('vig').classList.add('hit'); setTimeout(() => $('vig').classList.remove('hit'), 250); HAP('heavy');
+  if (HP <= 0) { dead = true; play(me, 'Defeat', { once: true }); popT('🕸 Пауки утащили тебя…'); setTimeout(() => { me.position.set(0, 0, 6); HP = HPM(); hpUI(); dead = false; play(me, 'Idle'); toast('Ты очнулся у выхода из пещеры. Будь осторожнее!') }, 2600) } }
 function loop(now) {
   requestAnimationFrame(loop); const dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now;
   // движение
-  const L = Math.hypot(joy.x, joy.y); if (!dead && L > .1) { const sp = 7 * (HAS('i_boots') ? 1.35 : 1) * Math.min(1, L), ca = Math.cos(camA), sa = Math.sin(camA); const dx = -(joy.x * ca + joy.y * sa) , dz = -(-joy.x * sa + joy.y * ca); const nx = me.position.x + dx * sp * dt, nz = me.position.z + dz * sp * dt; if (walkable(nx, nz)) { me.position.x = nx; me.position.z = nz } else if (walkable(nx, me.position.z)) me.position.x = nx; else if (walkable(me.position.x, nz)) me.position.z = nz; me.rotation.y = Math.atan2(dx, dz); walk(me, t, true) } else walk(me, t, false);
+  const L = Math.hypot(joy.x, joy.y); if (!dead && L > .1) { const sp = 7 * (HAS('i_boots') ? 1.35 : 1) * (FXA('spd') ? 1.4 : 1) * Math.min(1, L), ca = Math.cos(camA), sa = Math.sin(camA); const dx = -(joy.x * ca + joy.y * sa) , dz = -(-joy.x * sa + joy.y * ca); const nx = me.position.x + dx * sp * dt, nz = me.position.z + dz * sp * dt; if (walkable(nx, nz)) { me.position.x = nx; me.position.z = nz } else if (walkable(nx, me.position.z)) me.position.x = nx; else if (walkable(me.position.x, nz)) me.position.z = nz; me.rotation.y = Math.atan2(dx, dz); walk(me, t, true) } else walk(me, t, false);
   if (me.position.z > 11 && !dead) { P.closeWork && P.closeWork(); return }
-  if (performance.now() - lastHit > 3000 && HP < 100) { HP = Math.min(100, HP + dt * (HAS('i_ring') ? 12 : 4)); hpUI() }
+  if (performance.now() - lastHit > 3000 && HP < HPM()) { HP = Math.min(HPM(), HP + dt * (HAS('i_ring') ? 12 : 4)); hpUI() }
   TL.intensity += (((HASTORCH ? (HAS('i_torch') ? 320 : 220) : 90) + Math.sin(t * 13) * 20 + Math.sin(t * 7.3) * 15) - TL.intensity) * .2; TORCH.userData.f.scale.set(1 + Math.sin(t * 11) * .08, 1 + Math.sin(t * 15) * .18, 1 + Math.cos(t * 12) * .08); TORCH.userData.f2.scale.y = 1 + Math.sin(t * 19) * .2; TORCH.userData.gl.material.opacity = .75 + Math.sin(t * 9) * .2;
   // пауки
   for (const s of SP) { const g = s.g, K = KIND[s.kind], d = g.position.distanceTo(me.position); let tx = null, tz = null, spd = 0;

@@ -46,6 +46,9 @@ let me = makeHero({ ...((ME().life || {}).look || {}), vh: '' }); me.position.se
 let HP = 100, dead = false, lastHit = 0;
 const WPN = { w_knife: ['🔪', 'Нож', 1, 2.4, .45], w_bow: ['🏹', 'Лук', 2, 15, .9], w_sword: ['⚔️', 'Меч', 3, 3.2, .7], w_lbow: ['🎯', 'Длинный лук', 4, 19, 1], w_elf: ['🍃', 'Эльфийский лук', 5, 19, .7], w_skard: ['🗡', 'Клинок Скарда', 6, 3.6, .6], w_shadow: ['🌑', 'Кинжал тени', 4, 2.6, .3], w_flame: ['🔥', 'Меч пламени', 7, 3.6, .6], w_hunt: ['🏹', 'Лук охотника', 8, 22, .6], w_legend: ['🌟', 'Гроза Скарда', 10, 4.2, .5] };
 const HAS = k => ((ME().life || {}).wear || []).includes(k);
+const FXA = k => { const f = ((ME().life || {}).fx || {})[k]; return f && f > Date.now() / 1000 };
+const ARMK = () => { let a = 0; for (const k of ((ME().life || {}).wear || [])) a = Math.max(a, { ar_leather: .15, ar_chain: .25, ar_plate: .35, ar_skard: .45, ar_gold: .5 }[k] || 0); return 1 - a };
+const HPM = () => FXA('hp') ? 150 : 100;
 const owned = () => Object.keys(WPN).filter(HAS);
 let wi = 0; const FIST = ['✊', 'Кулаки', 1, 2.2, .55]; const curW = () => { const o = owned(); return o.length ? WPN[o[wi % o.length]] : FIST };
 const WG = new THREE.Group(); scene.add(WG);
@@ -54,7 +57,7 @@ function wModel() { WG.clear(); const o = owned(); const k = o.length ? o[wi % o
   else { const L = k === 'w_knife' || k === 'w_shadow' ? .55 : k === 'w_legend' ? 1.5 : 1.2; const bl = new THREE.Mesh(new THREE.BoxGeometry(.09, L, .025), steel); bl.position.y = L / 2 + .2; WG.add(bl); const gd = new THREE.Mesh(new THREE.BoxGeometry(.32, .06, .08), gold); gd.position.y = .2; WG.add(gd); const hd = cyl(.04, .04, .3, wood, 0, .05, 0, WG, 6) } }
 function wBtn() { wModel(); WG.userData.base = WG.userData.bow ? [Math.PI, Math.PI / 2, 0] : [Math.PI / 2 + .6, 0, 0]; WG.rotation.set(...WG.userData.base); const w = curW(); $('wsw').innerHTML = w[0] + '<br><small style="font-size:10px">' + w[1] + '</small>' }
 $('wsw').onclick = () => { wi++; wBtn(); HAP('light') };
-const hpUI = () => { $('hpi').style.width = HP + '%'; $('hpl').textContent = '❤️ ' + Math.round(HP) };
+const hpUI = () => { $('hpi').style.width = (HP / HPM() * 100) + '%'; $('hpl').textContent = '❤️ ' + Math.round(HP) + (HPM() > 100 ? ' / ' + HPM() : '') };
 const coins = () => $('coins').textContent = '🪙 ' + ((ME().coins || 0).toLocaleString('ru'));
 
 // ---------- разбойники ----------
@@ -84,7 +87,7 @@ $('atk').onclick = () => {
   const bd = BOSS.visible ? BOSS.position.distanceTo(me.position) - 1.4 : 1e9; const toBoss = bd < range && (!tgt || bd < td); const tp = toBoss ? BOSS.position : tgt ? tgt.h.position : null;
   if (tp) me.rotation.y = Math.atan2(tp.x - me.position.x, tp.z - me.position.z); play(me, 'Punch', { once: true }); setTimeout(() => !dead && play(me, 'Idle'), 500); WG.userData.sw = performance.now();
   if (!tp) { popT(range > 5 ? '🏹 Нет цели' : '👊 Никого рядом'); return }
-  const hit = () => { if (toBoss) { bossN++; sprite('-' + w[2], BOSS.position.clone().setY(4.2), '#ff6a6a', 1.2); play(BOSS, 'Defeat', { once: true }); setTimeout(() => play(BOSS, 'Idle'), 500); return } if (!BN.includes(tgt)) return; tgt.hp -= w[2]; sprite('-' + w[2], tgt.h.position.clone().setY(2.6), '#ff6a6a'); tgt.st = 'chase'; if (tgt.hp <= 0) { BN.splice(BN.indexOf(tgt), 1); play(tgt.h, 'Defeat', { once: true }); DEADB.push({ b: tgt, t: performance.now() }); popT('🤠 Разбойник повержен!'); api({ a: 'kill' }) } };
+  const hit = () => { const dm = Math.ceil(w[2] * (FXA('str') ? 1.5 : 1)); if (toBoss) { bossN++; sprite('-' + dm, BOSS.position.clone().setY(4.2), '#ff6a6a', 1.2); play(BOSS, 'Defeat', { once: true }); setTimeout(() => play(BOSS, 'Idle'), 500); return } if (!BN.includes(tgt)) return; tgt.hp -= dm; sprite('-' + dm, tgt.h.position.clone().setY(2.6), '#ff6a6a'); tgt.st = 'chase'; if (tgt.hp <= 0) { BN.splice(BN.indexOf(tgt), 1); play(tgt.h, 'Defeat', { once: true }); DEADB.push({ b: tgt, t: performance.now() }); popT('🤠 Разбойник повержен!'); api({ a: 'kill' }) } };
   if (range > 5) arrow(me.position.clone().setY(1.4), tp.clone().setY(toBoss ? 2.5 : 1.2), hit); else hit() };
 $('back').onclick = () => P.closeWork && P.closeWork();
 const LEG = `<h2>🏴‍☠️ Город разбойников</h2><p>За лесом, в пыльной долине, банда Атамана построила свой городок за частоколом. Отсюда разбойники ходят на дороги и обчищают карманы путников.</p><p>Здесь тебя тоже попробуют ограбить: если разбойник подберётся близко — стащит монеты. Победи его — и вернёшь украденное!</p><p style="color:var(--win)">Шериф у ворот платит за каждого прогнанного разбойника. А главная награда — за Атамана, которого можно одолеть только всем городом.</p><button class="go1" id="px">🤠 Войти</button>`;
@@ -97,14 +100,14 @@ const joy = { x: 0, y: 0 }; { const J = $('joy'), K = $('knob'); let id = null; 
   const end = () => { id = null; joy.x = joy.y = 0; K.style.transform = '' }; J.addEventListener('touchend', end); J.addEventListener('touchcancel', end);
   J.addEventListener('mousedown', e => { mv(e); const mm = ev => mv(ev), up = () => { end(); removeEventListener('mousemove', mm); removeEventListener('mouseup', up) }; addEventListener('mousemove', mm); addEventListener('mouseup', up) }) }
 
-function hurt(dmg, rob) { if (dead) return; if (HAS('i_shield')) dmg *= .65; HP = Math.max(0, HP - dmg); lastHit = performance.now(); hpUI(); $('vig').classList.add('hit'); setTimeout(() => $('vig').classList.remove('hit'), 250); HAP('heavy'); if (rob) { api({ a: 'rob' }); sprite('💸', me.position.clone().setY(2.8), '#ffd34d') }
-  if (HP <= 0) { dead = true; play(me, 'Defeat', { once: true }); popT('😵 Тебя обчистили и выкинули за ворота'); setTimeout(() => { me.position.set(0, 0, RAD - 6); HP = 100; hpUI(); dead = false; play(me, 'Idle') }, 2600) } }
+function hurt(dmg, rob) { if (dead) return; if (HAS('i_shield')) dmg *= .65; dmg *= ARMK(); HP = Math.max(0, HP - dmg); lastHit = performance.now(); hpUI(); $('vig').classList.add('hit'); setTimeout(() => $('vig').classList.remove('hit'), 250); HAP('heavy'); if (rob) { api({ a: 'rob' }); sprite('💸', me.position.clone().setY(2.8), '#ffd34d') }
+  if (HP <= 0) { dead = true; play(me, 'Defeat', { once: true }); popT('😵 Тебя обчистили и выкинули за ворота'); setTimeout(() => { me.position.set(0, 0, RAD - 6); HP = HPM(); hpUI(); dead = false; play(me, 'Idle') }, 2600) } }
 let last = performance.now(); const cp = new THREE.Vector3(0, 14, RAD + 4);
 function loop(now) {
   requestAnimationFrame(loop); const dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now;
-  const L = Math.hypot(joy.x, joy.y); if (!dead && L > .1) { const sp = 8 * (HAS('i_boots') ? 1.35 : 1) * Math.min(1, L), dx = joy.x, dz = joy.y; const nx = me.position.x + dx * sp * dt, nz = me.position.z + dz * sp * dt; if (!solid(nx, nz)) { me.position.x = nx; me.position.z = nz } else if (!solid(nx, me.position.z)) me.position.x = nx; else if (!solid(me.position.x, nz)) me.position.z = nz; me.rotation.y = Math.atan2(dx, dz); walk(me, t, true) } else walk(me, t, false);
+  const L = Math.hypot(joy.x, joy.y); if (!dead && L > .1) { const sp = 8 * (HAS('i_boots') ? 1.35 : 1) * (FXA('spd') ? 1.4 : 1) * Math.min(1, L), dx = joy.x, dz = joy.y; const nx = me.position.x + dx * sp * dt, nz = me.position.z + dz * sp * dt; if (!solid(nx, nz)) { me.position.x = nx; me.position.z = nz } else if (!solid(nx, me.position.z)) me.position.x = nx; else if (!solid(me.position.x, nz)) me.position.z = nz; me.rotation.y = Math.atan2(dx, dz); walk(me, t, true) } else walk(me, t, false);
   if (me.position.z > RAD + 1 && !dead) { P.closeWork && P.closeWork(); return }
-  if (now - lastHit > 3000 && HP < 100) { HP = Math.min(100, HP + dt * (HAS('i_ring') ? 12 : 5)); hpUI() }
+  if (now - lastHit > 3000 && HP < HPM()) { HP = Math.min(HPM(), HP + dt * (HAS('i_ring') ? 12 : 5)); hpUI() }
   for (const b of BN) { const h = b.h, d = h.position.distanceTo(me.position); let tx = null, tz = null, spd = 0;
     if (b.st === 'run') { if (t > b.run) b.st = 'idle'; tx = h.position.x * 2 - me.position.x; tz = h.position.z * 2 - me.position.z; spd = 6 }
     else if (d < 13 && !dead) b.st = 'chase'; else if (b.st === 'chase' && (d > 26 || dead)) b.st = 'idle';
