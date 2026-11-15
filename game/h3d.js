@@ -140,3 +140,15 @@ class Town{constructor(el,cb){this.el=el;this.cb=cb;const r=this.r=new THREE.Web
   this.r.render(this.s,this.cam)}
  home(){this.me.position.set(-28,0,-10)}}
 window.H3D={make:el=>{const h=new House(el);return {set:(d,n)=>h.set(d,n),dispose:()=>h.dispose()}},town:(el,cb)=>new Town(el,cb)};window.dispatchEvent(new Event('h3d'));
+
+// 3D-питомец в карточке: один рендерер на всю игру
+let PV=null;const PK={cat:'cats',dog:'dogs',fox:'fox',parrot:'parrot',bunny:'rabbit'};
+function petView(){const r=new THREE.WebGLRenderer({antialias:true,alpha:true});r.setPixelRatio(Math.min(2,devicePixelRatio||1));const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x6a4ab0,2.2));const dl=new THREE.DirectionalLight(0xffffff,1.6);dl.position.set(2,4,3);sc.add(dl);
+ const cam=new THREE.PerspectiveCamera(32,1,.1,50);cam.position.set(0,1,2.3);cam.lookAt(0,.42,0);const fl=new THREE.Mesh(new THREE.CircleGeometry(.62,32),new THREE.MeshStandardMaterial({color:0x8a62e0,transparent:true,opacity:.5}));fl.rotation.x=-Math.PI/2;sc.add(fl);
+ const V={r,sc,cam,g:null,k:null,t0:0,hop:0,spin:0,clk:new THREE.Clock()};
+ r.setAnimationLoop(()=>{const el=r.domElement;if(!el.isConnected)return;const w=el.parentElement.clientWidth|0,h=el.parentElement.clientHeight|0;if(w&&(r.domElement.width!==Math.round(w*r.getPixelRatio())||r.domElement.height!==Math.round(h*r.getPixelRatio()))){r.setSize(w,h,false);el.style.width=w+'px';el.style.height=h+'px';cam.aspect=w/h;cam.updateProjectionMatrix()}
+  const dt=Math.min(.05,V.clk.getDelta()),t=V.clk.elapsedTime;if(V.g){const U=V.g.userData;U.mix&&U.mix.update(dt);if(!U.mix){V.g.children.forEach(c=>c.position.y=Math.abs(Math.sin(t*2))*.04)}V.hop=Math.max(0,V.hop-dt);V.spin=Math.max(0,V.spin-dt);V.g.position.y=Math.sin(Math.min(1,V.hop/.6)*Math.PI)*.35;V.g.rotation.y=Math.sin(t*.6)*.5+(V.spin>0?(1-V.spin/1.2)*Math.PI*2:0);const s=1+(V.hop>0?Math.sin(V.hop*20)*.04:0);V.g.scale.setScalar(V.sc0*s)}
+  r.render(sc,cam)});
+ r.domElement.style.cssText='display:block;touch-action:manipulation;cursor:pointer';return V}
+window.H3D.pet=(el,k)=>{if(!PV)PV=petView();const V=PV;if(V.k!==k){if(V.g)V.sc.remove(V.g);V.k=k;V.g=pet(PK[k]||'cats');V.sc0=({cat:1.25,dog:.66,fox:1.05,parrot:.95,bunny:.9})[k]||1;V.sc.add(V.g)}if(V.r.domElement.parentElement!==el){el.innerHTML='';el.appendChild(V.r.domElement)}
+ return {hop:()=>{V.hop=.6;V.g&&petPlay(V.g,'idle')},eat:()=>{V.hop=.3;if(V.g){petPlay(V.g,'eat');setTimeout(()=>V.g&&petPlay(V.g,'idle'),1800)}},spin:()=>{V.spin=1.2;V.hop=.6}}};
