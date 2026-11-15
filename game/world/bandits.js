@@ -42,7 +42,7 @@ const FIRE = new THREE.Group(); FIRE.position.set(0, 0, 18); scene.add(FIRE); fo
 for (const [x, z] of [[-12, -6], [12, -6], [-34, -4], [33, 18]]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.8), new THREE.MeshBasicMaterial({ map: tex((g, W, H) => { g.fillStyle = '#e8d6a8'; g.fillRect(0, 0, W, H); g.fillStyle = '#3a1a0a'; g.font = '900 40px serif'; g.textAlign = 'center'; g.fillText('WANTED', W / 2, 50); g.font = '120px serif'; g.fillText('🤠', W / 2, 180); g.font = '900 30px serif'; g.fillText('500 🪙', W / 2, 235) }, 256, 256) })); cyl(.08, .08, 2.6, '#4a2e18', x, 1.3, z); p.position.set(x, 2.2, z + .1); scene.add(p) }
 
 // ---------- игрок ----------
-let me = makeHero({ ...((ME().life || {}).look || {}), vh: '' }); me.position.set(0, 0, RAD - 6); me.rotation.y = Math.PI; scene.add(me); play(me, 'Idle');
+let me = makeHero({ ...((ME().life || {}).look || {}), vh: '', cw: '' }); me.position.set(0, 0, RAD - 6); me.rotation.y = Math.PI; scene.add(me); play(me, 'Idle');
 let HP = 100, dead = false, lastHit = 0;
 const WPN = { w_knife: ['🔪', 'Нож', 1, 2.4, .45], w_bow: ['🏹', 'Лук', 2, 15, .9], w_sword: ['⚔️', 'Меч', 3, 3.2, .7], w_lbow: ['🎯', 'Длинный лук', 4, 19, 1], w_elf: ['🍃', 'Эльфийский лук', 5, 19, .7], w_skard: ['🗡', 'Клинок Скарда', 6, 3.6, .6], w_shadow: ['🌑', 'Кинжал тени', 4, 2.6, .3], w_flame: ['🔥', 'Меч пламени', 7, 3.6, .6], w_hunt: ['🏹', 'Лук охотника', 8, 22, .6], w_legend: ['🌟', 'Гроза Скарда', 10, 4.2, .5] };
 const HAS = k => ((ME().life || {}).wear || []).includes(k);
@@ -52,7 +52,7 @@ const HPM = () => FXA('hp') ? 150 : 100;
 const owned = () => Object.keys(WPN).filter(HAS);
 let wi = 0; const FIST = ['✊', 'Кулаки', 1, 2.2, .55]; const curW = () => { const o = owned(); return o.length ? WPN[o[wi % o.length]] : FIST };
 const WG = new THREE.Group(); scene.add(WG);
-function wModel() { WG.clear(); const o = owned(); const k = o.length ? o[wi % o.length] : null; WG.userData.bow = 0; if (!k) return; const steel = new THREE.MeshStandardMaterial({ color: k === 'w_flame' ? '#ff6a2a' : k === 'w_legend' ? '#ffe9a0' : '#dfe6ee', metalness: .8, roughness: .25 }), wood = M('#5a3a1a'), gold = new THREE.MeshStandardMaterial({ color: '#d4a52a', metalness: .7, roughness: .3 });
+function wModel() { WG.clear(); const o = owned(); const k = o.length ? o[wi % o.length] : null; WG.userData.bow = 0; if (!k) return; const steel = new THREE.MeshStandardMaterial({ color: k === 'w_flame' ? '#ff6a2a' : k === 'w_legend' ? '#ffe9a0' : '#dfe6ee', metalness: .4, roughness: .3 }), wood = M('#5a3a1a'), gold = new THREE.MeshStandardMaterial({ color: '#d4a52a', metalness: .7, roughness: .3 });
   if (WPN[k][3] > 5) { const bow = new THREE.Mesh(new THREE.TorusGeometry(.75, .045, 6, 20, Math.PI), k === 'w_elf' ? M('#3aa05a') : k === 'w_hunt' ? gold : wood); bow.rotation.z = -Math.PI / 2; bow.position.z = .25; WG.add(bow); WG.userData.bow = 1 }
   else { const L = k === 'w_knife' || k === 'w_shadow' ? .55 : k === 'w_legend' ? 1.5 : 1.2; const bl = new THREE.Mesh(new THREE.BoxGeometry(.09, L, .025), steel); bl.position.y = L / 2 + .2; WG.add(bl); const gd = new THREE.Mesh(new THREE.BoxGeometry(.32, .06, .08), gold); gd.position.y = .2; WG.add(gd); const hd = cyl(.04, .04, .3, wood, 0, .05, 0, WG, 6) } }
 function wBtn() { wModel(); WG.userData.base = WG.userData.bow ? [Math.PI, Math.PI / 2, 0] : [Math.PI / 2 + .6, 0, 0]; WG.rotation.set(...WG.userData.base); const w = curW(); $('wsw').innerHTML = w[0] + '<br><small style="font-size:10px">' + w[1] + '</small>' }
