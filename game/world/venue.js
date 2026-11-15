@@ -184,6 +184,36 @@ if (V === 'museum') {
   $('mu1').onclick = coll; $('mu2').onclick = tour; $('mu3').onclick = () => openP(`<h2>⛏ Как найти экспонаты</h2><p>1. Купи 🪏 лопату: Магазин → ⛏ Раскопки.</p><p>2. В городе ищи жёлтые крестики на земле — это места раскопок, каждый день новые.</p><p>3. Копай: монеты, сундуки и 10 древних артефактов.</p><p>4. Неси находки сюда — хранитель поставит их в витрины, а за полную коллекцию даст 15 000 🪙 и титул 🏺 Археолог.</p><button class="go2" id="px">Понятно</button>`) || ($('px').onclick = closeP);
   Object.assign(VW, { staff: cur, at: [0, -8.9], front: [0, -5.6], spawn: [0, 10], cam: [[0, 8.5, 5], [0, 1.6, -7.5]], items: [['amph', '🏺', 'Амфора'], ['bone', '🦴', 'Кость'], ['ring', '💍', 'Кольцо'], ['dagger', '🗡', 'Кинжал'], ['crown', '👑', 'Корона']] });
 }
+if (V === 'library') {
+  $('ttl').firstChild.textContent = '📚 Библиотека'; hemi.intensity = 1.7; scene.background = new THREE.Color('#2a1c14'); $('st').textContent = 'читай и прокачивай знания';
+  { const ft = tex((g, W, H) => { for (let i = 0; i < 16; i++) { g.fillStyle = i % 2 ? '#b07a4a' : '#c08a58'; g.fillRect(0, i * H / 16, W, H / 16) } }, 256, 256); ft.wrapS = ft.wrapT = THREE.RepeatWrapping; ft.repeat.set(3, 3); const fl = new THREE.Mesh(new THREE.PlaneGeometry(26, 26), new THREE.MeshStandardMaterial({ map: ft, roughness: .6 })); fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true; scene.add(fl) }
+  B(26, 8, .4, '#d9c39a', 0, 4, -13); B(.4, 8, 26, '#cfb88e', -13, 4, 0); B(.4, 8, 26, '#cfb88e', 13, 4, 0); B(9, .05, 6, '#8a2a2a', 0, .03, 4);
+  const BC = ['#c0392b', '#2e86c1', '#27ae60', '#f1c40f', '#8e44ad', '#e67e22', '#ecf0f1', '#16a085'];
+  const shelf = (x, z, ry) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry; scene.add(g); B(4.6, 5, 1, '#4a2e1c', 0, 2.5, 0, g); for (let r = 0; r < 4; r++) { B(4.4, .12, .9, '#6b4428', 0, .5 + r * 1.2, .05, g); let bx = -2; while (bx < 1.9) { const w = .14 + Math.random() * .16, h = .6 + Math.random() * .35; B(w, h, .6, BC[Math.floor(Math.random() * BC.length)], bx + w / 2, .56 + r * 1.2 + h / 2, .15, g); bx += w + .02 } } };
+  const SH = [[-10, -12.2, 0], [-5, -12.2, 0], [5, -12.2, 0], [10, -12.2, 0], [-12.2, -6, Math.PI / 2], [-12.2, -1, Math.PI / 2], [12.2, -6, -Math.PI / 2], [12.2, -1, -Math.PI / 2]]; SH.forEach(a => shelf(...a));
+  sign('📚 БИБЛИОТЕКА · ТИШИНА!', 12, 1.3, '#3a2416', '#ffe2a0', 0, 6.4, -12.75);
+  const TB = [[-6, 4], [6, 4], [-6, 8.5], [6, 8.5]]; TB.forEach(([x, z]) => { B(3.6, .15, 2, '#7a4a2a', x, 1.3, z); for (const dx of [-1.5, 1.5]) for (const dz of [-.8, .8]) B(.15, 1.3, .15, '#4a2e1c', x + dx, .65, z + dz); const lp = C(.06, .06, .8, '#c9a227', x + 1.2, 1.75, z - .5); const sh2 = C(.15, .35, .35, '#2e7d32', x + 1.2, 2.2, z - .5); const L2 = new THREE.PointLight('#ffd27a', 2, 5); L2.position.set(x + 1.2, 2, z - .5); scene.add(L2); for (const dx of [-1, 1]) { B(.9, .1, .9, '#5a3420', x + dx, .75, z + 1.5); B(.9, 1, .1, '#5a3420', x + dx, 1.25, z + 1.95) } });
+  B(5, 1.1, 1.6, '#5a3420', 0, .55, -7.2); B(5.2, .1, 1.8, '#7a4a2a', 0, 1.12, -7.2);
+  const lib = NPC({ sh: '#4a3a5a', pa: '#2a2a2a', ac: 'glasses', g: 'f', hc: '#9a9a9a', hs: 1, sk: '#e8c4a0' }, 0, -8.6, 0);
+  sign('БИБЛИОТЕКАРЬ', 2.8, .6, '#3a2416', '#ffe2a0', 0, 2.3, -6.35);
+  const SUB = { hist: ['📜', 'История'], sci: ['🔬', 'Наука'], geo: ['🌍', 'География'], art: ['🎨', 'Искусство'], tech: ['💻', 'Технологии'], cook: ['🍳', 'Кулинария'], sport: ['⚽', 'Спорт'], lang: ['🗣', 'Языки'] };
+  const ANG = ['Тсс! Здесь читают! 🤫', 'Не шуми! 😠', 'Руки чистые? Книги дорогие! 😤', 'Положи на место, где взял! 😾', 'Ещё звук — выгоню! 😡', 'Не загибай страницы! 🙄'];
+  let K = {}; const load = async (a = { a: 'info' }) => { const j = await P.call('lib', a); if (j && j.lib) K = j.lib; coins(); return j };
+  load();
+  const scold = () => { const t = ANG[Math.floor(Math.random() * ANG.length)]; emo(lib, '😠'); play(lib, 'Punch', { once: true }); P.toast && P.toast('👵 Библиотекарша: «' + t + '»'); setTimeout(() => play(lib, 'Idle'), 1200) };
+  setInterval(() => { if (Math.random() < .35) { emo(lib, ['🤫', '😒', '👀', '😤'][Math.floor(Math.random() * 4)]) } }, 6000);
+  const pick = () => { const lv = k => Math.floor(Math.sqrt((K.xp?.[k] || 0) / 10)); openP(`<h2>📚 Что почитать?</h2><p style="color:var(--dim)">Сегодня прочитано ${K.n || 0}/12 · всего знаний: ${K.tot || 0} ур.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${Object.entries(SUB).map(([k, s]) => `<button class="sec b" data-s="${k}" style="font-size:13px;padding:10px 4px">${s[0]} ${s[1]}<small>ур. ${lv(k)} · ${K.xp?.[k] || 0} оп.</small></button>`).join('')}</div><button class="go2" id="px">Закрыть</button>`); $('px').onclick = closeP; panel.querySelectorAll('[data-s]').forEach(b => b.onclick = () => read(b.dataset.s)) };
+  const read = async k => { if (busy) return; if ((K.n || 0) >= 12) { closeP(); scold(); P.toast && P.toast('👵 «На сегодня хватит, глаза испортишь! Приходи завтра»'); return } busy = true; closeP(); $('bar0').classList.add('hidden');
+    const sh = SH[Math.floor(Math.random() * 4)]; await goTo(sh[0], sh[1] + 1.6); me.rotation.y = Math.PI; play(me, 'PickUp', { once: true }); emo(me, SUB[k][0]); await wait(900);
+    const [tx, tz] = TB[Math.floor(Math.random() * TB.length)], sx = tx + (Math.random() < .5 ? -1 : 1); await goTo(sx, tz + 1.5); me.rotation.y = Math.PI; me.position.y = .25; play(me, 'SitDown', { once: true }); emo(me, '📖');
+    let noisy = false; for (let i = 0; i < 4; i++) { await wait(1500); emo(me, ['📖', '🤔', '💡', '😮'][i]); if (!noisy && Math.random() < .2) { noisy = true; scold() } }
+    const j = await load({ a: 'read', s: k }); me.position.y = 0; play(me, 'Idle'); if (j && j.lib && j.up) { emo(me, '🎓'); play(me, 'Victory', { once: true }) } busy = false; $('bar0').classList.remove('hidden') };
+  $('bar0').innerHTML = `<button class="sec b" id="lb1" style="font-size:13px;padding:12px 2px">📖 Читать<small>выбрать книгу</small></button><button class="sec b" id="lb2" style="font-size:13px;padding:12px 2px">🎓 Мои знания<small>уровни</small></button><button class="sec b" id="lb3" style="font-size:13px;padding:12px 2px">🙋 Спросить<small>библиотекаршу</small></button>`;
+  $('lb1').onclick = pick;
+  $('lb2').onclick = () => { const lv = k => Math.floor(Math.sqrt((K.xp?.[k] || 0) / 10)); openP(`<h2>🎓 Мои знания · ${K.tot || 0} ур.</h2>${Object.entries(SUB).map(([k, s]) => { const x = K.xp?.[k] || 0, l = lv(k), a = 10 * l * l, b = 10 * (l + 1) * (l + 1); return `<div class="mi">${s[0]} <b>${s[1]} · ур. ${l}<br><small style="color:var(--dim)">${x} / ${b} опыта</small></b></div>` }).join('')}<p style="color:var(--dim)">Каждые 5 уровней знаний — +1% к доходу дома (до +20%).</p><button class="go2" id="px">Закрыть</button>`); $('px').onclick = closeP };
+  $('lb3').onclick = async () => { if (busy) return; busy = true; await goTo(0, -4.8); me.rotation.y = Math.PI; await wait(300); scold(); busy = false };
+  Object.assign(VW, { staff: lib, at: [0, -8.6], front: [0, -5.4], spawn: [0, 10], cam: [[0, 8.5, 5], [0, 1.6, -7.5]], items: [] });
+}
 if (WK) {
   $('ttl').firstChild.textContent = V === 'museum' ? '🧑‍🏫 Работа в музее' : V === 'cinema' ? '🍿 Работа в кинотеатре' : '👨‍🍳 Работа в «Бургер Город»';
   const IT = k => VW.items.find(i => i[0] === k);
@@ -218,4 +248,4 @@ function loop(now) { requestAnimationFrame(loop); const dt = Math.min(.05, (now 
   for (let i = bubbles.length - 1; i >= 0; i--) { const b = bubbles[i], k = (now - b.t0) / 1600; b.s.position.y += dt * .8; b.s.material.opacity = 1 - k; if (k >= 1) { scene.remove(b.s); bubbles.splice(i, 1) } }
   cp.lerp(CAM.p, .06); cl.lerp(CAM.l, .08); cam.position.copy(cp); cam.lookAt(cl); R.render(scene, cam) }
 preload(myLook()); requestAnimationFrame(loop);
-setTimeout(() => !WK && P.toast && P.toast(V === 'museum' ? '🏛 Твои находки — в витринах. Подойди к хранителю' : V === 'mall' ? '🛍 Бутик слева, супермаркет справа' : V === 'cinema' ? '🎬 Купи билет и выбери, с кем пойдёшь' : '🍔 Жми «Заказать еду» — и за стол!'), 700);
+setTimeout(() => !WK && P.toast && P.toast(V === 'museum' ? '🏛 Твои находки — в витринах. Подойди к хранителю' : V === 'library' ? '📚 Тихо! Выбери книгу и читай 🤫' : V === 'mall' ? '🛍 Бутик слева, супермаркет справа' : V === 'cinema' ? '🎬 Купи билет и выбери, с кем пойдёшь' : '🍔 Жми «Заказать еду» — и за стол!'), 700);
