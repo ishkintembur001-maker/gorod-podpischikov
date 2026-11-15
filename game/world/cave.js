@@ -16,9 +16,9 @@ addEventListener('resize', () => { R.setSize(innerWidth, innerHeight); cam.aspec
 scene.add(new THREE.HemisphereLight('#8a8ac0', '#2a1a10', 1.5));
 
 // ---------- карта: залы и туннели ----------
-const CH = [[0, 0, 14], [0, -55, 20], [40, -102, 18], [-12, -150, 24], [-62, -196, 20], [-20, -250, 22], [32, -302, 20], [0, -378, 38], [-58, -96, 15], [80, -158, 16]].map(([x, z, r]) => ({ x, z, r }));
+const CH = [[0, 0, 14], [0, -55, 20], [40, -102, 18], [-12, -150, 24], [-62, -196, 20], [-20, -250, 22], [32, -302, 20], [0, -378, 38], [-58, -96, 15], [80, -158, 16], [-115, -235, 18], [-150, -298, 22], [95, -245, 20], [132, -322, 18]].map(([x, z, r]) => ({ x, z, r }));
 const BOSS_I = 7;
-const TU = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [1, 8], [3, 9]].map(([a, b]) => ({ a: CH[a], b: CH[b], w: 8 }));
+const TU = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [1, 8], [3, 9], [4, 10], [10, 11], [6, 12], [12, 13]].map(([a, b]) => ({ a: CH[a], b: CH[b], w: 8 }));
 function segD(px, pz, a, b) { const dx = b.x - a.x, dz = b.z - a.z, L = dx * dx + dz * dz; let t = ((px - a.x) * dx + (pz - a.z) * dz) / L; t = Math.max(0, Math.min(1, t)); return Math.hypot(px - a.x - t * dx, pz - a.z - t * dz) }
 function walkable(x, z) { for (const c of CH) if (Math.hypot(x - c.x, z - c.z) < c.r - 1.4) return true; for (const t of TU) if (segD(x, z, t.a, t.b) < t.w / 2 - 1) return true; return false }
 function chamberOf(x, z) { let best = -1, bd = 1e9; CH.forEach((c, i) => { const d = Math.hypot(x - c.x, z - c.z); if (d < c.r && d < bd) { bd = d; best = i } }); return best }
@@ -56,6 +56,17 @@ for (const t of TU) { const L = Math.hypot(t.b.x - t.a.x, t.b.z - t.a.z), ux = (
 // выход
 { const g = new THREE.Group(); g.position.set(0, 0, 12); scene.add(g); const L = new THREE.PointLight('#bcd8ff', 15, 26, 1.5); L.position.set(0, 6, 3); g.add(L); const sp = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.MeshBasicMaterial({ color: '#bcd8ff', transparent: true, opacity: .25 })); sp.position.set(0, 3, 2); sp.rotation.y = Math.PI; g.add(sp) }
 
+// ---------- старые факелы на стенах ----------
+const SC = [];
+{ const brG = new THREE.BoxGeometry(.18, .18, .7), stG = new THREE.CylinderGeometry(.07, .09, .9, 6), flG = new THREE.ConeGeometry(.22, .6, 8), brM = new THREE.MeshLambertMaterial({ color: '#3a3a3a' }), stM = new THREE.MeshLambertMaterial({ color: '#4a2e14' }), flM = new THREE.MeshBasicMaterial({ color: '#ffb040' });
+  const glowT = tex((g, W, H) => { const r = g.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W / 2); r.addColorStop(0, 'rgba(255,190,90,.9)'); r.addColorStop(1, 'rgba(255,120,30,0)'); g.fillStyle = r; g.fillRect(0, 0, W, H) }, 64, 64);
+  const add = (x, z, fx, fz) => { const g = new THREE.Group(); g.position.set(x, 0, z); g.lookAt(fx, 0, fz); scene.add(g); const br = new THREE.Mesh(brG, brM); br.position.set(0, 2.4, -.1); g.add(br); const st = new THREE.Mesh(stG, stM); st.position.set(0, 2.8, .25); st.rotation.x = .35; g.add(st); const fl = new THREE.Mesh(flG, flM); fl.position.set(0, 3.4, .42); fl.visible = false; g.add(fl); const gl = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowT, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); gl.scale.set(3, 3, 1); gl.position.set(0, 3.4, .45); gl.visible = false; g.add(gl); SC.push({ g, fl, gl, lit: false, x: x + (fx - x) * .08, z: z + (fz - z) * .08 }) };
+  CH.forEach((c, i) => { if (i === 0) return; for (let k = 0; k < 3; k++) { const a = k / 3 * Math.PI * 2 + i; const x = c.x + Math.cos(a) * (c.r - .8), z = c.z + Math.sin(a) * (c.r - .8); let ok = true; for (const t of TU) if (segD(x, z, t.a, t.b) < t.w / 2 + 1) ok = false; if (ok) add(x, z, c.x, c.z) } });
+  for (const t of TU) { const L = Math.hypot(t.b.x - t.a.x, t.b.z - t.a.z), ux = (t.b.x - t.a.x) / L, uz = (t.b.z - t.a.z) / L; let sd = 1; for (let d = t.a.r + 10; d < L - t.b.r - 6; d += 20) { const cx = t.a.x + ux * d, cz = t.a.z + uz * d; add(cx - uz * sd * (t.w / 2 - .4), cz + ux * sd * (t.w / 2 - .4), cx, cz); sd = -sd } }
+}
+const LP = [0, 1, 2, 3].map(() => { const l = new THREE.PointLight('#ff9a40', 0, 20, 1.3); scene.add(l); return l });
+let LIT = [];
+function lightPool() { const lit = SC.filter(s => s.lit).sort((a, b) => Math.hypot(a.x - me.position.x, a.z - me.position.z) - Math.hypot(b.x - me.position.x, b.z - me.position.z)); LIT = lit; LP.forEach((l, i) => { const s = lit[i]; if (s && Math.hypot(s.x - me.position.x, s.z - me.position.z) < 45) { l.position.set(s.x, 3.4, s.z); l.intensity = 90 } else l.intensity = 0 }) }
 // ---------- игрок ----------
 let me = makeHero({ ...((ME().life || {}).look || {}), vh: '' }); me.position.set(0, 0, 6); me.rotation.y = Math.PI; scene.add(me); play(me, 'Idle');
 const TORCH = new THREE.Group(); { const h = new THREE.Mesh(new THREE.CylinderGeometry(.06, .08, 1.1, 8), new THREE.MeshLambertMaterial({ color: '#5a3a1a' })); h.position.y = .55; TORCH.add(h); const f = new THREE.Mesh(new THREE.ConeGeometry(.2, .55, 8), new THREE.MeshBasicMaterial({ color: '#ffb040' })); f.position.y = 1.3; TORCH.add(f); TORCH.userData.f = f } TORCH.position.set(-.45, 1.1, .3); TORCH.rotation.x = .3; me.add(TORCH);
@@ -88,7 +99,7 @@ function spider(kind) {
 }
 const SP = [], KIND = { s: [.55, 1, 3, 3.6, 'малый паук'], m: [1, 3, 7, 3.0, 'пещерный паук'], l: [1.8, 6, 13, 2.6, 'чёрная вдова'] };
 function spawn(kind, ci) { const c = CH[ci], g = spider(kind), K = KIND[kind]; g.scale.setScalar(K[0]); let x, z; do { const a = rnd(0, 7), d = rnd(2, c.r - 3); x = c.x + Math.cos(a) * d; z = c.z + Math.sin(a) * d } while (!walkable(x, z)); g.position.set(x, 0, z); g.rotation.y = rnd(0, 7); scene.add(g); SP.push({ g, kind, hp: K[1], ci, hx: x, hz: z, st: 'idle', t: rnd(0, 3), atk: 0, flee: 0, ph: rnd(0, 6) }) }
-const PLAN = { 1: 's5', 2: 's4m1', 3: 's3m3', 4: 's2m3l1', 5: 's3m2l2', 6: 'm3l3', 8: 's6', 9: 'm2l2' };
+const PLAN = { 1: 's5', 2: 's4m1', 3: 's3m3', 4: 's2m3l1', 5: 's3m2l2', 6: 'm3l3', 8: 's6', 9: 'm2l2', 10: 's3m2', 11: 'm2l3', 12: 's4m2', 13: 'l3m2' };
 for (const ci in PLAN) { const p = PLAN[ci]; for (let i = 0; i < p.length; i += 2) for (let k = 0; k < +p[i + 1]; k++) spawn(p[i], +ci) }
 const DEAD = [];
 
@@ -96,7 +107,7 @@ const DEAD = [];
 const BC = CH[BOSS_I]; const BOSS = spider('b'); BOSS.scale.setScalar(5.2); BOSS.position.set(BC.x, 0, BC.z - 10); scene.add(BOSS);
 let BS = { hp: 1, max: 1, dead: 0 }, bossN = 0, bossAtk = 0, bossSpawn = 0, bossTgt = new THREE.Vector3(BC.x, 0, BC.z);
 function bossUI() { $('bi').style.width = (BS.hp / BS.max * 100) + '%'; $('bl').textContent = BS.dead ? '💀 СКАРД повержен — вернётся завтра' : '🕷 СКАРД · ' + BS.hp.toLocaleString('ru') + ' / ' + BS.max.toLocaleString('ru'); BOSS.visible = !BS.dead }
-async function api(a) { const j = await P.call('cave', a); if (j && j.boss) { BS = j.boss; bossUI() } coins(); return j }
+async function api(a) { const j = await P.call('cave', a); if (j && j.boss) { BS = j.boss; bossUI() } if (j && j.loot) $('st').textContent = '🦵 лапки: ' + j.loot.leg + ' · 🧪 яд: ' + j.loot.ven; coins(); return j }
 const coins = () => $('coins').textContent = '🪙 ' + ((ME().coins || 0).toLocaleString('ru'));
 
 // ---------- эффекты ----------
@@ -125,6 +136,9 @@ let torchT = 0;
 $('tor').onclick = () => { if (dead) return; const n = performance.now() / 1000; if (n < torchT) return; torchT = n + (HAS('i_torch') ? 1.2 : 2.5); HAP('medium'); TORCH.rotation.x = -1; setTimeout(() => TORCH.rotation.x = .3, 350); TL.intensity = 500; setTimeout(() => TL.intensity = 220, 600);
   let k = 0; for (const s of [...SP]) { const d = s.g.position.distanceTo(me.position); if (d < (HAS('i_torch') ? 14 : 9)) { if (s.kind === 'l') { s.st = 'chase'; continue } s.st = 'flee'; s.flee = n + 4; k++; if (s.kind === 's' && d < 4) { s.hp -= 1; sprite('🔥', s.g.position.clone().setY(1.2)); if (s.hp <= 0) kill(s) } } } if (k) popT('🔥 Пауки разбегаются!') };
 $('back').onclick = () => P.closeWork && P.closeWork();
+let nearSc = null;
+$('lit').onclick = () => { const s = nearSc; if (!s || s.lit || dead) return; s.lit = true; s.fl.visible = s.gl.visible = true; HAP('medium'); play(me, 'PickUp', { once: true }); setTimeout(() => !dead && play(me, 'Idle'), 700); popT('🔥 Факел зажжён!'); lightPool(); P.call('cave', { a: 'torch' }); const n = SC.filter(x => x.lit).length; $('st').textContent = '🔥 зажжено факелов: ' + n + ' из ' + SC.length };
+
 const LEG = `<h2>📜 Легенда о Пещере Скарда</h2><p>Сто лет назад шахтёры Города искали серебро в горах за рекой. Однажды кирка пробила стену — и за ней открылась пещера, которой не было ни на одной карте.</p><p>Из темноты вышел паук размером с дом. Шахтёры назвали его <b>Скард</b>. Той ночью домой вернулись не все.</p><p>Вход завалили камнями, дорогу стёрли с карт, а детям запретили даже говорить о горе. Старики шепчутся: по ночам из-под земли слышен шорох тысяч лап…</p><p>Сто лет ни один житель Города не заходил внутрь. Пока не появились смельчаки — с факелами, ножами, мечами и луками.</p><p style="color:var(--win)">Свет факела пугает мелких пауков. Чёрных вдов огонь только злит. А Скарда можно одолеть только всем городом вместе.</p><button class="go1" id="px">🔥 Войти во тьму</button>`;
 const openLeg = () => { $('panel').innerHTML = LEG; $('panel').classList.remove('hidden'); $('px').onclick = () => $('panel').classList.add('hidden') };
 $('leg').onclick = openLeg;
@@ -151,14 +165,17 @@ function loop(now) {
   for (const s of SP) { const g = s.g, K = KIND[s.kind], d = g.position.distanceTo(me.position); let tx = null, tz = null, spd = 0;
     if (s.st === 'flee' && t > s.flee) s.st = 'idle';
     if (s.st !== 'flee' && d < (s.kind === 'l' ? 14 : 10) * (HAS('i_cloak') ? .55 : 1) && !dead) s.st = 'chase'; else if (s.st === 'chase' && (d > 22 || dead)) s.st = 'idle';
+    if (s.kind !== 'l') for (const L2 of LIT) { if (Math.hypot(L2.x - g.position.x, L2.z - g.position.z) < 6) { s.st = 'flee'; s.flee = t + 1.5; break } }
     if (s.st === 'chase') { tx = me.position.x; tz = me.position.z; spd = K[3]; if (d < 1.1 + K[0] * .9) { spd = 0; if (t > s.atk) { s.atk = t + 1.1; hurt(K[2]); g.userData.body.position.z = .3; setTimeout(() => g.userData.body.position.z = 0, 150) } } }
     else if (s.st === 'flee') { tx = g.position.x * 2 - me.position.x; tz = g.position.z * 2 - me.position.z; spd = K[3] * 1.3 }
     else { s.t -= dt; if (s.t < 0) { s.t = rnd(2, 5); s.wx = s.hx + rnd(-5, 5); s.wz = s.hz + rnd(-5, 5) } if (s.wx !== undefined && Math.hypot(s.wx - g.position.x, s.wz - g.position.z) > .5) { tx = s.wx; tz = s.wz; spd = 1.2 } }
     if (tx !== null && spd > 0) { const vx = tx - g.position.x, vz = tz - g.position.z, l = Math.hypot(vx, vz) || 1; const nx = g.position.x + vx / l * spd * dt, nz = g.position.z + vz / l * spd * dt; if (walkable(nx, nz)) { g.position.x = nx; g.position.z = nz } g.rotation.y = Math.atan2(vx, vz) }
     s.ph += dt * (spd ? spd * 4 : 1); g.userData.legs.forEach((p, i) => { p.rotation.y = p.userData.base + Math.sin(s.ph + i * 1.7) * (spd ? .35 : .05); p.rotation.z = Math.max(0, Math.sin(s.ph + i * 1.7)) * (spd ? .3 : 0) }); g.userData.body.position.y = spd ? Math.abs(Math.sin(s.ph * 2)) * .05 : 0 }
   for (let i = DEAD.length - 1; i >= 0; i--) { const D = DEAD[i], k = (now - D.t) / 1000; if (k > 2) D.s.g.visible = false; if (k > 45 && D.s.g.position.distanceTo(me.position) > 30) { scene.remove(D.s.g); DEAD.splice(i, 1); spawn(D.s.kind, D.s.ci) } }
+  if ((now | 0) % 6 === 0) { let best = null, bd = 3.2; for (const sc of SC) { if (sc.lit) continue; const d = Math.hypot(sc.x - me.position.x, sc.z - me.position.z); if (d < bd) { bd = d; best = sc } } nearSc = best; $('lit').classList.toggle('hidden', !best) }
+  if ((now | 0) % 30 === 0) lightPool(); for (const sc of LIT) { sc.fl.scale.y = 1 + Math.sin(t * 14 + sc.x) * .2 }
   // босс
-  const inBoss = chamberOf(me.position.x, me.position.z) === BOSS_I; $('bossb').classList.toggle('hidden', !inBoss && !(Math.hypot(me.position.x - BC.x, me.position.z - BC.z) < BC.r + 20));
+  const inBoss = chamberOf(me.position.x, me.position.z) === BOSS_I; if (inBoss && !window.__deep) { window.__deep = 1; api({ a: 'deep' }) } $('bossb').classList.toggle('hidden', !inBoss && !(Math.hypot(me.position.x - BC.x, me.position.z - BC.z) < BC.r + 20));
   if (BOSS.visible) { const d = BOSS.position.distanceTo(me.position), U = BOSS.userData; let spd = 0;
     if (inBoss && !dead) { bossTgt.copy(me.position); spd = d > 5.5 ? 2.4 : 0; if (d < 6.5 && t > bossAtk) { bossAtk = t + 1.3; hurt(16); U.body.position.z = .25; setTimeout(() => U.body.position.z = 0, 200) }
       if (t > bossSpawn && SP.filter(s => s.ci === BOSS_I).length < 6) { bossSpawn = t + 14; for (let k = 0; k < 3; k++) spawn('s', BOSS_I); popT('🕷 Скард зовёт детёнышей!') } }
@@ -166,12 +183,12 @@ function loop(now) {
     const vx = bossTgt.x - BOSS.position.x, vz = bossTgt.z - BOSS.position.z, l = Math.hypot(vx, vz) || 1; if (spd) { const nx = BOSS.position.x + vx / l * spd * dt, nz = BOSS.position.z + vz / l * spd * dt; if (Math.hypot(nx - BC.x, nz - BC.z) < BC.r - 6) { BOSS.position.x = nx; BOSS.position.z = nz } } BOSS.rotation.y = Math.atan2(vx, vz);
     U.legs.forEach((p, i) => { p.rotation.y = p.userData.base + Math.sin(t * 5 + i * 1.7) * (spd ? .3 : .06) }) }
   if (bossN && now - flush > 2000) { flush = now; const n = bossN; bossN = 0; api({ a: 'boss', n }) }
-  for (const [i, nm] of [[1, '🕸 Зал паутины'], [3, '🦴 Зал костей'], [4, '💎 Кристальный грот'], [6, '⚠ Близко логово…'], [BOSS_I, '🕷 ЛОГОВО СКАРДА']]) { if (!shown.has(i) && chamberOf(me.position.x, me.position.z) === i) { shown.add(i); popT(nm) } }
+  for (const [i, nm] of [[1, '🕸 Зал паутины'], [3, '🦴 Зал костей'], [4, '💎 Кристальный грот'], [6, '⚠ Близко логово…'], [11, '🕳 Бездонный провал'], [12, '🍄 Грибная пещера'], [13, '💀 Гнездо вдов'], [BOSS_I, '🕷 ЛОГОВО СКАРДА']]) { if (!shown.has(i) && chamberOf(me.position.x, me.position.z) === i) { shown.add(i); popT(nm) } }
   for (let i = FX.length - 1; i >= 0; i--) { const f = FX[i], k = (now - f.t0) / 1000; if (f.arrow) { const kk = Math.min(1, k / .25); f.s.position.lerpVectors(f.from, f.to, kk); f.s.lookAt(f.to); f.s.rotateX(Math.PI / 2); if (kk >= 1) { scene.remove(f.s); FX.splice(i, 1); f.done && f.done() } continue } f.s.position.y += dt * f.v; f.s.material.opacity = 1 - k; if (k >= 1) { scene.remove(f.s); FX.splice(i, 1) } }
   tickHeroes(dt);
   const ch = inBoss ? 17 : 11; const want = new THREE.Vector3(me.position.x, ch, me.position.z + ch); cp.lerp(want, .08); cam.position.copy(cp); cam.lookAt(me.position.x, 1, me.position.z - 2);
   R.render(scene, cam)
 }
-window.__cv = { me, SP, BOSS };
+window.__cv = { me, SP, BOSS, SC };
 preload(((ME().life || {}).look) || {}); hpUI(); coins(); requestAnimationFrame(loop);
 api({ a: 'enter' }).then(j => { if (j && j.err) { setTimeout(() => P.closeWork && P.closeWork(), 300); return } let seen = 0; try { seen = localStorage.getItem('skleg') } catch (e) { } if (!seen) { openLeg(); try { localStorage.setItem('skleg', '1') } catch (e) { } } if (j && j.cave) $('st').textContent = 'смельчаков внутри было: ' + j.cave.n });
