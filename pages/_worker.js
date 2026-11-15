@@ -5,4 +5,4 @@ if(u.pathname==='/game')return Response.redirect(u.origin+'/game/',301);
 if(u.pathname.startsWith('/cards/')||u.pathname.startsWith('/data/')){const c=caches.default;let r=await c.match(req);if(r)return r;
 const o=await fetch(SRC+u.pathname+u.search,{cf:{cacheTtl:600,cacheEverything:true}});r=new Response(o.body,o);r.headers.set('Cache-Control',u.pathname.startsWith('/data/')?'public, max-age=300':'public, max-age=3600');r.headers.delete('x-github-request-id');r.headers.delete('x-origin-cache');
 if(o.ok)ctx.waitUntil(c.put(req,r.clone()));return r}
-return env.ASSETS.fetch(req)}}
+const r=await env.ASSETS.fetch(req);if(/(\.html|\.js|\.txt|\/)$/.test(u.pathname)){const n=new Response(r.body,r);n.headers.set('Cache-Control','no-cache, must-revalidate');return n}return r}}
