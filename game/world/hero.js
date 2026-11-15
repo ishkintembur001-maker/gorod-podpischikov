@@ -166,6 +166,10 @@ export function makeHero(look = {}, me = true) {
     if (head && (L.ac || L.fc)) { const a = accessory(L); head.getWorldScale(ws); a.scale.setScalar(1 / ws.x); a.position.y = .7 / ws.y; head.add(a) }
     let torso = null; model.traverse(o => { if (o.isBone && /^(torso|chest|spine2?)$/i.test(o.name) && !torso) torso = o });
     if (torso && L.bk) { const bkI = backItem(L); torso.getWorldScale(ws); bkI.scale.setScalar((/^bp_|^backpack$/.test(L.bk) ? 1.3 : 1) / ws.x); bkI.position.y = .5 / ws.y; torso.add(bkI); g.userData.back = bkI }
+    if (L.fox && head) { const fm = new THREE.MeshStandardMaterial({ color: '#e0782a', roughness: .8 }), wm = new THREE.MeshStandardMaterial({ color: '#fff4e8', roughness: .8 }), bm = new THREE.MeshStandardMaterial({ color: '#222' }); const fg = new THREE.Group(); head.getWorldScale(ws); fg.scale.setScalar(1 / ws.x); fg.position.y = .35 / ws.y; head.add(fg);
+      for (const sx of [-1, 1]) { const e = new THREE.Mesh(new THREE.ConeGeometry(.13, .34, 4), fm); e.position.set(sx * .2, .38, -.02); e.rotation.z = -sx * .25; fg.add(e); const ei = new THREE.Mesh(new THREE.ConeGeometry(.07, .2, 4), bm); ei.position.set(sx * .2, .36, .03); ei.rotation.z = -sx * .25; fg.add(ei) }
+      const sn = new THREE.Mesh(new THREE.ConeGeometry(.13, .32, 8), wm); sn.rotation.x = Math.PI / 2; sn.position.set(0, -.08, .36); fg.add(sn); const no = new THREE.Mesh(new THREE.SphereGeometry(.045, 8, 6), bm); no.position.set(0, -.08, .53); fg.add(no) }
+    if (L.fox) { let hips = null; model.traverse(o => { if (o.isBone && /^hips$/i.test(o.name)) hips = o }); if (hips) { hips.getWorldScale(ws); const tg = new THREE.Group(); tg.scale.setScalar(1 / ws.x); hips.add(tg); const t1 = new THREE.Mesh(new THREE.CapsuleGeometry(.16, .55, 4, 10), new THREE.MeshStandardMaterial({ color: '#e0782a' })); t1.position.set(0, -.05, -.42); t1.rotation.x = 1.1; tg.add(t1); const t2 = new THREE.Mesh(new THREE.SphereGeometry(.15, 10, 8), new THREE.MeshStandardMaterial({ color: '#fff4e8' })); t2.position.set(0, .18, -.72); tg.add(t2); g.userData.tail = tg } }
     if (torso && L.ar) { const aI = armorItem(L); if (aI) { torso.getWorldScale(ws); aI.scale.setScalar(1.32 / ws.x); aI.position.y = .62 / ws.y; torso.add(aI) } }
     if (torso && L.cw && !L.bk) { const wI = backWeapon(L); if (wI) { torso.getWorldScale(ws); const w2 = new THREE.Group(); w2.add(wI); w2.scale.setScalar(1 / ws.x); w2.position.set(0, .05 / ws.y, -.36 / ws.z); torso.add(w2) } }
     if (torso && L.fl) { const fI = flagItem(L); torso.getWorldScale(ws); fI.scale.setScalar(1 / ws.x); fI.position.y = .3 / ws.y; torso.add(fI) }
@@ -183,7 +187,7 @@ export function play(g, name, { once = false, fade = .25 } = {}) {
   if (U.cur) U.cur.crossFadeTo(a, fade, false); U.cur = a;
 }
 let AT = 0;
-export function tickHeroes(dt) { for (const m of MIXERS) m.update(dt); AT += dt;
+export function tickHeroes(dt) { for (const m of MIXERS) { const r = m.getRoot(), g = r && r.parent; if (g && g.userData.far) continue; m.update(dt) } AT += dt;
   for (const f of FLAGS) { if (!f.parent) { FLAGS.delete(f); continue } const a = f.geometry.attributes.position, b = f.userData.base; for (let i = 0; i < a.count; i++) { const x = b[i * 3]; a.array[i * 3 + 2] = Math.sin(x * 2.6 - AT * 5) * .16 * x / 2.2; a.array[i * 3 + 1] = b[i * 3 + 1] - x * x * .02 } a.needsUpdate = true }
   for (const w of WHEELS) { if (!w.parent) { WHEELS.delete(w); continue } const gp = w.parent.parent; if (gp && gp.userData.moving) w.rotation.x += dt * 9 }
   for (const fl of FLAMES) { if (!fl.parent) { FLAMES.delete(fl); continue } fl.scale.set(1, .8 + Math.random() * .5, 1) }
