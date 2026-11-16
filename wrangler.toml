@@ -1,0 +1,11 @@
+# Сервер игры «Город подписчиков» (Cloudflare Worker)
+name = "gorod-bot"
+main = "bot/worker.js"
+compatibility_date = "2024-11-01"
+workers_dev = true
+keep_vars = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gorod-game"
+database_id = "91bcb5fb-0952-4f6c-9e59-272d73bf3ea0"
