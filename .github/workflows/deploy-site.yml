@@ -1,0 +1,28 @@
+name: Deploy game site (Cloudflare Pages)
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['bot/**', 'wrangler.toml', '.github/workflows/deploy-worker.yml']
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'main = для игроков, другое = тестовая копия'
+        default: 'main'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          mkdir -p /tmp/site/dist
+          rsync -a --exclude .git --exclude .github --exclude bot --exclude site-functions --exclude wrangler.toml --exclude README.md ./ /tmp/site/dist/
+          cp -r site-functions /tmp/site/functions
+          git rev-parse --short=12 HEAD > /tmp/site/dist/game/ver.txt
+      - name: Deploy
+        working-directory: /tmp/site
+        run: |
+          echo "API probe before:"; curl -s -m 10 https://gorod-podpischikov.pages.dev/setup | head -c 120; echo
+          npx --yes wrangler@3 pages deploy dist --project-name gorod-podpischikov --branch "${{ inputs.branch || 'main' }}" --commit-dirty=true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
