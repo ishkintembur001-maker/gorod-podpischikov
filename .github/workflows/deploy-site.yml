@@ -22,7 +22,13 @@ jobs:
       - name: Deploy
         working-directory: /tmp/site
         run: |
-          echo "API probe before:"; curl -s -m 10 https://gorod-podpischikov.pages.dev/setup | head -c 120; echo
           npx --yes wrangler@3 pages deploy dist --project-name gorod-podpischikov --branch "${{ inputs.branch || 'main' }}" --commit-dirty=true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Smoke test
+        run: |
+          B="${{ inputs.branch || 'main' }}"; [ "$B" = main ] && U=https://gorod-podpischikov.pages.dev || U=https://$B.gorod-podpischikov.pages.dev
+          sleep 10
+          for p in api/top game/ver.txt game/ game/world/scene.js game/news.js; do printf "%s -> " $p; curl -s -m 20 -o /tmp/o -w "%{http_code}\n" "$U/$p"; head -c 120 /tmp/o | tr '\n' ' '; echo; done
+          curl -s "$U/game/world/scene.js" | grep -c "Логово Атамана"
+          curl -s "$U/api/top" | python3 -c "import sys,json;d=json.load(sys.stdin);print('top',len(d.get('top',[])),'all',len(d.get('all',[])))"
