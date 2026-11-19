@@ -1,6 +1,6 @@
 import {THREE,scene,M,T,GEO,AG,mergeParts,rng} from './city.js';
 const {BX,SP,CY,CO,part,hipRoof}=GEO;
-export const P=16,ST=8,COLS=36,GROUP=6;
+export const P=22,ST=12,COLS=36,GROUP=6;
 export const WORLD={plots:[],houses:[],special:{}};
 const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_v=new THREE.Vector3(),_s=new THREE.Vector3(),_e=new THREE.Euler(),_c=new THREE.Color();
 function inst1(geo,mat,list,opts){const im=new THREE.InstancedMesh(geo,mat,list.length);list.forEach((o,i)=>{_e.set(o.rx||0,o.ry||0,o.rz||0);_q.setFromEuler(_e);_v.set(o.x,o.y||0,o.z);_s.set(o.sx||1,o.sy||1,o.sz||1);_m.compose(_v,_q,_s);im.setMatrixAt(i,_m);if(o.c!==undefined){_c.set(o.c);im.setColorAt(i,_c)}});
