@@ -706,11 +706,11 @@ const BR=[[/ты\s*бот|вы\s*боты|ты\s*живой|ты\s*робот/i,
  [/пока|до\s*свид|бб|ушёл|ушел/i,()=>['Пока! Заходи ещё 👋','До встречи в городе! 😊']],
  [/\?$/,()=>['Хороший вопрос 🤔 Жми ❓ — там подсказки','Не знаю точно 😅 Спроси живых игроков в чате']]];
 let BLAST=0;
-function botReply(t){const nb=BOTS.filter(b=>b.g&&b.g.position.distanceTo(ME.position)<45);if(!nb.length||Date.now()-BLAST<6000)return;
+function botReply(t){return;const nb=BOTS.filter(b=>b.g&&b.g.position.distanceTo(ME.position)<45);if(!nb.length||Date.now()-BLAST<6000)return;
  const r=BR.find(x=>x[0].test(t.trim()));if(!r)return;BLAST=Date.now();
  nb.sort((a,b)=>a.g.position.distanceTo(ME.position)-b.g.position.distanceTo(ME.position));const b=nb[0],L=r[1]();const txt=L[Math.floor(Math.random()*L.length)];
  setTimeout(()=>{say(b.g,txt);logChat(b.n,txt);hplay(b.g,'Victory',{once:true})},1600+Math.random()*1400)}
-setInterval(()=>{if(Math.random()<.65||Date.now()-BLAST<30000)return;const vb=BOTS.filter(b=>b.g&&b.g.position.distanceTo(ME.position)<60);if(!vb.length)return;const b=vb[Math.floor(Math.random()*vb.length)];const t=['Всем привет! 👋','Кто в луна-парк? 🎢','Сегодня отличный день ☀️','Иду на смену в бургерную 🍔','Обожаю этот город ❤️','Кто на рыбалку? 🎣'][Math.floor(Math.random()*6)];say(b.g,t);logChat(b.n,t)},45000);
+setTimeout(()=>{try{const d=new Date().toISOString().slice(0,10);if(localStorage.getItem('botHi')===d)return;localStorage.setItem('botHi',d);const n=BOTN[Math.floor(Math.random()*BOTN.length)];logChat(n,['Всем привет! 👋','Привет, город! 😊','Салам всем! 👋'][Math.floor(Math.random()*3)])}catch(e){}},20000);
 setInterval(()=>{if(!document.hidden)sendPos()},4000);setTimeout(sendPos,800);
 addEventListener('message',e=>{const d=e.data||{};if(d.t!=='pl')return;document.getElementById('onl').innerHTML=`🟢 <b>${d.city+BOTS.filter(b=>b.g).length}</b> рядом · ${d.online} онлайн`;if(d.pl.length)MET=true;const seen=new Set();
  if(d.chat)for(const c of d.chat.slice().reverse())if(c.n!==myNick&&!CLOG.some(x=>x.n===c.n&&x.t===c.t))logChat(c.n,c.t);
@@ -802,7 +802,7 @@ function lifeTick(t,dt){if(BURG)BURG.rotation.y=t*.6;FIRE.forEach((f,i)=>f.scale
   const glide=gull&&Math.sin(t*.6+b.ph)>-.2;const fl=glide?Math.sin(t*1.5+b.ph)*.08+.12:Math.sin(t*(gull?7:16)+b.ph)*(gull?.6:.9);const[L,Rw]=g.userData.w;L.rotation.z=fl;Rw.rotation.z=-fl;L.userData.tip.rotation.z=fl*.6;Rw.userData.tip.rotation.z=-fl*.6;g.rotation.z=(gull?-b.sp*3:0)}}
 const BOTS=[];
 {const S=WORLD.streets||[];const H=S.filter(s=>s.w>s.d),V=S.filter(s=>s.d>=s.w);const xs=V.map(s=>s.x).sort((a,b)=>a-b),zs=H.map(s=>s.z).sort((a,b)=>a-b);
- if(xs.length>1&&zs.length>1)BOTN.forEach((n,i)=>{const u=k=>bh(n,k);const day=Math.floor((Date.now()-BOT_DAY0)/864e5);const HUBS=[[P.cx,P.cz],[HS.x,HS.z],[PS.x,PS.z],[MALL.x,MALL.z],[PK.x,PK.z],[FB.x,FB.z],[VP.x,VP.z],[P.cx+40,P.cz+40],[P.cx-40,P.cz-30]].concat(MY?[[MY.x,MY.z]]:[]);const hb=HUBS[Math.floor(u(1)*HUBS.length)];let c=xs.reduce((bi,x,k)=>Math.abs(x-hb[0])<Math.abs(xs[bi]-hb[0])?k:bi,0),r=zs.reduce((bi,z,k)=>Math.abs(z-hb[1])<Math.abs(zs[bi]-hb[1])?k:bi,0);c=Math.max(0,Math.min(xs.length-1,c+Math.round((u(2)-.5)*2)));const pts=[[xs[c],zs[r]]];
+ if(false&&xs.length>1&&zs.length>1)BOTN.forEach((n,i)=>{const u=k=>bh(n,k);const day=Math.floor((Date.now()-BOT_DAY0)/864e5);const HUBS=[[P.cx,P.cz],[HS.x,HS.z],[PS.x,PS.z],[MALL.x,MALL.z],[PK.x,PK.z],[FB.x,FB.z],[VP.x,VP.z],[P.cx+40,P.cz+40],[P.cx-40,P.cz-30]].concat(MY?[[MY.x,MY.z]]:[]);const hb=HUBS[Math.floor(u(1)*HUBS.length)];let c=xs.reduce((bi,x,k)=>Math.abs(x-hb[0])<Math.abs(xs[bi]-hb[0])?k:bi,0),r=zs.reduce((bi,z,k)=>Math.abs(z-hb[1])<Math.abs(zs[bi]-hb[1])?k:bi,0);c=Math.max(0,Math.min(xs.length-1,c+Math.round((u(2)-.5)*2)));const pts=[[xs[c],zs[r]]];
   // маршрут на сегодня: случайная прогулка по перекрёсткам, затем обратно — замкнутая петля
   let seed=bh(n,100+day);const rnd=()=>{seed=(seed*9301+49297)%233280/233280||bh(n,seed*1e6);return seed};
   for(let k=0;k<10;k++){const d=Math.floor(rnd()*4);if(d===0&&c<xs.length-1)c++;else if(d===1&&c>0)c--;else if(d===2&&r<zs.length-1)r++;else if(r>0)r--;const p=[xs[c],zs[r]];const q=pts[pts.length-1];if(p[0]!==q[0]||p[1]!==q[1])pts.push(p)}
