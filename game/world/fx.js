@@ -60,6 +60,8 @@ export const STYLE = {
   mage: { an: 'Shoot_OneHanded', range: 15, col: 0xff6a2a, kind: 'fire' },
   druid: { an: 'Shoot_OneHanded', range: 13, col: 0x5aff7a, kind: 'leaf' },
   shaman: { an: 'Shoot_OneHanded', range: 13, col: 0x7ae8ff, kind: 'bolt' },
+  ice: { an: 'Shoot_OneHanded', range: 20, col: 0x8ad8ff, kind: 'ice' },
+  axe: { an: 'Shoot_OneHanded', range: 14, col: 0xff8a4a, kind: 'axe' },
   '': { an: 'Punch', range: 2.2, col: 0xffd34d, kind: 'slash' }
 };
 // удар класса: визуал + вызов hit() в момент попадания
@@ -73,6 +75,8 @@ export function attack(scene, who, tgt, cls, hit, play) {
   else if (S.kind === 'arrow') setTimeout(() => projectile(scene, arrow(), a, b, 34, .6, done), 220);
   else if (S.kind === 'fire') setTimeout(() => projectile(scene, orb(0xff6a2a), a, b, 20, .4, done), 250);
   else if (S.kind === 'leaf') setTimeout(() => { const l = new THREE.Mesh(new THREE.OctahedronGeometry(.25, 0), basic(0x5aff7a)); projectile(scene, l, a, b, 18, .8, done, true) }, 230);
+  else if (S.kind === 'ice') setTimeout(() => projectile(scene, orb(0x6ac8ff, .24), a, b, 24, .3, done), 230);
+  else if (S.kind === 'axe') setTimeout(() => { const x = new THREE.Group(); const h = new THREE.Mesh(new THREE.BoxGeometry(.08, .9, .08), new THREE.MeshBasicMaterial({ color: 0x6a4426 })); const bl = new THREE.Mesh(new THREE.BoxGeometry(.5, .35, .05), new THREE.MeshBasicMaterial({ color: 0xd8dde4 })); bl.position.y = .35; x.add(h, bl); projectile(scene, x, a, b, 20, .8, done, true) }, 230);
   else if (S.kind === 'bolt') setTimeout(() => { bolt(scene, tgt.position); done() }, 260);
   return S;
 }

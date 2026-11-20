@@ -38,7 +38,7 @@ function fighter(o, team, i, isMe) {
   const x = (i - 1) * 4.5, z = team ? -8 : 8; m.position.set(x, 0, z); m.rotation.y = team ? 0 : Math.PI; scene.add(m);
   const nm = lbl((STYLE[o.cls] ? '' : '') + (isMe ? '⭐ ' : '') + '@' + String(o.n).slice(0, 14), team ? '#ff8a6a' : isMe ? '#ffd34d' : '#7ae8a8'); nm.position.y = 3.4; m.add(nm);
   const hb = hpBar(); hb.position.y = 2.95; m.add(hb);
-  const f = { o, team, m, hb, cls: o.cls, hp: S.hp, max: S.hp, dmg: S.dmg, def: S.def, dr: S.dr * K[2], dodge: K[3], crit: K[4], critM: K[5], spd: K[6], int: K[0], range: (STYLE[o.cls] || STYLE['']).range, na: 1 + Math.random(), nab: 3 + Math.random() * 4, cdk: 1 - .05 * S.cd, tgt: null, alive: true, stun: 0, rage: 0, smoke: 0, trap: 0, goto: null, isMe };
+  const hpX = isMe ? 1.3 : 1, dX = team ? .8 : 1; const f = { o, team, m, hb, cls: o.cls, hp: S.hp * hpX, max: S.hp * hpX, dmg: S.dmg * dX, def: S.def, dr: S.dr * K[2], dodge: K[3], crit: K[4], critM: K[5], spd: K[6], int: K[0], range: (STYLE[o.cls] || STYLE['']).range, na: 1 + Math.random(), nab: 3 + Math.random() * 4, cdk: 1 - .05 * S.cd, tgt: null, alive: true, stun: 0, rage: 0, smoke: 0, trap: 0, goto: null, isMe };
   play(m, 'Idle'); F.push(f); return f;
 }
 const ally = f => F.filter(g => g.alive && g.team === f.team), foes = f => F.filter(g => g.alive && g.team !== f.team);
@@ -75,6 +75,7 @@ function skill(f) {
 function think(f, dt) {
   const n = t(); if (n < T0) return; if (!f.alive || f.stun > n) { if (f.moving) { f.moving = false; play(f.m, 'Idle') } return }
   const E = foes(f); if (!E.length) return;
+  if (!f.isMe && S2[f.cls] && n > (f.n2 || T0 + 4) && Math.random() < .02) { if (skill2(f)) return }
   if (!f.isMe && n > f.nab) { const lowAlly = ally(f).some(a => a.hp / a.max < .5); if (f.cls !== 'paladin' || lowAlly) if (skill(f)) return }
   if (!f.tgt || !f.tgt.alive || (!f.isMe && Math.random() < .004)) { f.tgt = E.filter(e => e.smoke <= n).sort((a, b) => (dist(f, a) + a.hp / a.max * 6) - (dist(f, b) + b.hp / b.max * 6))[0] || E[0] }
   const tg = f.tgt, d = dist(f, tg); let mv = null;
@@ -89,6 +90,20 @@ function think(f, dt) {
   if (n > f.na) { f.na = n + f.int * (.9 + Math.random() * .2); const src = f, T = tg; clearTimeout(f.at);
     attack(scene, f.m, tg.m, f.cls, () => damage(src, T, src.dmg), an => { play(f.m, an, { once: true }); f.at = setTimeout(() => { if (f.alive) play(f.m, 'Idle') }, 700) }) }
 }
+const S2 = { warrior: ['🌀', 'Вихрь', 10], paladin: ['🔨', 'Молот', 9], berserk: ['🪓', 'Бросок топора', 8], rogue: ['🔪', 'Кинжалы', 7], assassin: ['☠️', 'Яд', 10], archer: ['🎯', 'Меткий выстрел', 8], hunter: ['🏹', 'Двойной выстрел', 7], mage: ['❄️', 'Ледяная стрела', 7], shaman: ['🌪', 'Смерч', 12], druid: ['🍃', 'Исцеление', 12] };
+function skill2(f) { const n = t(), c = f.cls, E = foes(f); if (!E.length || !S2[c]) return false; const tg = f.tgt && f.tgt.alive ? f.tgt : E.sort((a, b) => dist(f, a) - dist(f, b))[0]; f.n2 = n + S2[c][2] * f.cdk; dmgText(scene, f.m.position, S2[c][0], '#bfe8ff');
+  const pl = an => anim(f, an, 700), near = r => E.filter(e => dist(f, e) < r);
+  if (c === 'warrior') { pl('SwordSlash'); ringFx(scene, f.m.position, 0xffe08a, 2); for (const e of near(4.5)) damage(f, e, f.dmg * 1.5, 1, 1) }
+  else if (c === 'paladin') { pl('SwordSlash'); setTimeout(() => { burst(scene, tg.m.position, 0xfff4a0, 1.6); damage(f, tg, f.dmg * 2, 1, 1); tg.stun = Math.max(tg.stun, t() + 2) }, 250) }
+  else if (c === 'berserk') attack(scene, f.m, tg.m, 'axe', () => damage(f, tg, f.dmg * 2, 1, 1), an => pl(an));
+  else if (c === 'rogue') { pl('SwordSlash'); for (let i = 0; i < 3; i++) setTimeout(() => damage(f, tg, f.dmg * .8, 1, 1), 150 + i * 170) }
+  else if (c === 'assassin') { pl('SwordSlash'); for (let i = 1; i <= 5; i++) setTimeout(() => tg.alive && damage(f, tg, f.dmg * .6, 1, 1), i * 1000) }
+  else if (c === 'archer') attack(scene, f.m, tg.m, 'archer', () => damage(f, tg, f.dmg * 3.5, 1, 1), an => pl(an));
+  else if (c === 'hunter') { attack(scene, f.m, tg.m, 'hunter', () => damage(f, tg, f.dmg * 1.5, 1, 1), an => pl(an)); setTimeout(() => tg.alive && attack(scene, f.m, tg.m, 'hunter', () => damage(f, tg, f.dmg * 1.5, 1, 1)), 260) }
+  else if (c === 'mage') attack(scene, f.m, tg.m, 'ice', () => { damage(f, tg, f.dmg * 2, 1, 1); tg.stun = Math.max(tg.stun, t() + 1.5) }, an => pl(an));
+  else if (c === 'shaman') { pl('Shoot_OneHanded'); ringFx(scene, f.m.position, 0x9ae8ff, 3); for (const e of near(7)) { damage(f, e, f.dmg * 1.2, 1, 1); const dx = e.m.position.x - f.m.position.x, dz = e.m.position.z - f.m.position.z, L = Math.hypot(dx, dz) || 1; e.m.position.x += dx / L * 3; e.m.position.z += dz / L * 3 } }
+  else if (c === 'druid') { pl('Shoot_OneHanded'); heal(f, 30) }
+  return true }
 // ---------- ввод ----------
 const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); let sx = 0, sy = 0;
 addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY });
@@ -96,13 +111,14 @@ $('gl').addEventListener('pointerup', e => { if (!ME || !ME.alive || END || Math
   let best = null, bd = 1e9; for (const f of foes(ME)) { const p = f.m.position.clone(); p.y = 1.2; const d = ray.ray.distanceToPoint(p); if (d < 1.6 && d < bd) { bd = d; best = f } }
   if (best) { ME.tgt = best; ME.goto = null; ringFx(scene, best.m.position, 0xff3a3a, .8); return }
   const p = new THREE.Vector3(); if (ray.ray.intersectPlane(ground, p)) { ME.goto = p; ringFx(scene, p, 0xffffff, .5) } });
+$('ab2').onclick = () => { if (!ME || !ME.alive || END || t() < (ME.n2 || 0)) return; if (skill2(ME)) P.HAP && P.HAP('medium') };
 $('ab').onclick = () => { if (!ME || !ME.alive || END || t() < ME.nab) return; if (skill(ME)) P.HAP && P.HAP('medium') };
 // ---------- старт ----------
 let camA = 0;
 function hud() {
   const A = F.filter(f => !f.team), B = F.filter(f => f.team), s = a => a.reduce((x, f) => x + f.hp, 0) / a.reduce((x, f) => x + f.max, 0) * 100;
   $('tha').style.width = s(A) + '%'; $('thb').style.width = s(B) + '%'; const left = Math.max(0, Math.ceil(LIMIT - (t() - T0))); $('tmr').textContent = left;
-  if (ME) { const c = Math.ceil(ME.nab - t()), a = AB[ME.cls]; $('ab').disabled = c > 0 || !ME.alive; $('ab').textContent = a ? (c > 0 ? a[0] + ' ' + c + ' с' : a[0] + ' ' + a[1]) : '—' }
+  if (ME) { const c = Math.ceil(ME.nab - t()), a = AB[ME.cls]; $('ab').disabled = c > 0 || !ME.alive; $('ab').textContent = a ? (c > 0 ? a[0] + ' ' + c + ' с' : a[0] + ' ' + a[1]) : '—'; const c2 = Math.ceil((ME.n2 || 0) - t()), s2 = S2[ME.cls]; $('ab2').disabled = c2 > 0 || !ME.alive; $('ab2').textContent = s2 ? (c2 > 0 ? s2[0] + ' ' + c2 + ' с' : s2[0] + ' ' + s2[1]) : '—' }
   if (!END) { const ea = foes(ME).length === 0, aa = ally(ME).length === 0; if (ea || aa || left <= 0) finish(ea || (!aa && s(A) > s(B))) }
 }
 async function finish(win) {

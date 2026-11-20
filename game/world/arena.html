@@ -7,7 +7,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#140c08;font-family:-a
 .tb2{height:8px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:4px}.tb2 i{display:block;height:100%;transition:width .2s}
 #tmr{flex:none;font:900 18px sans-serif;background:rgba(0,0,0,.45);border:1.5px solid #ffd34d;border-radius:12px;padding:4px 10px;color:#ffd34d}
 #ab{position:fixed;right:12px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:4;border:2px solid #ffd34d;border-radius:18px;padding:12px 14px;font:900 15px sans-serif;color:#fff;background:linear-gradient(180deg,#7a4aff,#3a1aa8);box-shadow:0 4px 0 #22106a,0 0 16px rgba(160,120,255,.7);min-width:120px}
-#ab:disabled{opacity:.55;filter:grayscale(.3)}
+#ab2{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;border:2px solid #9fe8ff;border-radius:18px;padding:10px 14px;font:900 14px sans-serif;color:#fff;background:linear-gradient(180deg,#3ab8ff,#1a5ab8);box-shadow:0 4px 0 #0a3a6a;min-width:120px}#ab2:disabled{opacity:.55}#ab:disabled{opacity:.55;filter:grayscale(.3)}
 #hint{position:fixed;left:12px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:4;max-width:52vw;font:700 12px/1.35 sans-serif;background:rgba(0,0,0,.5);border-radius:12px;padding:8px 10px}
 #ov{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:rgba(10,5,3,.78)}
 #ov .bx{width:min(88vw,360px);background:linear-gradient(160deg,#3a2414,#1a0f08);border:2px solid #ffd34d;border-radius:22px;padding:20px;text-align:center}
@@ -18,7 +18,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#140c08;font-family:-a
 </style></head><body>
 <script type="importmap">{"imports":{"three":"./three.js"}}</script><canvas id="gl"></canvas>
 <div class="top"><div class="tm"><b id="tna">—</b><div class="tb2"><i id="tha" style="width:100%;background:linear-gradient(90deg,#3ae07a,#5ee6b0)"></i></div></div><div id="tmr">90</div><div class="tm r"><b id="tnb">—</b><div class="tb2"><i id="thb" style="width:100%;background:linear-gradient(90deg,#ff6a4a,#ff3a3a);margin-left:auto"></i></div></div></div>
-<button id="ab">…</button><div id="hint">👆 Нажми на врага — твой герой атакует его. Нажми на землю — отойти туда.</div>
+<button id="ab">…</button><button id="ab2">…</button><div id="hint">👆 Нажми на врага — твой герой атакует его. Нажми на землю — отойти туда.</div>
 <div id="ov" class="hidden" style="display:none"><div class="bx" id="ovb"></div></div>
 <div id="load">⚔️ Арена готовится к бою…</div>
 <script type="module" src="arena.js"></script>
