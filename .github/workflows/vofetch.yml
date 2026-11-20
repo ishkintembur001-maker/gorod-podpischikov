@@ -2,11 +2,15 @@ name: vofetch
 on:
   push:
     branches: [vo-fetch]
+    paths: [urls.txt]
+permissions:
+  contents: write
 jobs:
   f:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir out && while read n u; do curl -sSfL -o out/$n.mp3 "$u"; done < urls.txt && ls -la out
-      - uses: actions/upload-artifact@v4
-        with: {name: vo, path: out, retention-days: 1}
+      - run: |
+          mkdir -p out && while read n u; do curl -sSfL -o out/$n.mp3 "$u"; done < urls.txt && ls -la out
+          git config user.name bot && git config user.email bot@users.noreply.github.com
+          git add out && git commit -m "vo files" && git push
