@@ -95,7 +95,7 @@ const openLeg = () => { $('panel').innerHTML = LEG; $('panel').classList.remove(
 $('leg').onclick = openLeg;
 
 // ---------- управление ----------
-const joy = { x: 0, y: 0 }; { const J = $('joy'), K = $('knob'); let id = null; const mv = e => { for (const t of e.changedTouches || [e]) { if (id !== null && t.identifier !== undefined && t.identifier !== id) continue; const r = J.getBoundingClientRect(); let dx = t.clientX - r.left - 65, dy = t.clientY - r.top - 65; const L = Math.hypot(dx, dy); if (L > 50) { dx *= 50 / L; dy *= 50 / L } joy.x = dx / 50; joy.y = dy / 50; K.style.transform = `translate(${dx}px,${dy}px)` } };
+const joy = { x: 0, y: 0 }; { const J = $('joy'), K = $('knob'); let id = null; const mv = e => { for (const t of e.changedTouches || [e]) { if (id !== null && t.identifier !== undefined && t.identifier !== id) continue; const r = J.getBoundingClientRect(); let dx = t.clientX - r.left - r.width / 2, dy = t.clientY - r.top - r.height / 2; const L = Math.hypot(dx, dy); if (L > 50) { dx *= 50 / L; dy *= 50 / L } joy.x = dx / 50; joy.y = dy / 50; K.style.transform = `translate(${dx}px,${dy}px)` } };
   J.addEventListener('touchstart', e => { id = e.changedTouches[0].identifier; mv(e); e.preventDefault() }, { passive: false }); J.addEventListener('touchmove', e => { mv(e); e.preventDefault() }, { passive: false });
   const end = () => { id = null; joy.x = joy.y = 0; K.style.transform = '' }; J.addEventListener('touchend', end); J.addEventListener('touchcancel', end);
   J.addEventListener('mousedown', e => { mv(e); const mm = ev => mv(ev), up = () => { end(); removeEventListener('mousemove', mm); removeEventListener('mouseup', up) }; addEventListener('mousemove', mm); addEventListener('mouseup', up) }) }
