@@ -16,6 +16,18 @@ const P23=[
  {n:'yusufs.555x',set:{fl:3,f:['cars'],cc:'white'}},{n:'adel.insii',set:{fl:3,f:['garden','flowers']}},{n:'animeshnick_kgz',set:{fl:2,f:['sauna','pool']}}];
 const P23C=[0,2,1,3,4,5,7,9,10,11,12,13,14];
 const PEOPLE=[
+ {n:'sofiya_666_222',w:'софия',txt:'3 этажа · розовый · бассейн · собака · Lamborghini',c:2,r:3,set:{fl:3,wall:'pink',roof:'pink',f:['pool','dogs','flowers']},carC:'#f2c230'},
+ {n:'mago.med8562',w:'маго',txt:'2 этажа · флаг Дагестана · чёрная Приора',c:3,r:3,set:{fl:2,f:['garden']},flag:'dag',carC:'#111111'},
+ {n:'fatima12062015',w:'фатима',txt:'3 этажа · две кошки',c:4,r:3,set:{fl:3,f:['flowers','garden'],an:{cat:2}}},
+ {n:'shohruz7329',w:'шохруз',txt:'3 этажа · флаг Узбекистана',c:5,r:3,set:{fl:3,f:['garden']},flag:'uz'},
+ {n:'yunus_barsa77',w:'юнус',txt:'флаг Кыргызстана',c:6,r:3,set:{fl:2,f:['garden','playground']},flag:'kg'},
+ {n:'simkon19',w:'симкон',txt:'3 этажа и бассейн',c:7,r:3,set:{fl:3,f:['pool','garden']}},
+ {n:'letafet341',w:'летафет',txt:'двухэтажный дом',c:8,r:3,set:{fl:2,roof:'blue',f:['garden','flowers']}},
+ {n:'extazuu.001',w:'экстазу',txt:'особняк, почти дворец',c:9,r:3,set:{fl:3,wall:'white',roof:'gold',f:['pool','garden','flowers']}},
+ {n:'ermekovaaiperi5',w:'айпери',txt:'хотела в видео — ты в видео!',c:10,r:3,set:{fl:2,roof:'pink',f:['flowers','garden']}},
+ {n:'miro.slava7285',w:'мирослава',txt:'«где я?» — вот ты!',c:11,r:3,set:{fl:2,f:['playground','garden']}},
+ {n:'saipi_din0v',w:'сайпидин',txt:'ждал 4 дня — дом готов',c:12,r:3,set:{fl:2,f:['cars','garden']}},
+ {n:'emirhantoktobekov2022',w:'эмирхан',txt:'ждал 10 дней — держи!',c:13,r:3,set:{fl:3,roof:'black',f:['pool','garden']}},
  {n:'nurh_an2012',w:'нурхан',txt:'дом с шариками на крыше',c:16,set:{fl:2,f:['garden'],roof:'blue'},balloons:1},
  {n:'just_watch_uliana',w:'ульяна',txt:'твой дом в видео! сад · бассейн · котики',c:17,set:{fl:2,f:['garden','pool','cats'],an:{cat:3}}},
  {n:'boboewm.1',w:'бобоев',txt:'настоящий американский дом',c:18,set:{fl:2,roof:'gray',wall:'beige',f:[]},flag:'us',usa:1},
@@ -303,6 +315,8 @@ function nickList(list,t,t0,dt,y0,colW,fsMax){const n=list.length,rows=Math.ceil
 
 // ===== EP29 extras =====
 {const p=PEOPLE.find(p=>p.sakura);const h=p.h;for(const [lx,lz] of [[-5.5,4.4],[5.5,4.4]]){const [x,z]=HX(h,lx,lz);mesh(new THREE.CylinderGeometry(0.25,0.35,2.6,6),MAT(0x6b4220),x,1.3,z);const c=mesh(new THREE.IcosahedronGeometry(2.1,1),new THREE.MeshLambertMaterial({color:0xf7a8c8,emissive:0x5a1f35,emissiveIntensity:0.15}),x,3.6,z);c.castShadow=true}}
+for(const p of PEOPLE){if(!p.carC||!p.h)continue;const h=p.h;const [x,z]=HX(h,-3.6,4.8);const c=new THREE.Mesh(AG.car(p.carC),new THREE.MeshLambertMaterial({vertexColors:true}));c.position.set(x,0,z);c.rotation.y=(h.face>0?0:Math.PI)+Math.PI/2;c.scale.setScalar(1.25);c.castShadow=true;scene.add(c)}
+window.__PEOPLE=PEOPLE;
 {const p=PEOPLE.find(p=>p.tesla);const h=p.h;const [x,z]=HX(h,-3.6,4.8);const c=new THREE.Mesh(AG.car('#151515'),new THREE.MeshLambertMaterial({vertexColors:true}));c.position.set(x,0,z);c.rotation.y=(h.face>0?0:Math.PI)+Math.PI/2;c.scale.setScalar(1.25);c.castShadow=true;scene.add(c)}
 {const p=PEOPLE.find(p=>p.rainbow);const h=p.h;const cols=[0xe8433a,0xf2a03a,0xf2d23a,0x3ab36a,0x3a8fd8,0x8a5cc4];const r=rng(77);for(let i=0;i<46;i++){const [x,z]=HX(h,-6.6+r()*13.2,2.6+r()*4.2);mesh(new THREE.SphereGeometry(0.28,6,5),MAT(cols[i%6]),x,0.35,z)}}
 // park expansion
@@ -1142,3 +1156,4 @@ function loop(now){requestAnimationFrame(loop);const t=(now-t0)/1000,dt=Math.min
  let n=null;if(!RIDE){for(const sp of SPOTS)if(Math.hypot(ME.position.x-sp[2],ME.position.z-sp[3])<sp[4]){n=sp;break}if(!n){let bk=9;for(const z of ZONES){const k0=Math.hypot(ME.position.x-z[2],ME.position.z-z[3])/z[4],k=k0+(z[0]==='fvil'||z[0]==='gmk'||z[0]==='gval'||z[0]==='bcmp'||z[0]==='elf'||z[0]==='trv'||z[0]==='orc'||z[0]==='glm'?.75:0);if(k0<1&&k<bk){bk=k;n=z}}}}if(n!==NEAR){NEAR=n;act.style.display=n&&n[0]!=='plaza'?'block':'none';if(n&&n[6]!==undefined)act.textContent=n[1];else if(n)act.textContent=({home:'🏠 Зайти домой',vip:'👑 VIP-район',emb:'🌊 Набережная',plaza:'',smith:'💬 Поговорить с оружейником',alch:'💬 Поговорить с алхимиком',cave:'🕸 Войти в пещеру',band:'🏴‍☠️ Войти в Город разбойников',sheriff:'💬 Поговорить с шерифом',library:'📚 Зайти в библиотеку',fe:'💬 Поговорить со Старейшиной',fh:'💬 Поговорить с Охотницей',fvil:'🦊 Лисья деревня',gk:'💬 Поговорить с Королём гномов',fbd:'📜 Доска заданий',gbd:'📜 Доска заданий',gw:'💬 Поговорить с Воеводой',gval:'⛰ Долина гномов',rg:'💬 Поговорить с Капитаном',el:'💬 Поговорить с Королевой',tr:'💬 Поговорить с Вождём',ebd:'📜 Доска заданий',tbd:'📜 Доска заданий',elf:'🧝 Эльфийский лес',trv:'🧌 Деревня троллей',orc:'👹 Орочий лагерь',glm:'🗿 Каменный круг',bbd:'📜 Доска заданий',bcmp:'🏴‍☠️ Логово Атамана'})[n[0]]||(n[0].startsWith('v_')?'💬 '+n[1]:'🚪 Зайти: '+n[1].replace(/^\S+ /,''))}
  mpTick(t,dt);botTick(t,dt);tickHeroes(dt);tickFx(dt);perf(now);if(COMP){const nk=nightK();BLOOM.strength=.22+nk*.33;BLOOM.threshold=.92-nk*.07;BLOOM.radius=.35;COMP.render()}else renderer.render(scene,camera)}
 document.getElementById('load').remove();requestAnimationFrame(loop);
+window.__scene=scene;window.__cam=camera;
