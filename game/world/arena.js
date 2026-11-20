@@ -4,7 +4,7 @@ import { makeHero, play, tickHeroes } from './hero.js';
 import { attack, skillFx, tickFx, dmgText, burst, ringFx, pillar, STYLE } from './fx.js';
 window.__WMODE = 'adv';
 const P = parent, D = P.ARENA || null, $ = id => document.getElementById(id);
-const WDMG = { w_knife: 1, w_club: 2, w_bow: 2, w_sword: 3, w_lbow: 4, w_shadow: 4, w_axe: 4, w_saber: 4, w_elf: 5, w_spear: 5, w_skard: 6, w_mace: 6, w_katana: 6, w_flame: 7, w_xbow: 7, w_halberd: 7, w_hunt: 8, w_ice: 8, w_runeaxe: 8, w_dragon: 9, w_staff: 9, w_legend: 10, w_moon: 10, w_thunder: 11, w_diamond: 12, w_void: 13, w_sun: 14 };
+const WDMG = { w_knife: 1, w_club: 2, w_bow: 2, w_sword: 3, w_lbow: 4, w_shadow: 4, w_axe: 4, w_saber: 4, w_elf: 5, w_spear: 5, w_skard: 6, w_mace: 6, w_katana: 6, w_flame: 7, w_xbow: 7, w_halberd: 7, w_hunt: 8, w_ice: 8, w_runeaxe: 8, w_dragon: 9, w_staff: 9, w_legend: 10, w_moon: 10, w_thunder: 11, w_diamond: 12, w_void: 13, w_sun: 14, w_twin: 7, w_trident: 9, w_warhammer: 9, w_scythe: 10, w_frostbow: 13, w_inferno: 15, w_starstaff: 15, w_soul: 17, x_hero: 14, x_elite: 16, x_star: 18, x_crown: 20, x_champ: 24 };
 const ADEF = { ar_leather: .15, ar_ranger: .2, ar_chain: .25, ar_scale: .3, ar_plate: .35, ar_elf: .38, ar_knight: .4, ar_skard: .45, ar_shadow: .45, ar_gold: .5, ar_dragon: .55, ar_crystal: .6 };
 const AHD = { ah_leather: .04, ah_iron: .07, ah_horned: .09, ah_knight: .12, ah_hood: .1, ah_dragon: .15, ah_crown: .18 }, SDD = { sd_wood: .05, sd_iron: .08, sd_tower: .12, sd_dragon: .16, sd_sun: .2 }, CLHP = { cl_brown: 10, cl_ranger: 20, cl_red: 30, cl_royal: 40, cl_flame: 50, cl_star: 60 };
 // класс: [интервал удара, бонус урона, множитель получаемого урона, шанс уворота, шанс крита, множитель крита, скорость]
