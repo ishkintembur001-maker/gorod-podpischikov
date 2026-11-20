@@ -1,0 +1,12 @@
+name: vofetch
+on:
+  push:
+    branches: [vo-fetch]
+jobs:
+  f:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir out && while read n u; do curl -sSfL -o out/$n.mp3 "$u"; done < urls.txt && ls -la out
+      - uses: actions/upload-artifact@v4
+        with: {name: vo, path: out, retention-days: 1}
