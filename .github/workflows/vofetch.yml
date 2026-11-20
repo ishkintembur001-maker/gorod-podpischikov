@@ -2,7 +2,6 @@ name: vofetch
 on:
   push:
     branches: [vo-fetch]
-    paths: [urls.txt]
 permissions:
   contents: write
 jobs:
