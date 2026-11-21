@@ -3,7 +3,7 @@ import * as THREE from './three.js';
 const FXL = [];
 const add = (scene, o, life, upd) => { scene.add(o); FXL.push({ scene, o, t: 0, life, upd }) };
 export function tickFx(dt) {
-  for (let i = FXL.length - 1; i >= 0; i--) { const f = FXL[i]; f.t += dt; const k = f.t / f.life; if (k >= 1) { f.scene.remove(f.o); f.o.traverse(c => { c.geometry && c.geometry.dispose(); c.material && c.material.dispose && c.material.dispose() }); FXL.splice(i, 1); continue } f.upd && f.upd(k, dt, f) }
+  for (let i = FXL.length - 1; i >= 0; i--) { const f = FXL[i]; f.t += dt; const k = f.t / f.life; if (k >= 1) { f.scene.remove(f.o); f.o.traverse(c => { c.geometry && c.geometry.dispose(); if (c.material) { if (c.material.map) c.material.map.dispose(); c.material.dispose && c.material.dispose() } }); FXL.splice(i, 1); continue } f.upd && f.upd(k, dt, f) }
 }
 const basic = (c, o = 1) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false });
 // вспышка попадания: кольцо + искры
@@ -26,7 +26,7 @@ function projectile(scene, mesh, a, b, speed, arc, hit, spin) {
   setTimeout(() => { if (!mesh.userData.done) { mesh.userData.done = 1; hit && hit() } }, life * 1000 + 60);
 }
 const arrow = () => { const g = new THREE.Group(); const sh = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, 1.1, 5), new THREE.MeshBasicMaterial({ color: 0x8a5a2a })); sh.rotation.x = Math.PI / 2; g.add(sh); const tip = new THREE.Mesh(new THREE.ConeGeometry(.07, .22, 6), new THREE.MeshBasicMaterial({ color: 0xd8dde4 })); tip.rotation.x = Math.PI / 2; tip.position.z = .6; g.add(tip); for (const r of [0, Math.PI / 2]) { const f = new THREE.Mesh(new THREE.PlaneGeometry(.18, .22), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })); f.position.z = -.5; f.rotation.z = r; g.add(f) } return g };
-const orb = (col, r = .28) => { const g = new THREE.Group(); g.add(new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), basic(0xffffff))); const h = new THREE.Mesh(new THREE.SphereGeometry(r * 1.8, 14, 10), basic(col, .55)); g.add(h); const l = new THREE.PointLight(col, 8, 6, 2); g.add(l); return g };
+const orb = (col, r = .28) => { const g = new THREE.Group(); g.add(new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), basic(0xffffff))); const h = new THREE.Mesh(new THREE.SphereGeometry(r * 1.8, 14, 10), basic(col, .55)); g.add(h);  return g };
 // дуга удара мечом/топором перед бойцом
 function slash(scene, who, col, wide = 1, flip = false) {
   const m = new THREE.Mesh(new THREE.RingGeometry(.9, 1.5, 24, 1, -.9 * wide, 1.8 * wide), basic(col, .85)); m.material.side = THREE.DoubleSide;

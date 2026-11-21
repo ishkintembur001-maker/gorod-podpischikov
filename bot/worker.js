@@ -52,7 +52,7 @@ for(const k in DECOR)if(DECOR[k][4])STARS['d_'+k]=[DECOR[k][0],DECOR[k][1],DECOR
 const GOALS=['🌊 Аквапарк','🦁 Зоопарк','✈️ Аэропорт','🏙 Небоскрёб','⛸ Ледовый каток','⛵ Яхт-клуб','🏟 Арена'],GT=300000;
 
 // ===== ЖИЗНЬ (Симс-механики в Городе подписчиков) =====
-const BOTL=[['wolf_alpha','🐺'],['wolf_grey','🐺'],['wolf_shadow','🐺'],['wolf_storm','🐺'],['strong_titan','⚡'],['strong_max','⚡'],['strong_bear','⚡']];const BOTON=()=>{const h=Math.floor(Date.now()/600000);return 4+((h*7)%4)};
+const BOTL=[['wolf_alpha','🐺'],['wolf_grey','🐺'],['wolf_shadow','🐺'],['wolf_storm','🐺'],['strong_titan','⚡'],['strong_max','⚡'],['strong_bear','⚡']];const BOTON=()=>{const h=Math.floor(Date.now()/600000),mh=((Date.now()/3600000)+3)%24;return 4+((h*7)%4)+Math.round(92+24*Math.sin((mh-13)/24*2*Math.PI)+((h*13)%11))};
 function botPl(x,z,t){const n=Math.min(4,BOTON()),out=[];for(let i=0;i<n;i++){const [nk]=BOTL[(i+Math.floor(t/600))%BOTL.length];const ax=Math.round(x/60)*60,az=Math.round(z/60)*60,ph=i*0.9+nk.length,R=10+(i%3)*6,w=t/(14+i*3);out.push({n:nk,x:x+Math.sin(ph)*R,z:z+Math.cos(ph)*R,r:0,e:null,lk:null,s:null,bot:1})}return out}
 const NEEDS=['food','sleep','fun','soc','hyg'],DECAY={food:6,sleep:4,fun:5,soc:4,hyg:4};
 const FURN={toilet:['🚽','Туалет',0,0,{hyg:20}],fridge:['🧊','Холодильник',0,0,{food:35}],bed:['🛏','Кровать',0,0,{sleep:45}],shower:['🚿','Душ',0,0,{hyg:45}],tv:['📺','Телевизор',0,0,{fun:30}],phone:['📱','Телефон: позвонить подписчикам',0,0,{soc:25}],table:['🍽','Обеденный стол',0,0,{food:15,soc:5}],plant:['🪴','Цветок',0,0,{}],
