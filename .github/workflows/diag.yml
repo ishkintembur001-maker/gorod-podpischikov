@@ -1,0 +1,31 @@
+name: diag
+on:
+  push:
+    branches: [diag]
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - name: tail
+        run: |
+          timeout 120 npx --yes wrangler@3 tail gorod-bot --format json > tail.json 2>tail.err || true
+          echo ---ERR; tail -5 tail.err
+          python3 - <<'PY'
+          import json
+          raw=open('tail.json').read();dec=json.JSONDecoder();i=0;n=0;bad=0;out={}
+          while True:
+            while i<len(raw) and raw[i] in ' \r\n\t':i+=1
+            if i>=len(raw):break
+            try:o,i=dec.raw_decode(raw,i)
+            except Exception as e:print('decode',e);break
+            n+=1;ev=o.get('event') or {};u=(ev.get('request') or {}).get('url','?').split('/api/')[-1];oc=o.get('outcome')
+            k=(u,oc);out[k]=out.get(k,0)+1
+            if oc!='ok' or o.get('exceptions'):
+              bad+=1
+              if bad<15:print(oc,u,[e.get('message') for e in o.get('exceptions',[])][:2],o.get('cpuTime'),o.get('wallTime'))
+          print('events',n,'bad',bad)
+          for k,v in sorted(out.items(),key=lambda x:-x[1])[:25]:print(k,v)
+          PY
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
