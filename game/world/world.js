@@ -37,7 +37,7 @@ export function buildWorld(residents){
   const pines=[];const trees=[];
   for(let i=0;i<1700;i++){let x,z;for(;;){x=(R()-0.5)*1900;z=-1300+R()*1500;const inCity=x>ox-90&&x<ox+W0+20&&z>oz-20&&z<60;if(!inCity&&Math.abs(x-rvx)>rvw/2+7&&!(Math.abs(x-(WORLD.plaza.cx-290))<20&&Math.abs(z-(oz+H0+118))<18)&&!(Math.abs(x-(WORLD.plaza.cx-280))<45&&Math.abs(z-(oz+H0+240))<60)&&!(window.TREEFREE&&window.TREEFREE(x,z)))break}const h=10+R()*14;pines.push({x,z,y:h/2,sx:3.5+R()*2,sy:h,sz:3.5+R()*2})}
   {const C6=new THREE.ConeGeometry(1,1,6);const g=mergeParts([part(C6,'#1f5a2c',0,0.1,0,0,0,0,1,0.8,1),part(C6,'#24683a',0,0.45,0,0,0,0,0.7,0.55,0.7)]);inst(g,M.vc,pines,{recv:false,cast:false,chunk:300})}
-  const mt=[];const r2=rng(3);for(let i=0;i<26;i++){const x=-1900+i*150+r2()*80,z=-1150-r2()*350,h=420+r2()*480;mt.push({x,z,y:h/2,sx:260+r2()*180,sy:h,sz:220+r2()*120,ry:r2()*3})}
+  const mt=[];const r2=rng(3);for(let i=0;i<26;i++){const x=-1900+i*150+r2()*80,z=Math.min(-1150,oz-420)-r2()*350,h=420+r2()*480;mt.push({x,z,y:h/2,sx:260+r2()*180,sy:h,sz:220+r2()*120,ry:r2()*3})}
   {const g=new THREE.ConeGeometry(1,1,7,3);const pos=g.attributes.position;const r3=rng(9);for(let i=0;i<pos.count;i++){if(pos.getY(i)<0.49){pos.setX(i,pos.getX(i)*(0.85+r3()*0.3));pos.setZ(i,pos.getZ(i)*(0.85+r3()*0.3))}}g.computeVertexNormals();
     inst(g,new THREE.MeshLambertMaterial({color:0x5f7660,flatShading:true}),mt,{cast:false,recv:false})}
   // sky
