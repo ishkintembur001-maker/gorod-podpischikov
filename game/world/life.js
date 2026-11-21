@@ -283,7 +283,20 @@ function placeAll() {
 function addObj(k, x, z, r, f = FL) {
   if (!FB[k]) return;
   const g = new THREE.Group(); const d = FB[k](g); g.position.set(x, 0, z); g.rotation.y = r || 0;
-  g.userData = { k, d, fl: f }; g.traverse(o => o.userData.k = k); furn.add(g); OBJ.set(k, g); setL(g, f === FL ? 0 : 1); return g;
+  g.userData = { k, d, fl: f }; snapW(g); g.traverse(o => o.userData.k = k); furn.add(g); OBJ.set(k, g); setL(g, f === FL ? 0 : 1); return g;
+}
+const WALLK = new Set(['shelf', 'wallclock', 'darts', 'antlers']);
+function snapW(g) {
+  const k = g.userData.k; if (!WALLK.has(k) && !k.startsWith('pic_')) return;
+  const x = g.position.x, z = g.position.z, W = [[-HW, -HD, HW, -HD, 1], [-HW, -HD, -HW, HD, 1], ...(g.userData.fl ? WALLS2 : WALLS)].filter(w => w[4]);
+  let best = null, bd = 1e9;
+  for (const [x0, z0, x1, z1] of W) {
+    let px, pz, rot; const a = Math.min(x0, x1), b = Math.max(x0, x1), c = Math.min(z0, z1), e = Math.max(z0, z1);
+    if (z0 === z1) { px = b - a > 1.8 ? Math.max(a + .9, Math.min(b - .9, x)) : (a + b) / 2; const sd = z >= z0 ? 1 : -1; pz = z0 + sd * .25; rot = sd > 0 ? 0 : Math.PI }
+    else { pz = e - c > 1.8 ? Math.max(c + .9, Math.min(e - .9, z)) : (c + e) / 2; const sd = x >= x0 ? 1 : -1; px = x0 + sd * .25; rot = sd > 0 ? Math.PI / 2 : -Math.PI / 2 }
+    const d = Math.hypot(px - x, pz - z); if (d < bd) { bd = d; best = [px, pz, rot] }
+  }
+  if (best) { g.position.x = best[0]; g.position.z = best[1]; g.rotation.y = best[2] }
 }
 function spot(g) { const d = (g.userData.d || 1) / 2 + 1.1, r = g.rotation.y; return new THREE.Vector3(g.position.x + Math.sin(r) * d, 0, g.position.z + Math.cos(r) * d) }
 
@@ -428,7 +441,7 @@ let sx = 0, sy = 0, lx = null;
 let doff = new THREE.Vector3();
 $('gl').addEventListener('pointerdown', e => { sx = e.clientX; sy = e.clientY; lx = e.clientX; if (BUILD) { setPtr(e); const h = ray.intersectObjects(furn.children, true)[0]; if (h) { const g = OBJ.get(h.object.userData.k); if (g !== sel) select(g) } if (sel) { const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); doff.set(sel.position.x - p.x, 0, sel.position.z - p.z); drag = true; lx = null } } });
 $('gl').addEventListener('pointermove', e => {
-  if (drag && sel) { setPtr(e); const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); p.add(doff); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 4) / 4; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 4) / 4; return }
+  if (drag && sel) { setPtr(e); const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); p.add(doff); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 4) / 4; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 4) / 4; snapW(sel); return }
   if (lx != null && e.buttons) { ang -= (e.clientX - lx) * .005; ang = Math.max(-.2, Math.min(1.3, ang)); lx = e.clientX }
 });
 addEventListener('pointerup', e => {
@@ -436,7 +449,7 @@ addEventListener('pointerup', e => {
   if (drag && !tap) { drag = false; autosave(); return } drag = false;
   if (!tap || e.target.id !== 'gl') return;
   setPtr(e); const h = ray.intersectObjects(furn.children, true)[0];
-  if (BUILD) { if (h) { select(OBJ.get(h.object.userData.k)); return } if (sel) { const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 4) / 4; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 4) / 4; autosave() } return }
+  if (BUILD) { if (h) { select(OBJ.get(h.object.userData.k)); return } if (sel) { const p = new THREE.Vector3(); ray.ray.intersectPlane(ground, p); sel.position.x = Math.round(Math.max(-HW + .8, Math.min(HW - .8, p.x)) * 4) / 4; sel.position.z = Math.round(Math.max(-HD + .8, Math.min(HD - .8, p.z)) * 4) / 4; snapW(sel); autosave() } return }
   if (h) { menu(OBJ.get(h.object.userData.k), e.clientX, e.clientY); return }
   $('om').classList.add('hidden');
   const p = new THREE.Vector3(); if (ray.ray.intersectPlane(ground, p) && !busy) walkTo(new THREE.Vector3(Math.max(-HW + 1, Math.min(HW - 1, p.x)), 0, Math.max(-HD + 1, Math.min(HD - 1, p.z))));
