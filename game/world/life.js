@@ -52,10 +52,10 @@ const DOORS = [[XA, -10, 'z'], [XB, -10, 'z'], [XA, 0, 'z'], [XB, 0, 'z'], [XA, 
 const ROOMS = [['Кухня', -10.7, -10], ['Гостиная', 0, -10], ['Спальня', 10.7, -10], ['Лаунж', -10.7, 0], ['Холл', 0, 0], ['Игровая', 10.7, 0], ['Ванная', -10.7, 10], ['Прихожая', 0, 10], ['Кабинет', 10.7, 10]];
 let DOORM = [];
 // встроенный интерьер: кухонный гарнитур, тумбы, ковры, полки, картины — как у дизайнера
-let FL = 0; const STR = [1.7, 9.3, 4.95, 10.9], SBOT = [1.0, 10.1];
+let FL = 0; const STR = [3.7, 5.55, 5.2, 8.35], SBOT = [3.0, 8.5];
 const WALLS2 = [[XA, -HD, XA, -11.3, 1], [XA, -8.7, XA, -5, 1], [XB, -HD, XB, -11.3, 1], [XB, -8.7, XB, -5, 1], [-HW, -5, -12, -5, 1], [-9.37, -5, -1.3, -5, 1], [1.3, -5, HW, -5, 1]];
 const ROOMS2 = [['Детская', -10.7, -10], ['Мансарда', 0, -10], ['Гардеробная', 10.7, -10], ['Зал 2 этажа', -6, 2], ['Зона отдыха', 8, 2]];
-const SOLID = [[1.7, 9.3, 4.95, 10.9], [-12.3, -14.95, -10.2, -13.6], [9.6, -14.9, 11.1, -13.6], [14.1, -14.9, 15.6, -13.6], [15, 8.6, 15.9, 13], [-4.95, 6.2, -4.1, 8.8], [3.9, 6, 5, 7.6], [-15.6, -1, -14.6, 1]];
+const SOLID = [STR, [-12.3, -14.95, -10.2, -13.6], [9.6, -14.9, 11.1, -13.6], [14.1, -14.9, 15.6, -13.6], [15, 8.6, 15.9, 13], [-4.95, 6.2, -4.1, 8.8], [-4.95, 13.1, -3.9, 14.2], [-15.6, -1, -14.6, 1]];
 function interior() {
   const I = new THREE.Group(); house.add(I);
   const wood = mat('#7a4f2e', { roughness: .6 }), wl = mat('#c9a77c', { roughness: .6 }), white = mat('#f4f1ea', { roughness: .45 }), stone = mat('#3a3a44', { roughness: .3 }), steel = mat('#c0c6cc', { metalness: .8, roughness: .25 });
@@ -82,7 +82,7 @@ function interior() {
   // ванная: коврики и полотенцесушитель
   rug(2.2, 1.4, '#9fd6e8', -7.6, 9.6); rug(1.6, 1.2, '#9fd6e8', -13.6, 10, '#ffffff'); for (let i = 0; i < 4; i++) B(1.2, .06, .06, steel, -5.75, 1.6 + i * .3, 12.6, I).rotation.y = Math.PI / 2;
   // прихожая: обувница, вешалка, зеркало
-  B(.8, 1.2, 2.6, wood, -4.55, .6, 7.5, I); const mi = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.4), mat('#cfe6ff', { metalness: .9, roughness: .05 })); mi.position.set(-5.05, 2.5, 7.5); mi.rotation.y = Math.PI / 2; I.add(mi); C(.06, .06, 3.4, '#2b2118', 4.4, 1.7, 6.8, I, 8); for (let i = 0; i < 4; i++) { const h = B(.5, .06, .06, '#2b2118', 4.4, 3.2, 6.8, I); h.rotation.y = i * Math.PI / 4 } C(.35, .4, .1, '#2b2118', 4.4, .05, 6.8, I, 12);
+  B(.8, 1.2, 2.6, wood, -4.55, .6, 7.5, I); const mi = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.4), mat('#cfe6ff', { metalness: .9, roughness: .05 })); mi.position.set(-5.05, 2.5, 7.5); mi.rotation.y = Math.PI / 2; I.add(mi); C(.06, .06, 3.4, '#2b2118', -4.4, 1.7, 13.65, I, 8); for (let i = 0; i < 4; i++) { const h = B(.5, .06, .06, '#2b2118', -4.4, 3.2, 13.65, I); h.rotation.y = i * Math.PI / 4 } C(.35, .4, .1, '#2b2118', -4.4, .05, 13.65, I, 12);
   // кабинет: книжный стеллаж, ковёр, растение
   B(.8, 3.6, 4.4, wood, 15.45, 1.8, 10.8, I); for (let r = 0; r < 4; r++) { B(.7, .08, 4.3, wl, 15.4, .5 + r * .85, 10.8, I); for (let i = 0; i < 9; i++) B(.45, .55, .3, `hsl(${(i * 47 + r * 90) % 360},45%,50%)`, 15.3, .82 + r * .85, 8.9 + i * .45, I) } rug(4.4, 3, '#2b6a4a', 10.6, 9.4); plantB(6.2, 14.2, 1);
   I.traverse(o => { if (o.isMesh) o.userData.static = 1 });
@@ -128,12 +128,14 @@ function buildHouse() {
   for (const [, x, z] of ROOMS) { const l = new THREE.PointLight('#ffd9a0', NIGHT ? 22 : 6, 15, 1.6); l.position.set(x, 3.6, z); house.add(l) }
   stairs(house, 0); buildUp(wood); applyFloor();
 }
-function stairs(p, up) { const st = mat('#8a5a3a', { roughness: .5 }), rl = mat('#2b2b33', { metalness: .5, roughness: .4 });
-  if (!up) for (let i = 0; i < 9; i++) B(.38, .3 + i * .42, 1.5, st, 1.95 + i * .37, (.3 + i * .42) / 2, 10.1, p);
-  else { const hole = new THREE.Mesh(new THREE.PlaneGeometry(3.3, 1.6), mat('#1a1430')); hole.rotation.x = -Math.PI / 2; hole.position.set(3.3, .03, 10.1); p.add(hole); for (let i = 0; i < 3; i++) B(.38, .1, 1.5, st, 1.95 + i * .37, -.05 - i * .3, 10.1, p) }
-  for (const z of [9.3, 10.9]) { B(up ? 3.4 : 5, .08, .08, rl, 3.3, up ? 1.1 : 2.95, z, p).rotation.z = up ? 0 : .85; for (let i = 0; i < 5; i++) B(.06, 1.1, .06, rl, 1.95 + i * .74, up ? .55 : .55 + i * .74 * 1.13, z, p) }
+function stairs(p, up) { const st = mat('#8a5a3a', { roughness: .5 }), rl = mat('#2b2b33', { metalness: .5, roughness: .4 }), X = 4.45, W = 1.4;
+  // лестница вдоль правой стены прихожей: низ у холла, верх у кабинета — проходы и двери свободны
+  if (!up) { for (let i = 0; i < 8; i++) { const h = .3 + i * .48; B(W, h, .34, st, X, h / 2, 8.2 - i * .33, p); B(W + .04, .05, .38, '#6b4220', X, h + .02, 8.2 - i * .33, p) }
+    const k = 3.36 / 2.31, rail = B(.07, .07, 4.1, rl, X - W / 2 - .05, 2.98, 6.94, p); rail.rotation.x = Math.atan2(3.36, 2.31); for (let i = 0; i < 5; i++) { const z = 8.2 - i * .57, top = 1.3 + (8.2 - z) * k; B(.05, 1, .05, rl, X - W / 2 - .05, top - .5, z, p) } }
+  else { const hole = new THREE.Mesh(new THREE.PlaneGeometry(W + .2, 2.8), mat('#1a1430')); hole.rotation.x = -Math.PI / 2; hole.position.set(X, .03, 6.95); p.add(hole); for (let i = 0; i < 3; i++) B(W, .1, .34, st, X, -.05 - i * .3, 5.9 + i * .33, p);
+    B(.07, .07, 3.2, rl, X - W / 2 - .1, 1.1, 7.1, p); B(W + .2, .07, .07, rl, X, 1.1, 5.5, p); for (let i = 0; i < 5; i++) B(.05, 1.1, .05, rl, X - W / 2 - .1, .55, 5.6 + i * .75, p) }
   const sg = tex((c, w, h) => { c.fillStyle = 'rgba(43,34,102,.85)'; c.beginPath(); c.roundRect(4, 4, w - 8, h - 8, 30); c.fill(); c.fillStyle = '#ffc65c'; c.font = 'bold 40px sans-serif'; c.textAlign = 'center'; c.fillText(up ? '🪜 ⬇ 1 этаж' : '🪜 ⬆ 2 этаж', w / 2, 62) }, 320, 96);
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(2.6, .78), new THREE.MeshBasicMaterial({ map: sg, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(.4, .05, 11.6); p.add(m) }
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(2, .6), new THREE.MeshBasicMaterial({ map: sg, transparent: true, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(2.4, .05, 6.6); p.add(m) }
 const up = new THREE.Group(); scene.add(up);
 function buildUp(wood) { up.clear(); const L = LIFE();
   const w2 = wood.clone(); w2.needsUpdate = true; const fm = mat('#ffffff', { map: w2, roughness: .6, color: '#f0e2cc' });
@@ -288,15 +290,15 @@ function addObj(k, x, z, r, f = FL) {
 const WALLK = new Set(['shelf', 'wallclock', 'darts', 'antlers']);
 function snapW(g) {
   const k = g.userData.k; if (!WALLK.has(k) && !k.startsWith('pic_')) return;
-  const x = g.position.x, z = g.position.z, W = [[-HW, -HD, HW, -HD, 1], [-HW, -HD, -HW, HD, 1], ...(g.userData.fl ? WALLS2 : WALLS)].filter(w => w[4]);
+  const x = g.position.x, z = g.position.z, W = [[-HW, -HD, HW, -HD, 1], [-HW, -HD, -HW, HD, 1], ...(g.userData.fl ? WALLS2 : WALLS)];
   let best = null, bd = 1e9;
-  for (const [x0, z0, x1, z1] of W) {
+  for (const [x0, z0, x1, z1, hi] of W) {
     let px, pz, rot; const a = Math.min(x0, x1), b = Math.max(x0, x1), c = Math.min(z0, z1), e = Math.max(z0, z1);
     if (z0 === z1) { px = b - a > 1.8 ? Math.max(a + .9, Math.min(b - .9, x)) : (a + b) / 2; const sd = z >= z0 ? 1 : -1; pz = z0 + sd * .25; rot = sd > 0 ? 0 : Math.PI }
     else { pz = e - c > 1.8 ? Math.max(c + .9, Math.min(e - .9, z)) : (c + e) / 2; const sd = x >= x0 ? 1 : -1; px = x0 + sd * .25; rot = sd > 0 ? Math.PI / 2 : -Math.PI / 2 }
-    const d = Math.hypot(px - x, pz - z); if (d < bd) { bd = d; best = [px, pz, rot] }
+    const d = Math.hypot(px - x, pz - z); if (d < bd) { bd = d; best = [px, pz, rot, hi] }
   }
-  if (best) { g.position.x = best[0]; g.position.z = best[1]; g.rotation.y = best[2] }
+  if (best) { g.position.x = best[0]; g.position.z = best[1]; g.rotation.y = best[2]; const by = k.startsWith('pic_') ? 2.7 : { wallclock: 2.8, darts: 2.5, antlers: 2.85, shelf: 1.9 }[k] || 2.5; g.position.y = best[3] ? 0 : .85 - by }
 }
 function spot(g) { const d = (g.userData.d || 1) / 2 + 1.1, r = g.rotation.y; return new THREE.Vector3(g.position.x + Math.sin(r) * d, 0, g.position.z + Math.cos(r) * d) }
 
