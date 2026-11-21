@@ -16,6 +16,16 @@ const P23=[
  {n:'yusufs.555x',set:{fl:3,f:['cars'],cc:'white'}},{n:'adel.insii',set:{fl:3,f:['garden','flowers']}},{n:'animeshnick_kgz',set:{fl:2,f:['sauna','pool']}}];
 const P23C=[0,2,1,3,4,5,7,9,10,11,12,13,14];
 const PEOPLE=[
+ {n:'sogdianaofficialll',w:'согдиана',txt:'«А можно я?» — конечно можно! 🏡',c:14,r:3,set:{fl:2,roof:'pink',f:['flowers','garden']}},
+ {n:'lidiya45706',w:'лидия',txt:'3 этажа · бассейн · площадка · Lamborghini 🏎',c:15,r:3,set:{fl:3,f:['pool','playground']},carC:'#f2c230'},
+ {n:'alibkvna.aa',w:'алибковна',txt:'Lamborghini и флаг Кыргызстана 🇰🇬',c:16,r:3,set:{fl:2,f:['garden']},flag:'kg',carC:'#ff7a1a'},
+ {n:'david2731666',w:'давид',txt:'просил особняк — держи! 🏛',c:17,r:3,set:{fl:3,wall:'white',roof:'gold',f:['pool','garden','flowers']}},
+ {n:'zhangir_1111',w:'жангир',txt:'пентхаус · BMW · флаг Казахстана 🇰🇿',c:18,r:3,set:{fl:2,noroof:true,f:['pool']},pent:1,bmw:1,flag:'kz'},
+ {n:'amina40551',w:'амина',txt:'золотая крыша · бассейн · две кошки 🐱🐱',c:19,r:3,set:{fl:2,roof:'gold',f:['pool','playground'],an:{cat:2}}},
+ {n:'arietgx470',w:'ариет',txt:'3 этажа и Lexus 570 🚙',c:20,r:3,set:{fl:3,f:['garden']},carC:'#111111'},
+ {n:'alia201726',w:'алия',txt:'розовый дом · цветы · теплица 🌸',c:21,r:3,set:{fl:2,wall:'pink',roof:'pink',f:['pool','flowers','garden']}},
+ {n:'beka33700',w:'бека',txt:'собака · качели · горка 🐶',c:22,r:3,set:{fl:2,f:['playground','dogs'],an:{dog:1}}},
+ {n:'akmaral54071',w:'акмарал',txt:'голубой дом · большой бассейн · собака 💙',c:23,r:3,set:{fl:3,wall:'blue',roof:'blue',f:['bigpool','dogs'],an:{dog:1}}},
  {n:'sofiya_666_222',w:'софия',txt:'3 этажа · розовый · бассейн · собака · Lamborghini',c:2,r:3,set:{fl:3,wall:'pink',roof:'pink',f:['pool','dogs','flowers']},carC:'#f2c230'},
  {n:'mago.med8562',w:'маго',txt:'2 этажа · флаг Дагестана · чёрная Приора',c:3,r:3,set:{fl:2,f:['garden']},flag:'dag',carC:'#111111'},
  {n:'fatima12062015',w:'фатима',txt:'3 этажа · две кошки',c:4,r:3,set:{fl:3,f:['flowers','garden'],an:{cat:2}}},
