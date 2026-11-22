@@ -273,7 +273,7 @@ const ldkey=()=>{const d=new Date(Date.now()+3*3600e3);if(d.getUTCHours()>=21)d.
 async function grp(env,text){try{await fetch('https://api.telegram.org/bot'+await token(env)+'/sendMessage',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat_id:'@gorod_podpischikov',text,reply_markup:{inline_keyboard:[[{text:'🎮 Играть',url:'https://t.me/gorod_podpischikov_bot?start=play'}]]}})})}catch(e){}}
 
 const mskH=()=>new Date(Date.now()+3*3600e3).getUTCHours(),mskDow=()=>new Date(Date.now()+3*3600e3).getUTCDay();
-const WTH=['sun','sun','cloud','rain','fog','snow','sun','cloud'];const weather=()=>{const h=Math.floor(Date.now()/3600e3);let x=(h*2654435761)>>>0;x^=x>>>13;return WTH[x%WTH.length]};
+const WTH=['sun','sun','cloud','rain','fog','snow','sun','cloud'];const weather=()=>{const h=Math.floor(Date.now()/3600e3);let x=(h*2654435761)>>>0;x=(x^(x>>>13))>>>0;return WTH[x%WTH.length]};
 async function lbInit(env){await env.DB.prepare('CREATE TABLE IF NOT EXISTS lb(k TEXT,tg INTEGER,nick TEXT,v REAL,x TEXT,PRIMARY KEY(k,tg))').run()}
 async function lbAdd(env,k,p,v,x,mode){await lbInit(env);if(mode==='max')await env.DB.prepare('INSERT INTO lb(k,tg,nick,v,x) VALUES(?,?,?,?,?) ON CONFLICT(k,tg) DO UPDATE SET v=MAX(v,excluded.v),x=CASE WHEN excluded.v>v THEN excluded.x ELSE x END').bind(k,p.tg,p.nick,v,x||'').run();else await env.DB.prepare('INSERT INTO lb(k,tg,nick,v,x) VALUES(?,?,?,?,?) ON CONFLICT(k,tg) DO UPDATE SET v=v+excluded.v').bind(k,p.tg,p.nick,v,x||'').run()}
 async function lbTop(env,k,n=5){await lbInit(env);return (await env.DB.prepare('SELECT nick,v,x,tg FROM lb WHERE k=? ORDER BY v DESC LIMIT ?').bind(k,n).all()).results}
