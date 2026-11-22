@@ -267,7 +267,10 @@ export function play(g, name, { once = false, fade = .25 } = {}) {
   if (U.cur) U.cur.crossFadeTo(a, fade, false); U.cur = a;
 }
 let AT = 0;
-export function tickHeroes(dt) { for (const m of MIXERS) { const r = m.getRoot(), g = r && r.parent; if (g && g.userData.far) continue; m.update(dt) } AT += dt;
+const _v = new THREE.Vector3(); let _fc = 0; const _skip = new WeakSet(); export const FOCUS = { x: 0, z: 0, on: false };
+function _hid(o) { while (o) { if (!o.visible) return true; o = o.parent } return false }
+export function tickHeroes(dt) { if (FOCUS.on && (_fc++ % 20 === 0)) { for (const m of MIXERS) { const r = m.getRoot(); if (!r || !r.parent) continue; r.getWorldPosition(_v); if (_hid(r) || Math.hypot(_v.x - FOCUS.x, _v.z - FOCUS.z) > 95) _skip.add(m); else _skip.delete(m) } }
+  for (const m of MIXERS) { const r = m.getRoot(), g = r && r.parent; if (g && g.userData.far) continue; if (_skip.has(m)) continue; m.update(dt) } AT += dt;
   for (const f of FLAGS) { if (!f.parent) { FLAGS.delete(f); continue } const a = f.geometry.attributes.position, b = f.userData.base; for (let i = 0; i < a.count; i++) { const x = b[i * 3]; a.array[i * 3 + 2] = Math.sin(x * 2.6 - AT * 5) * .16 * x / 2.2; a.array[i * 3 + 1] = b[i * 3 + 1] - x * x * .02 } a.needsUpdate = true }
   for (const w of WHEELS) { if (!w.parent) { WHEELS.delete(w); continue } const gp = w.parent.parent; if (gp && gp.userData.moving) w.rotation.x += dt * 9 }
   for (const fl of FLAMES) { if (!fl.parent) { FLAMES.delete(fl); continue } fl.scale.set(1, .8 + Math.random() * .5, 1) }
