@@ -80,6 +80,8 @@ function stats(o, wear) {
   return { dmg: (wd + K[1] + (hu.str || 0)) * (1 + (o.lvl || 1) * .015), def: Math.min(.8, ar + ah + sd), dr: 1 - .03 * (hu.def || 0), hp: 100 + 10 * (hu.hp || 0) + cl + (o.lvl || 1) * 3, cd: hu.cd || 0 };
 }
 const F = []; let ME = null, T0 = 0, END = false, LIMIT = 90, TS = 1, TSU = 0, SHK = 0, FOCUS = false, KA = 0, KB = 0;
+const RANKS = [[0, '🪵', 'Новичок'], [100, '🥉', 'Бронза'], [300, '🥈', 'Серебро'], [600, '🥇', 'Золото'], [1000, '💠', 'Платина'], [1500, '💎', 'Алмаз'], [2200, '👑', 'Легенда']];
+function rankOf(r) { let i = 0; while (i < RANKS.length - 1 && r >= RANKS[i + 1][0]) i++; return [i, ...RANKS[i]] }
 const CEMO = { warrior: '⚔️', paladin: '🛡', berserk: '🪓', rogue: '🗡', assassin: '🥷', archer: '🏹', hunter: '🪤', mage: '🔮', shaman: '⚡', druid: '🌿' };
 const CNAME = { warrior: 'Воин', paladin: 'Паладин', berserk: 'Берсерк', rogue: 'Разбойник', assassin: 'Ассасин', archer: 'Лучник', hunter: 'Охотник', mage: 'Маг', shaman: 'Шаман', druid: 'Друид' };
 const footRing = c => { const g = new THREE.Mesh(new THREE.RingGeometry(.62, .82, 32), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: .85, depthWrite: false })); g.rotation.x = -Math.PI / 2; g.position.y = .04; return g };
@@ -88,7 +90,7 @@ function fighter(o, team, i, isMe) {
   const x = (i - 1) * 4.5, z = team ? -11 : 11; m.position.set(x, 0, z); m.rotation.y = team ? 0 : Math.PI; scene.add(m); m.traverse(c => { if (c.isMesh) c.castShadow = true });
   const nm = lbl((isMe ? '⭐ ' : (CEMO[o.cls] || '') + ' ') + '@' + String(o.n).slice(0, 14), team ? '#ff8a6a' : isMe ? '#ffd34d' : '#7ae8a8'); nm.position.y = 3.4; m.add(nm);
   const hb = hpBar(); hb.position.y = 2.95; m.add(hb); m.add(footRing(isMe ? '#ffd34d' : TCOL[team]));
-  const hpX = isMe ? 1.3 : 1, dX = team ? .8 : 1; const f = { o, team, m, hb, cls: o.cls, hp: S.hp * hpX, max: S.hp * hpX, dmg: S.dmg * dX, def: S.def, dr: S.dr * K[2], dodge: K[3], crit: K[4], critM: K[5], spd: K[6], int: K[0], range: (STYLE[o.cls] || STYLE['']).range, na: 1 + Math.random(), nab: 3 + Math.random() * 4, cdk: 1 - .05 * S.cd, tgt: null, alive: true, stun: 0, rage: 0, smoke: 0, trap: 0, roll: 0, nroll: 0, goto: null, isMe, dealt: 0, kills: 0 };
+  const hu = o.hu || {}, rb = isMe ? 1 + .02 * rankOf(o.ar || 0)[0] : 1, hpX = (isMe ? 1.3 : 1) * rb, dX = (team ? .8 : 1) * rb; const f = { o, team, m, hb, cls: o.cls, hp: S.hp * hpX, max: S.hp * hpX, dmg: S.dmg * dX, def: S.def, dr: S.dr * K[2], dodge: K[3] + .015 * (hu.agi || 0), crit: K[4] + .02 * (hu.crit || 0), critM: K[5], spd: K[6] * (1 + .03 * (hu.agi || 0)), vamp: .015 * (hu.vamp || 0), int: K[0], range: (STYLE[o.cls] || STYLE['']).range, na: 1 + Math.random(), nab: 3 + Math.random() * 4, cdk: 1 - .05 * S.cd, tgt: null, alive: true, stun: 0, rage: 0, smoke: 0, trap: 0, roll: 0, nroll: 0, goto: null, isMe, dealt: 0, kills: 0 };
   play(m, 'Idle'); F.push(f); return f;
 }
 const ally = f => F.filter(g => g.alive && g.team === f.team), foes = f => F.filter(g => g.alive && g.team !== f.team);
@@ -100,10 +102,10 @@ function damage(src, f, d, emo, noDodge) {
   if (!f.alive) return; const n = t();
   if (f.roll > n || (!noDodge && (Math.random() < f.dodge || f.smoke > n))) { dmgText(scene, f.m.position, 'уворот', '#9fd6ff'); if (f.roll <= n) anim(f, 'Roll', 600); return }
   let crit = false; if (src && Math.random() < src.crit) { d *= src.critM; crit = true } if (src && src.rage > n) d *= 2; if (f.trap > n) d *= 1.5;
-  d = Math.max(1, d * (1 - f.def) * f.dr); d = Math.round(d * 10) / 10; f.hp -= d; if (src) src.dealt += d;
+  d = Math.max(1, d * (1 - f.def) * f.dr); d = Math.round(d * 10) / 10; f.hp -= d; if (src) { src.dealt += d; if (src.vamp && src.alive) src.hp = Math.min(src.max, src.hp + d * src.vamp) }
   dmgText(scene, f.m.position, (crit ? '💥' : '') + '-' + d, crit ? '#ff5a3a' : f.team ? '#ffd34d' : '#ff8a8a', crit); if (emo) burst(scene, f.m.position, 0xffd34d, .6);
-  if (f.isMe) { SHK = Math.min(.6, SHK + (crit ? .45 : .22)); $('flash').style.boxShadow = 'inset 0 0 90px rgba(255,0,0,.32)'; setTimeout(() => $('flash').style.boxShadow = 'inset 0 0 90px rgba(255,0,0,0)', 160) }
-  else if (src && src.isMe) SHK = Math.min(.3, SHK + (crit ? .2 : .06));
+  if (f.isMe) { SHK = Math.min(.4, SHK + (crit ? .3 : .12)); $('flash').style.boxShadow = 'inset 0 0 90px rgba(255,0,0,.32)'; setTimeout(() => $('flash').style.boxShadow = 'inset 0 0 90px rgba(255,0,0,0)', 160) }
+  else if (src && src.isMe && crit) SHK = Math.min(.2, SHK + .1);
   if (f.hp <= 0) { f.hp = 0; f.alive = false; clearTimeout(f.at); play(f.m, 'Death', { once: true }); f.hb.visible = false; setTimeout(() => f.m.children.forEach(c => c.isSprite && (c.material.opacity = .4)), 300);
     if (src) src.kills++; if (f.team) KA++; else KB++; ringFx(scene, f.m.position, f.team ? 0x3ae07a : 0xff4a3a, 2.5); burst(scene, f.m.position, 0xffffff, 1.6);
     feedMsg(`<span style="color:${src && !src.team ? '#7ae8a8' : '#ff8a6a'}">@${src ? String(src.o.n).slice(0, 12) : '?'}</span> ☠️ <span style="color:${f.team ? '#ff8a6a' : '#7ae8a8'}">@${String(f.o.n).slice(0, 12)}</span>`);
@@ -219,10 +221,11 @@ function hud() {
 async function finish(win) {
   END = true; IN.atk = false; for (const f of F) if (f.alive) play(f.m, win === !f.team ? 'Victory' : 'Defeat', { once: false });
   await new Promise(r => setTimeout(r, 1400));
-  const r = P.arenaEnd ? await P.arenaEnd(win) : null; const ov = $('ov'); ov.classList.remove('hidden'); ov.style.display = 'flex';
+  const r = P.arenaEnd ? await P.arenaEnd(win, ME ? ME.kills : 0) : null; const ov = $('ov'); ov.classList.remove('hidden'); ov.style.display = 'flex';
   const mvp = F.filter(f => !f.team).sort((a, b) => b.dealt - a.dealt)[0];
   const rows = F.filter(f => !f.team).map(f => `<div><b>${f.alive ? (CEMO[f.cls] || '❤️') : '💀'}</b>@${String(f.o.n).slice(0, 10)}<br>🗡 ${Math.round(f.dealt)} · ☠️ ${f.kills}${f === mvp ? '<br>⭐ MVP' : ''}</div>`).join('');
-  $('ovb').innerHTML = `<h2>${win ? '🏆 Победа!' : '💀 Поражение'}</h2><p>${win ? 'Твой отряд разбил клан «' + D.opp.name + '»' : 'Клан «' + D.opp.name + '» оказался сильнее. Уворачивайся рывком, фокусь одну цель и прокачай героя!'}</p><p style="margin:0;font-weight:800">Счёт ${KA} : ${KB}</p><div class="rw">${rows}</div><p style="color:#ffd34d">${r && r.msg ? r.msg : r && r.err ? r.err : ''}</p><button id="okb">Вернуться в мир приключений</button>`;
+  $('ovb').innerHTML = `<h2>${win ? '🏆 Победа!' : '💀 Поражение'}</h2><p>${win ? 'Твой отряд разбил клан «' + D.opp.name + '»' : 'Клан «' + D.opp.name + '» оказался сильнее. Уворачивайся рывком, фокусь одну цель и прокачай героя!'}</p><p style="margin:0;font-weight:800">Счёт ${KA} : ${KB}</p><div class="rw">${rows}</div><p style="color:#ffd34d">${r && r.msg ? r.msg : r && r.err ? r.err : ''}</p>${r && r.ar != null ? (() => { const k = rankOf(r.ar), nx = RANKS[k[0] + 1]; return `<p style="margin:4px 0 10px;font-weight:800">${k[2]} ${k[3]} · рейтинг ${r.ar} <span style="color:${r.dr >= 0 ? '#5ee6b0' : '#ff8a6a'}">(${r.dr >= 0 ? '+' : ''}${r.dr})</span>${nx ? '<br><small style="opacity:.75">до ' + nx[1] + ' ' + nx[2] + ': ' + (nx[0] - r.ar) + '</small>' : ''}</p>` })() : ''}<button id="upb" style="background:linear-gradient(#b89aff,#7a4aff);color:#fff">⬆️ Прокачать героя</button><button id="okb">Вернуться в мир приключений</button>`;
+  $('upb').onclick = () => P.arenaUp ? P.arenaUp() : P.closeArena && P.closeArena();
   $('okb').onclick = () => P.closeArena && P.closeArena();
 }
 let last = performance.now(), fr = 0; const CP = new THREE.Vector3(0, 16, 30), CL = new THREE.Vector3();
@@ -233,14 +236,14 @@ function loop(now) { let dt = Math.min(.05, (now - last) / 1000); last = now; if
   if (fr % 2 === 0 && FANS.body) { const dm = new THREE.Object3D(), w = now / 1000; for (const a of FANS) { const j = Math.max(0, Math.sin(w * 7 + a.ph)) * (.25 + (TS < 1 ? .4 : 0)) + Math.max(0, Math.sin(a.a * 3 - w * 2.2)) * .35; dm.position.set(Math.sin(a.a) * a.rr, a.yy + .4 + j, Math.cos(a.a) * a.rr); dm.rotation.set(0, a.a + Math.PI, 0); dm.updateMatrix(); FANS.body.setMatrixAt(a.k, dm.matrix); dm.position.y += .65; dm.updateMatrix(); FANS.head.setMatrixAt(a.k, dm.matrix) } FANS.body.instanceMatrix.needsUpdate = FANS.head.instanceMatrix.needsUpdate = true }
   for (const o of TORCH) { if (o.fl) { const fl = .85 + Math.sin(now / 70 + o.ph * 3) * .1 + Math.random() * .08; o.fl.scale.set(fl, fl * (1 + Math.random() * .15), fl); if (o.L) o.L.intensity = 18 + fl * 8 } if (o.flag) o.flag.rotation.x = Math.sin(now / 400 + o.flag.userData.ph) * .12 }
   if (TORCH.dust) TORCH.dust.rotation.y += dt * .02;
-  const c = ME ? ME.m.position : new THREE.Vector3(); const want = new THREE.Vector3(c.x * .7, 18.5, c.z * .7 + 11.5); { const r = Math.hypot(want.x, want.z); if (r > 19.5) { want.x *= 19.5 / r; want.z *= 19.5 / r } } CP.lerp(want, Math.min(1, dt * 4)); CL.lerp(new THREE.Vector3(c.x * .8, .8, c.z * .8 - 1.8), Math.min(1, dt * 5));
+  const fo = ME && (ME.alive || END) ? ME : (ally(ME || {}).find(a => a !== ME) || ME), c = fo ? fo.m.position : new THREE.Vector3(); CP.lerp(new THREE.Vector3(c.x, 17, c.z + 12.5), Math.min(1, dt * 4)); CL.lerp(new THREE.Vector3(c.x, .8, c.z - 1), Math.min(1, dt * 5));
   if (t() < T0 || T0 > 1e8) { const w = now / 1000 * .25; CP.set(Math.sin(w) * 17, 9 + Math.sin(w * .7) * 2, Math.cos(w) * 17); CL.set(0, 2, 0) }
-  SHK = Math.max(0, SHK - dt * 1.8); cam.position.set(CP.x + (Math.random() - .5) * SHK, CP.y + (Math.random() - .5) * SHK, CP.z); cam.lookAt(CL); R.render(scene, cam); requestAnimationFrame(loop) }
+  SHK = Math.max(0, SHK - dt * 2.5); const sk = Math.min(.25, SHK); cam.position.set(CP.x + (Math.random() - .5) * sk, CP.y, CP.z + (Math.random() - .5) * sk * .5); cam.lookAt(CL); R.render(scene, cam); requestAnimationFrame(loop) }
 (function start() {
   if (!D) { $('load').textContent = 'Нет данных боя'; return }
   $('tna').textContent = (D.mine.emo || '🗡') + ' ' + D.mine.name; $('tnb').textContent = D.opp.emo + ' ' + D.opp.name;
   ME = fighter(D.me, 0, 1, true); D.al.forEach((o, i) => fighter(o, 0, i ? 2 : 0)); D.en.forEach((o, i) => fighter(o, 1, i));
-  [F[1], F[0], F[2], ...F.slice(3)].forEach(pf); $('mycl').textContent = (CEMO[ME.cls] || '⚔️') + ' ' + (CNAME[ME.cls] || 'Герой');
+  [F[1], F[0], F[2], ...F.slice(3)].forEach(pf); { const k = rankOf(D.me.ar || 0); $('mycl').textContent = (CEMO[ME.cls] || '⚔️') + ' ' + (CNAME[ME.cls] || 'Герой') + ' · ' + k[2] + ' ' + k[3] }
   for (const f of F) { f.na = 0; f.nab = 0 } T0 = 1e9;
   $('load').remove(); CP.set(0, 26, 40); setInterval(hud, 150); requestAnimationFrame(loop);
   const side = (arr, cn, r) => `<div class="sd${r ? ' r' : ''}"><div class="cn" style="color:${r ? '#ff8a6a' : '#7ae8a8'}">${cn}</div>${arr.map(f => `<div class="pl">${CEMO[f.cls] || ''} @${String(f.o.n).slice(0, 12)} · ур.${f.o.lvl || 1}</div>`).join('')}</div>`;

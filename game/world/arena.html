@@ -15,21 +15,21 @@ html,body{margin:0;height:100%;overflow:hidden;background:#140c08;font-family:-a
 #sc{font:900 13px sans-serif;letter-spacing:1px}
 #feed{position:fixed;left:50%;transform:translateX(-50%);top:calc(84px + env(safe-area-inset-top));z-index:3;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
 #feed div{font:800 12px sans-serif;background:rgba(0,0,0,.55);border-radius:10px;padding:3px 9px;animation:fd 3s forwards}@keyframes fd{0%{opacity:0;transform:translateY(-6px)}10%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
-#js{position:fixed;left:calc(18px + env(safe-area-inset-left));bottom:calc(26px + env(safe-area-inset-bottom));z-index:4;width:132px;height:132px;border-radius:50%;background:radial-gradient(rgba(255,255,255,.08),rgba(255,255,255,.18));border:2px solid rgba(255,255,255,.3);touch-action:none}
-#jk{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d8c8a8);box-shadow:0 4px 10px rgba(0,0,0,.5)}
-#myhp{position:fixed;left:calc(18px + env(safe-area-inset-left));bottom:calc(168px + env(safe-area-inset-bottom));z-index:4;width:132px}
-#myhp .t{font:900 11px sans-serif;display:flex;justify-content:space-between;text-shadow:0 1px 2px #000}#myhp .b{height:10px;border-radius:6px;background:rgba(0,0,0,.5);overflow:hidden;border:1.5px solid rgba(255,255,255,.35);margin-top:2px}#myhp .b i{display:block;height:100%;background:linear-gradient(90deg,#3ae07a,#a8f0c0);transition:width .15s}
+#js{position:fixed;left:calc(12px + env(safe-area-inset-left));bottom:calc(20px + env(safe-area-inset-bottom));z-index:4;width:116px;height:116px;border-radius:50%;background:radial-gradient(rgba(255,255,255,.08),rgba(255,255,255,.18));border:2px solid rgba(255,255,255,.3);touch-action:none}
+#jk{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d8c8a8);box-shadow:0 4px 10px rgba(0,0,0,.5)}
+#myhp{position:fixed;left:calc(12px + env(safe-area-inset-left));bottom:calc(146px + env(safe-area-inset-bottom));z-index:4;width:min(190px,48vw)}
+#myhp .t{font:900 10.5px sans-serif;white-space:nowrap;gap:6px;display:flex;justify-content:space-between;text-shadow:0 1px 2px #000}#myhp .b{height:10px;border-radius:6px;background:rgba(0,0,0,.5);overflow:hidden;border:1.5px solid rgba(255,255,255,.35);margin-top:2px}#myhp .b i{display:block;height:100%;background:linear-gradient(90deg,#3ae07a,#a8f0c0);transition:width .15s}
 .bt{position:fixed;z-index:4;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font:900 10px sans-serif;color:#fff;touch-action:none;border:2px solid rgba(255,255,255,.55);box-shadow:0 4px 0 rgba(0,0,0,.45);overflow:hidden}
-.bt b{font-size:24px;line-height:1}.bt span{margin-top:1px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt b{font-size:22px;line-height:1}.bt span{margin-top:1px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bt .cd{position:absolute;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;font:900 20px sans-serif}.bt.off .cd{display:flex}
 .bt.on{transform:scale(.93);filter:brightness(1.25)}
-#atk{right:calc(22px + env(safe-area-inset-right));bottom:calc(28px + env(safe-area-inset-bottom));width:92px;height:92px;background:radial-gradient(circle at 40% 30%,#ff8a5a,#c8281a);border-color:#ffd34d}#atk b{font-size:36px}
-#sk1{right:calc(124px + env(safe-area-inset-right));bottom:calc(30px + env(safe-area-inset-bottom));width:64px;height:64px;background:radial-gradient(circle at 40% 30%,#a07aff,#4a1ab8)}
-#sk2{right:calc(110px + env(safe-area-inset-right));bottom:calc(106px + env(safe-area-inset-bottom));width:64px;height:64px;background:radial-gradient(circle at 40% 30%,#5ac8ff,#1a5ab8)}
-#roll{right:calc(36px + env(safe-area-inset-right));bottom:calc(134px + env(safe-area-inset-bottom));width:56px;height:56px;background:radial-gradient(circle at 40% 30%,#7ae8a8,#1a8a4a)}#roll b{font-size:20px}
-#foc{right:calc(26px + env(safe-area-inset-right));bottom:calc(202px + env(safe-area-inset-bottom));width:48px;height:48px;background:radial-gradient(circle at 40% 30%,#ffe08a,#b8801a)}#foc b{font-size:18px}#foc.act{box-shadow:0 0 0 3px #ff3a3a,0 0 14px #ff3a3a}
-#swt{right:calc(190px + env(safe-area-inset-right));bottom:calc(38px + env(safe-area-inset-bottom));width:46px;height:46px;background:radial-gradient(circle at 40% 30%,#ff7a7a,#8a1a1a)}#swt b{font-size:17px}
-#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(178px + env(safe-area-inset-bottom));z-index:4;max-width:70vw;text-align:center;font:700 12px/1.35 sans-serif;background:rgba(0,0,0,.55);border-radius:12px;padding:7px 10px;transition:opacity .6s;pointer-events:none}
+#atk{right:calc(14px + env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));width:84px;height:84px;background:radial-gradient(circle at 40% 30%,#ff8a5a,#c8281a);border-color:#ffd34d}#atk b{font-size:36px}
+#sk1{right:calc(104px + env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:58px;height:58px;background:radial-gradient(circle at 40% 30%,#a07aff,#4a1ab8)}
+#sk2{right:calc(92px + env(safe-area-inset-right));bottom:calc(86px + env(safe-area-inset-bottom));width:58px;height:58px;background:radial-gradient(circle at 40% 30%,#5ac8ff,#1a5ab8)}
+#roll{right:calc(22px + env(safe-area-inset-right));bottom:calc(116px + env(safe-area-inset-bottom));width:52px;height:52px;background:radial-gradient(circle at 40% 30%,#7ae8a8,#1a8a4a)}#roll b{font-size:20px}
+#foc{right:calc(26px + env(safe-area-inset-right));bottom:calc(178px + env(safe-area-inset-bottom));width:48px;height:48px;background:radial-gradient(circle at 40% 30%,#ffe08a,#b8801a)}#foc b{font-size:18px}#foc.act{box-shadow:0 0 0 3px #ff3a3a,0 0 14px #ff3a3a}
+#swt{right:calc(84px + env(safe-area-inset-right));bottom:calc(158px + env(safe-area-inset-bottom));width:46px;height:46px;background:radial-gradient(circle at 40% 30%,#ff7a7a,#8a1a1a)}#swt b{font-size:17px}
+#hint{position:fixed;left:50%;transform:translateX(-50%);top:calc(120px + env(safe-area-inset-top));z-index:4;max-width:70vw;text-align:center;font:700 12px/1.35 sans-serif;background:rgba(0,0,0,.55);border-radius:12px;padding:7px 10px;transition:opacity .6s;pointer-events:none}
 #ov{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:rgba(10,5,3,.78)}
 #ov .bx{width:min(88vw,360px);background:linear-gradient(160deg,#3a2414,#1a0f08);border:2px solid #ffd34d;border-radius:22px;padding:20px;text-align:center}
 #ov h2{margin:0 0 8px;font-size:26px}#ov p{margin:6px 0 12px;font-size:14px;line-height:1.4;color:#f0dcc0}
@@ -58,5 +58,5 @@ html,body{margin:0;height:100%;overflow:hidden;background:#140c08;font-family:-a
 <div id="hint">🕹 Джойстик — ходить · ⚔️ держи — бить ближайшего · 💨 рывок от удара · 📣 союзники бьют твою цель</div>
 <div id="ov" class="hidden" style="display:none"><div class="bx" id="ovb"></div></div>
 <div id="load">⚔️ Арена готовится к бою…</div>
-<script type="module" src="arena.js?v=2"></script>
+<script type="module" src="arena.js?v=3"></script>
 </body></html>
