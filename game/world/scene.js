@@ -16,6 +16,16 @@ const P23=[
  {n:'yusufs.555x',set:{fl:3,f:['cars'],cc:'white'}},{n:'adel.insii',set:{fl:3,f:['garden','flowers']}},{n:'animeshnick_kgz',set:{fl:2,f:['sauna','pool']}}];
 const P23C=[0,2,1,3,4,5,7,9,10,11,12,13,14];
 const PEOPLE=[
+ {n:'mr.alihan4444',txt:'просил 5 раз — держи свой дом! 🏡',c:0,r:4,set:{fl:2,roof:'blue',f:['garden','flowers']}},
+ {n:'aidysbarym',txt:'дом с флагом Тывы',c:1,r:4,set:{fl:2,roof:'green',f:['garden']},flag:'ty'},
+ {n:'kahrimanova85',txt:'2 этажа и бассейн 🏊',c:2,r:4,set:{fl:2,f:['pool','flowers']}},
+ {n:'aichyraika_19',txt:'фиолетовая крыша и флаг Кыргызстана',c:3,r:4,set:{fl:2,roof:'purple',f:['garden']},flag:'kg'},
+ {n:'boktfg7',txt:'особняк мечты и хрустальная Lamborghini 💎',c:4,r:4,set:{fl:3,wall:'white',roof:'gold',f:['pool','garden']},carC:'#bfefff'},
+ {n:'zsai_da',txt:'2 этажа и капибара 🦫',c:5,r:4,set:{fl:2,roof:'orange',f:['garden']},capy:1},
+ {n:'khanifa21952',txt:'розовый дом с бассейном 💖',c:6,r:4,set:{fl:3,wall:'pink',roof:'pink',f:['pool','flowers']}},
+ {n:'itaci_77ja',txt:'особняк и Bugatti 🏎',c:7,r:4,set:{fl:3,wall:'white',roof:'black',f:['pool']},carC:'#1a5ad8'},
+ {n:'_2015_980',txt:'большой дом, Mercedes и флаг Таджикистана',c:8,r:4,set:{fl:3,f:['garden']},flag:'tj',carC:'#111111'},
+ {n:'taissiya10',txt:'как обещали — твой дом готов! 🎉',c:9,r:4,set:{fl:2,roof:'orange',f:['flowers','playground']}},
  {n:'sogdianaofficialll',w:'согдиана',txt:'«А можно я?» — конечно можно! 🏡',c:14,r:3,set:{fl:2,roof:'pink',f:['flowers','garden']}},
  {n:'lidiya45706',w:'лидия',txt:'3 этажа · бассейн · площадка · Lamborghini 🏎',c:15,r:3,set:{fl:3,f:['pool','playground']},carC:'#f2c230'},
  {n:'alibkvna.aa',w:'алибковна',txt:'Lamborghini и флаг Кыргызстана 🇰🇬',c:16,r:3,set:{fl:2,f:['garden']},flag:'kg',carC:'#ff7a1a'},
@@ -94,7 +104,9 @@ hosp.position.set(HS.x,0,HS.z);scene.add(hosp);WORLD.hyard.visible=true;
 const MAT=c=>new THREE.MeshLambertMaterial({color:c});
 function mesh(geo,mat,x,y,z,grp){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;(grp||scene).add(m);return m}
 // ---- flags ----
-function flagTex(k){return ctex(300,200,(c,w,h)=>{if(k==='uz'){c.fillStyle='#1eb5e6';c.fillRect(0,0,w,h/3);c.fillStyle='#fff';c.fillRect(0,h/3,w,h/3);c.fillStyle='#1eb53a';c.fillRect(0,2*h/3,w,h/3);c.fillStyle='#ce1126';c.fillRect(0,h/3-5,w,5);c.fillRect(0,2*h/3,w,5);c.fillStyle='#fff';c.beginPath();c.arc(48,34,22,0,7);c.fill();c.fillStyle='#1eb5e6';c.beginPath();c.arc(56,34,20,0,7);c.fill()}
+function flagTex(k){return ctex(300,200,(c,w,h)=>{if(k==='tj'){c.fillStyle='#cc0000';c.fillRect(0,0,w,h*.29);c.fillStyle='#fff';c.fillRect(0,h*.29,w,h*.42);c.fillStyle='#006600';c.fillRect(0,h*.71,w,h*.29);c.fillStyle='#f8c300';c.beginPath();c.arc(w/2,h/2+8,16,Math.PI,0);c.fill();for(let i=0;i<7;i++){const a=Math.PI+.25+i*(Math.PI-.5)/6;c.beginPath();c.arc(w/2+Math.cos(a)*36,h/2+6+Math.sin(a)*26,5,0,7);c.fill()}}
+  else if(k==='ty'){c.fillStyle='#0f6fc6';c.fillRect(0,0,w,h);c.fillStyle='#fff';c.beginPath();c.moveTo(0,0);c.lineTo(w*.42,h/2-26);c.lineTo(w,h/2-26);c.lineTo(w,h/2+26);c.lineTo(w*.42,h/2+26);c.lineTo(0,h);c.lineTo(0,h-40);c.lineTo(w*.3,h/2);c.lineTo(0,40);c.fill();c.fillStyle='#ffd100';c.beginPath();c.moveTo(0,18);c.lineTo(w*.4,h/2-13);c.lineTo(w,h/2-13);c.lineTo(w,h/2+13);c.lineTo(w*.4,h/2+13);c.lineTo(0,h-18);c.lineTo(0,h-30);c.lineTo(w*.34,h/2);c.lineTo(0,30);c.fill()}
+  else if(k==='uz'){c.fillStyle='#1eb5e6';c.fillRect(0,0,w,h/3);c.fillStyle='#fff';c.fillRect(0,h/3,w,h/3);c.fillStyle='#1eb53a';c.fillRect(0,2*h/3,w,h/3);c.fillStyle='#ce1126';c.fillRect(0,h/3-5,w,5);c.fillRect(0,2*h/3,w,5);c.fillStyle='#fff';c.beginPath();c.arc(48,34,22,0,7);c.fill();c.fillStyle='#1eb5e6';c.beginPath();c.arc(56,34,20,0,7);c.fill()}
   else if(k==='ru'){c.fillStyle='#fff';c.fillRect(0,0,w,h/3);c.fillStyle='#0039a6';c.fillRect(0,h/3,w,h/3);c.fillStyle='#d52b1e';c.fillRect(0,2*h/3,w,h/3)}
   else if(k==='am'){c.fillStyle='#d90012';c.fillRect(0,0,w,h/3);c.fillStyle='#0033a0';c.fillRect(0,h/3,w,h/3);c.fillStyle='#f2a800';c.fillRect(0,2*h/3,w,h/3)}
   else if(k==='kz'){c.fillStyle='#00afca';c.fillRect(0,0,w,h);c.fillStyle='#fec50c';c.beginPath();c.arc(w/2,h/2-6,40,0,7);c.fill();c.fillRect(w/2-60,h/2+48,120,10)}
@@ -326,7 +338,7 @@ function nickList(list,t,t0,dt,y0,colW,fsMax){const n=list.length,rows=Math.ceil
 // ===== EP29 extras =====
 {const p=PEOPLE.find(p=>p.sakura);const h=p.h;for(const [lx,lz] of [[-5.5,4.4],[5.5,4.4]]){const [x,z]=HX(h,lx,lz);mesh(new THREE.CylinderGeometry(0.25,0.35,2.6,6),MAT(0x6b4220),x,1.3,z);const c=mesh(new THREE.IcosahedronGeometry(2.1,1),new THREE.MeshLambertMaterial({color:0xf7a8c8,emissive:0x5a1f35,emissiveIntensity:0.15}),x,3.6,z);c.castShadow=true}}
 for(const p of PEOPLE){if(!p.carC||!p.h)continue;const h=p.h;const [x,z]=HX(h,-3.6,4.8);const c=new THREE.Mesh(AG.car(p.carC),new THREE.MeshLambertMaterial({vertexColors:true}));c.position.set(x,0,z);c.rotation.y=(h.face>0?0:Math.PI)+Math.PI/2;c.scale.setScalar(1.25);c.castShadow=true;scene.add(c)}
-window.__PEOPLE=PEOPLE;
+window.__PEOPLE=PEOPLE;{const p=PEOPLE.find(p=>p.capy);const h=p&&p.h;if(h){const B=MAT(0x9a6a3a),D=MAT(0x6a4426);const g=new THREE.Group();const b=mesh(new THREE.SphereGeometry(1,14,10),B,0,1,0,g);b.scale.set(1.5,.95,1);mesh(new THREE.SphereGeometry(.62,12,10),B,1.35,1.35,0,g).scale.set(1.3,1,1);for(const x of [-.7,.7])for(const z of [-.5,.5])mesh(new THREE.CylinderGeometry(.18,.18,.6,6),D,x,.3,z,g);for(const z of [-.3,.3])mesh(new THREE.SphereGeometry(.12,8,6),MAT(0x111111),1.95,1.5,z,g);const [x,z]=HX(h,3.4,5.2);g.position.set(x,0,z);g.rotation.y=h.face>0?-1:2.1;g.scale.setScalar(1.3);scene.add(g)}}
 {const p=PEOPLE.find(p=>p.tesla);const h=p.h;const [x,z]=HX(h,-3.6,4.8);const c=new THREE.Mesh(AG.car('#151515'),new THREE.MeshLambertMaterial({vertexColors:true}));c.position.set(x,0,z);c.rotation.y=(h.face>0?0:Math.PI)+Math.PI/2;c.scale.setScalar(1.25);c.castShadow=true;scene.add(c)}
 {const p=PEOPLE.find(p=>p.rainbow);const h=p.h;const cols=[0xe8433a,0xf2a03a,0xf2d23a,0x3ab36a,0x3a8fd8,0x8a5cc4];const r=rng(77);for(let i=0;i<46;i++){const [x,z]=HX(h,-6.6+r()*13.2,2.6+r()*4.2);mesh(new THREE.SphereGeometry(0.28,6,5),MAT(cols[i%6]),x,0.35,z)}}
 // park expansion
