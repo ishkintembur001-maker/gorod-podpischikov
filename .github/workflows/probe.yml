@@ -1,0 +1,14 @@
+name: probe
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          U=https://gorod-podpischikov.pages.dev
+          curl -sI $U/game/world/index.html | grep -i -E "cache|etag|age"
+          curl -s $U/game/world/index.html | grep -o 'scene.js[^"]*'
+          V=$(curl -s $U/game/world/index.html | grep -o 'scene.js?v=[a-z0-9]*' | cut -d= -f2)
+          curl -s "$U/game/world/scene.js?v=$V" | grep -c "__BZD"
+          curl -s "$U/game/index.html" | grep -o "world/index.html?v=[a-z0-9]*"
+          curl -s $U/game/ | grep -o "world/index.html?v=[a-z0-9]*"
