@@ -19,6 +19,11 @@ jobs:
           rsync -a --exclude .git --exclude .github --exclude bot --exclude site-functions --exclude wrangler.toml --exclude README.md ./ /tmp/site/dist/
           cp -r site-functions /tmp/site/functions
           git rev-parse --short=12 HEAD > /tmp/site/dist/game/ver.txt
+          H=$(git rev-parse --short=12 HEAD); D=/tmp/site/dist/game
+          sed -i "s#src=\"scene.js\"#src=\"scene.js?v=$H\"#; s#src=\"residents.js\"#src=\"residents.js?v=$H\"#" $D/world/index.html
+          for f in $D/world/*.js; do sed -E -i "s#(['\"]\.\.?/(bgu|city|fx|hero|main|world|props3d)\.js)(['\"])#\1?v=$H\3#g" "$f"; done
+          sed -i "s#'world/index.html?w='#'world/index.html?v=$H\&w='#" $D/index.html
+          grep -c "?v=$H" $D/world/index.html $D/world/scene.js $D/index.html
       - name: Deploy
         working-directory: /tmp/site
         run: |
