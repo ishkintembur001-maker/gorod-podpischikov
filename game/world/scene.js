@@ -1423,7 +1423,7 @@ const MKT=[],MKZ0=PK.z+26,MKZ1=PK.z+56,MKX=P.cx-150;for(let i=0;i<20;i++){const 
  for(const [x,z] of [[MKX-40,PK.z+41],[MKX,PK.z+41],[MKX+40,PK.z+41]]){mesh(new THREE.CylinderGeometry(1.3,1.5,1,12),MAT(0xb8a888),x,.5,z,g);const fl=mesh(new THREE.SphereGeometry(1.2,10,8),MAT(0x3f9a3a),x,1.6,z,g);for(let q=0;q<5;q++)mesh(new THREE.SphereGeometry(.28,8,6),MAT(FC2[q]),x+Math.sin(q*1.3)*.9,2.2,z+Math.cos(q*1.3)*.9,g);addCol(x,z,1.6)}
  for(const [x,z] of [[MKX-20,PK.z+41],[MKX+20,PK.z+41]]){mesh(new THREE.BoxGeometry(4,.25,1.2),MAT(0x8a5a32),x,.75,z,g);for(const bx of [-1.7,1.7])mesh(new THREE.BoxGeometry(.25,.75,1),MAT(0x333333),x+bx,.38,z,g)}}
 const BC={coffee:0x6b4226,ice:0xff8ec7,flowers:0x2bb24c,shawarma:0xe8a23a};const MKSIG={};
-const disp=o=>o.traverse(q=>{if(q.geometry)q.geometry.dispose();const m=q.material;if(m){(Array.isArray(m)?m:[m]).forEach(x=>{if(x.map)x.map.dispose();x.dispose()})}});
+const disp=o=>o.traverse(q=>{if(q.geometry)q.geometry.dispose();const m=q.material;if(m&&m.map){m.map.dispose();m.dispose()}});
 function kiosk(r){const g=new THREE.Group();
  if(r){const c=BC[r.k]||0x888888,E=(WD.BIZ&&WD.BIZ[r.k]||['🏪'])[0];
   mesh(new THREE.BoxGeometry(8,3.2,4.6),MAT(0xf6eedf),0,1.6,-.4,g);mesh(new THREE.BoxGeometry(8.2,.3,4.8),MAT(c),0,3.35,-.4,g);
