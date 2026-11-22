@@ -1,25 +1,62 @@
 <!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Арена кланов</title>
 <style>
-html,body{margin:0;height:100%;overflow:hidden;background:#140c08;font-family:-apple-system,"SF Pro Rounded",Nunito,sans-serif;color:#fff;touch-action:none;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#140c08;font-family:-apple-system,"SF Pro Rounded",Nunito,sans-serif;color:#fff;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #gl{position:fixed;inset:0;width:100%;height:100%}
-.top{position:fixed;left:0;right:0;top:0;z-index:3;padding:calc(10px + env(safe-area-inset-top)) 10px 8px;display:flex;gap:8px;align-items:flex-start;background:linear-gradient(rgba(20,10,6,.9),rgba(20,10,6,0))}
-.tm{flex:1;min-width:0}.tm b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tm.r{text-align:right}
-.tb2{height:8px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:4px}.tb2 i{display:block;height:100%;transition:width .2s}
-#tmr{flex:none;font:900 18px sans-serif;background:rgba(0,0,0,.45);border:1.5px solid #ffd34d;border-radius:12px;padding:4px 10px;color:#ffd34d}
-#ab{position:fixed;right:12px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:4;border:2px solid #ffd34d;border-radius:18px;padding:12px 14px;font:900 15px sans-serif;color:#fff;background:linear-gradient(180deg,#7a4aff,#3a1aa8);box-shadow:0 4px 0 #22106a,0 0 16px rgba(160,120,255,.7);min-width:120px}
-#ab2{position:fixed;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;border:2px solid #9fe8ff;border-radius:18px;padding:10px 14px;font:900 14px sans-serif;color:#fff;background:linear-gradient(180deg,#3ab8ff,#1a5ab8);box-shadow:0 4px 0 #0a3a6a;min-width:120px}#ab2:disabled{opacity:.55}#ab:disabled{opacity:.55;filter:grayscale(.3)}
-#hint{position:fixed;left:12px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:4;max-width:52vw;font:700 12px/1.35 sans-serif;background:rgba(0,0,0,.5);border-radius:12px;padding:8px 10px}
+.top{position:fixed;left:0;right:0;top:0;z-index:3;padding:calc(8px + env(safe-area-inset-top)) 8px 14px;display:flex;gap:6px;align-items:flex-start;background:linear-gradient(rgba(14,7,4,.92),rgba(14,7,4,0));pointer-events:none}
+.tm{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.tm.r{align-items:flex-end}
+.tn{font:900 12px sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;letter-spacing:.2px}
+.pf{display:flex;align-items:center;gap:4px;width:100%;max-width:150px;background:rgba(0,0,0,.4);border-radius:9px;padding:2px 5px 2px 2px;box-sizing:border-box}.tm.r .pf{flex-direction:row-reverse;padding:2px 2px 2px 5px}
+.pf .e{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.pf .w{flex:1;min-width:0}.pf .nm{font:700 9.5px sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.9}.tm.r .pf .nm{text-align:right}
+.pf .hb{height:5px;border-radius:3px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:1px}.pf .hb i{display:block;height:100%;transition:width .2s}.tm.r .pf .hb i{margin-left:auto}
+.pf.me{box-shadow:0 0 0 1.5px #ffd34d}.pf.dead{opacity:.35;filter:grayscale(1)}.pf.tg{box-shadow:0 0 0 1.5px #ff3a3a}
+#mid{flex:none;display:flex;flex-direction:column;align-items:center;gap:4px}
+#tmr{font:900 18px sans-serif;background:rgba(0,0,0,.5);border:1.5px solid #ffd34d;border-radius:12px;padding:3px 10px;color:#ffd34d;min-width:34px;text-align:center}
+#sc{font:900 13px sans-serif;letter-spacing:1px}
+#feed{position:fixed;left:50%;transform:translateX(-50%);top:calc(84px + env(safe-area-inset-top));z-index:3;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
+#feed div{font:800 12px sans-serif;background:rgba(0,0,0,.55);border-radius:10px;padding:3px 9px;animation:fd 3s forwards}@keyframes fd{0%{opacity:0;transform:translateY(-6px)}10%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
+#js{position:fixed;left:calc(18px + env(safe-area-inset-left));bottom:calc(26px + env(safe-area-inset-bottom));z-index:4;width:132px;height:132px;border-radius:50%;background:radial-gradient(rgba(255,255,255,.08),rgba(255,255,255,.18));border:2px solid rgba(255,255,255,.3);touch-action:none}
+#jk{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#d8c8a8);box-shadow:0 4px 10px rgba(0,0,0,.5)}
+#myhp{position:fixed;left:calc(18px + env(safe-area-inset-left));bottom:calc(168px + env(safe-area-inset-bottom));z-index:4;width:132px}
+#myhp .t{font:900 11px sans-serif;display:flex;justify-content:space-between;text-shadow:0 1px 2px #000}#myhp .b{height:10px;border-radius:6px;background:rgba(0,0,0,.5);overflow:hidden;border:1.5px solid rgba(255,255,255,.35);margin-top:2px}#myhp .b i{display:block;height:100%;background:linear-gradient(90deg,#3ae07a,#a8f0c0);transition:width .15s}
+.bt{position:fixed;z-index:4;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font:900 10px sans-serif;color:#fff;touch-action:none;border:2px solid rgba(255,255,255,.55);box-shadow:0 4px 0 rgba(0,0,0,.45);overflow:hidden}
+.bt b{font-size:24px;line-height:1}.bt span{margin-top:1px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt .cd{position:absolute;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;font:900 20px sans-serif}.bt.off .cd{display:flex}
+.bt.on{transform:scale(.93);filter:brightness(1.25)}
+#atk{right:calc(22px + env(safe-area-inset-right));bottom:calc(28px + env(safe-area-inset-bottom));width:92px;height:92px;background:radial-gradient(circle at 40% 30%,#ff8a5a,#c8281a);border-color:#ffd34d}#atk b{font-size:36px}
+#sk1{right:calc(124px + env(safe-area-inset-right));bottom:calc(30px + env(safe-area-inset-bottom));width:64px;height:64px;background:radial-gradient(circle at 40% 30%,#a07aff,#4a1ab8)}
+#sk2{right:calc(110px + env(safe-area-inset-right));bottom:calc(106px + env(safe-area-inset-bottom));width:64px;height:64px;background:radial-gradient(circle at 40% 30%,#5ac8ff,#1a5ab8)}
+#roll{right:calc(36px + env(safe-area-inset-right));bottom:calc(134px + env(safe-area-inset-bottom));width:56px;height:56px;background:radial-gradient(circle at 40% 30%,#7ae8a8,#1a8a4a)}#roll b{font-size:20px}
+#foc{right:calc(26px + env(safe-area-inset-right));bottom:calc(202px + env(safe-area-inset-bottom));width:48px;height:48px;background:radial-gradient(circle at 40% 30%,#ffe08a,#b8801a)}#foc b{font-size:18px}#foc.act{box-shadow:0 0 0 3px #ff3a3a,0 0 14px #ff3a3a}
+#swt{right:calc(190px + env(safe-area-inset-right));bottom:calc(38px + env(safe-area-inset-bottom));width:46px;height:46px;background:radial-gradient(circle at 40% 30%,#ff7a7a,#8a1a1a)}#swt b{font-size:17px}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(178px + env(safe-area-inset-bottom));z-index:4;max-width:70vw;text-align:center;font:700 12px/1.35 sans-serif;background:rgba(0,0,0,.55);border-radius:12px;padding:7px 10px;transition:opacity .6s;pointer-events:none}
 #ov{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:rgba(10,5,3,.78)}
 #ov .bx{width:min(88vw,360px);background:linear-gradient(160deg,#3a2414,#1a0f08);border:2px solid #ffd34d;border-radius:22px;padding:20px;text-align:center}
 #ov h2{margin:0 0 8px;font-size:26px}#ov p{margin:6px 0 12px;font-size:14px;line-height:1.4;color:#f0dcc0}
 #ov button{width:100%;border:0;border-radius:16px;padding:14px;font:900 16px sans-serif;background:linear-gradient(#ffe08a,#f2b33a);color:#3b2300;margin-top:6px}
-#ov .rw{display:flex;gap:8px;justify-content:center;margin:10px 0}.rw div{flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 4px;font-size:12px}.rw b{display:block;font-size:22px}
+#ov .rw{display:flex;gap:6px;justify-content:center;margin:10px 0}.rw div{flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 4px;font-size:11px}.rw b{display:block;font-size:20px}
+#vs{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;gap:10px;pointer-events:none;background:radial-gradient(rgba(0,0,0,.35),rgba(0,0,0,.75));transition:opacity .5s}
+#vs .sd{flex:1;display:flex;flex-direction:column;gap:6px;padding:0 8px;animation:sl .5s ease-out}#vs .sd.r{align-items:flex-end;animation-name:sr}
+#vs .cn{font:900 20px sans-serif;text-shadow:0 3px 10px #000}#vs .pl{font:800 13px sans-serif;background:rgba(0,0,0,.45);border-radius:10px;padding:4px 8px}
+#vs .v{font:900 54px sans-serif;color:#ffd34d;text-shadow:0 0 24px #ff6a2a,0 4px 0 #6a2a00}
+@keyframes sl{from{transform:translateX(-60vw)}}@keyframes sr{from{transform:translateX(60vw)}}
+#cnt{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;font:900 72px sans-serif;color:#ffd34d;text-shadow:0 4px 18px #000,0 0 30px #ff6a2a;pointer-events:none}
+#flash{position:fixed;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 90px rgba(255,0,0,.0);transition:box-shadow .25s}
 #load{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;background:#140c08;font:900 18px sans-serif;color:#ffd34d}
 </style></head><body>
-<script type="importmap">{"imports":{"three":"./three.js"}}</script><canvas id="gl"></canvas>
-<div class="top"><div class="tm"><b id="tna">—</b><div class="tb2"><i id="tha" style="width:100%;background:linear-gradient(90deg,#3ae07a,#5ee6b0)"></i></div></div><div id="tmr">90</div><div class="tm r"><b id="tnb">—</b><div class="tb2"><i id="thb" style="width:100%;background:linear-gradient(90deg,#ff6a4a,#ff3a3a);margin-left:auto"></i></div></div></div>
-<button id="ab">…</button><button id="ab2">…</button><div id="hint">👆 Нажми на врага — твой герой атакует его. Нажми на землю — отойти туда.</div>
+<script type="importmap">{"imports":{"three":"./three.js"}}</script><canvas id="gl"></canvas><div id="flash"></div>
+<div class="top"><div class="tm"><div class="tn" id="tna">—</div><div id="pfa" style="display:flex;flex-direction:column;gap:3px;width:100%"></div></div><div id="mid"><div id="tmr">90</div><div id="sc">0 : 0</div></div><div class="tm r"><div class="tn" id="tnb">—</div><div id="pfb" style="display:flex;flex-direction:column;gap:3px;width:100%;align-items:flex-end"></div></div></div>
+<div id="feed"></div>
+<div id="myhp"><div class="t"><span id="mycl">⚔️</span><span id="myv">100</span></div><div class="b"><i id="myb" style="width:100%"></i></div></div>
+<div id="js"><div id="jk"></div></div>
+<div class="bt" id="atk"><b>⚔️</b><span>Удар</span></div>
+<div class="bt" id="sk1"><b>✨</b><span>—</span><div class="cd"></div></div>
+<div class="bt" id="sk2"><b>✨</b><span>—</span><div class="cd"></div></div>
+<div class="bt" id="roll"><b>💨</b><span>Рывок</span><div class="cd"></div></div>
+<div class="bt" id="foc"><b>📣</b><span>Фокус</span></div>
+<div class="bt" id="swt"><b>🎯</b><span>Цель</span></div>
+<div id="hint">🕹 Джойстик — ходить · ⚔️ держи — бить ближайшего · 💨 рывок от удара · 📣 союзники бьют твою цель</div>
 <div id="ov" class="hidden" style="display:none"><div class="bx" id="ovb"></div></div>
 <div id="load">⚔️ Арена готовится к бою…</div>
-<script type="module" src="arena.js"></script>
+<script type="module" src="arena.js?v=2"></script>
 </body></html>
