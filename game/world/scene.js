@@ -280,12 +280,12 @@ const vac=new THREE.Mesh(new THREE.PlaneGeometry(10,2),new THREE.MeshBasicMateri
 // sparkles
 const SPK=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const gr=x.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,250,200,1)');gr.addColorStop(0.3,'rgba(255,220,90,0.7)');gr.addColorStop(1,'rgba(255,200,60,0)');x.fillStyle=gr;x.fillRect(0,0,64,64);return new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true})})();
 const SPARK=[];{const r=rng(3);for(let i=0;i<40;i++){const s=new THREE.Sprite(SPK);s.visible=false;scene.add(s);SPARK.push({s,a:r()*6.28,rad:6+r()*12,sp:0.5+r(),y0:r()*14,ph:r()})}}
-const DAY={hemiS:new THREE.Color(0xe6eef5),hemiG:new THREE.Color(0x55703a),hemiI:1.5,sunC:new THREE.Color(0xfff1dc),sunI:2.0,top:new THREE.Color(0x7f8f9e),hor:new THREE.Color(0xc9d2d4),fog:new THREE.Color(0xc9d2d4),exp:1.05};
+const DAY={hemiS:new THREE.Color(0xeaf4ff),hemiG:new THREE.Color(0x5e7d34),hemiI:1.45,sunC:new THREE.Color(0xfff0d4),sunI:2.35,top:new THREE.Color(0x4f95e0),hor:new THREE.Color(0xa8d0f0),fog:new THREE.Color(0xb6d3ea),exp:1.06};
 const NIG={hemiS:new THREE.Color(0x7484c0),hemiG:new THREE.Color(0x1d2622),hemiI:0.72,sunC:new THREE.Color(0xa9bcff),sunI:0.6,top:new THREE.Color(0x070d22),hor:new THREE.Color(0x24345c),fog:new THREE.Color(0x1a2442),exp:1.08};
 const tmpC=new THREE.Color();
 function applyLight(n,t){if(window.__ADV)n*=.3;L.hemi.color.copy(DAY.hemiS).lerp(NIG.hemiS,n);L.hemi.groundColor.copy(DAY.hemiG).lerp(NIG.hemiG,n);L.hemi.intensity=lerp(DAY.hemiI,NIG.hemiI,n);
   L.sun.color.copy(DAY.sunC).lerp(NIG.sunC,n);L.sun.intensity=lerp(DAY.sunI,NIG.sunI,n);
-  WORLD.sky.material.uniforms.top.value.copy(DAY.top).lerp(NIG.top,n);WORLD.sky.material.uniforms.hor.value.copy(DAY.hor).lerp(NIG.hor,n);
+  WORLD.sky.material.uniforms.top.value.copy(DAY.top).lerp(NIG.top,n);WORLD.sky.material.uniforms.hor.value.copy(DAY.hor).lerp(NIG.hor,n);{const U=WORLD.sky.material.uniforms;if(U.tm){U.tm.value=t;U.nightK.value=n}}
   scene.fog.color.copy(DAY.fog).lerp(NIG.fog,n);if(window.__ADV){scene.fog.color.lerp(ADVF,.55);WORLD.sky.material.uniforms.top.value.lerp(ADVT,.5);WORLD.sky.material.uniforms.hor.value.lerp(ADVH,.5)}scene.fog.near=lerp(500,180,n);scene.fog.far=lerp(3200,1500,n);if(window.__ADV){scene.fog.near=Math.min(scene.fog.near,150);scene.fog.far=Math.min(scene.fog.far,560)}
   for(const m of NIGHT_MATS)m.emissiveIntensity=1.25*clamp((n-0.35)/0.5);
   L.fire.intensity=lerp(0,600,n);

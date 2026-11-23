@@ -6,7 +6,7 @@ const glc=document.getElementById('gl');
 const QS=new URLSearchParams(location.search);export const renderer=new THREE.WebGLRenderer({canvas:glc,antialias:QS.get('aa')!=='0',powerPreference:'high-performance'});
 export const RS=+(QS.get("rs")||1);renderer.setPixelRatio(Math.min(1.5,devicePixelRatio||1));renderer.setSize(W,H);
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
-renderer.shadowMap.enabled=QS.get('sh')!=='0';renderer.shadowMap.type=THREE.PCFShadowMap;
+renderer.shadowMap.enabled=QS.get('sh')!=='0';renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 export const out=document.createElement('canvas');export const octx=out.getContext('2d');
 export const scene=new THREE.Scene();
 export const camera=new THREE.PerspectiveCamera(42,W/H,1,6000);

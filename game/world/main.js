@@ -5,7 +5,7 @@ window.THREE=THREE;
 // ---------- lights ----------
 export const L={};
 L.hemi=new THREE.HemisphereLight(0xe6eef5,0x55703a,1.5);scene.add(L.hemi);
-L.sun=new THREE.DirectionalLight(0xfff1dc,2.0);L.sun.castShadow=true;L.sun.shadow.mapSize.set(1024,1024);L.sun.shadow.bias=-0.0006;L.sun.shadow.normalBias=0.6;scene.add(L.sun);scene.add(L.sun.target);
+L.sun=new THREE.DirectionalLight(0xfff1dc,2.0);L.sun.castShadow=true;L.sun.shadow.mapSize.set((devicePixelRatio||1)>=2&&navigator.hardwareConcurrency>=6?2048:1024,(devicePixelRatio||1)>=2&&navigator.hardwareConcurrency>=6?2048:1024);L.sun.shadow.bias=-0.0006;L.sun.shadow.normalBias=0.6;scene.add(L.sun);scene.add(L.sun.target);
 L.fire=new THREE.PointLight(0xff8a3a,0,60,1.6);scene.add(L.fire);
 scene.fog=new THREE.Fog(0xc9d2d4,500,3200);
 function mk(geo,mat,x,y,z,ry,s){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;if(s)m.scale.setScalar(s);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}

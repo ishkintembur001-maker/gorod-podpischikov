@@ -41,9 +41,9 @@ export function buildWorld(residents){
   {const g=new THREE.ConeGeometry(1,1,7,3);const pos=g.attributes.position;const r3=rng(9);for(let i=0;i<pos.count;i++){if(pos.getY(i)<0.49){pos.setX(i,pos.getX(i)*(0.85+r3()*0.3));pos.setZ(i,pos.getZ(i)*(0.85+r3()*0.3))}}g.computeVertexNormals();
     inst(g,new THREE.MeshLambertMaterial({color:0x5f7660,flatShading:true}),mt,{cast:false,recv:false})}
   // sky
-  const sky=new THREE.Mesh(new THREE.SphereGeometry(5000,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(0x7f8f9e)},hor:{value:new THREE.Color(0xc9d2d4)},nightK:{value:0}},
+  const sky=new THREE.Mesh(new THREE.SphereGeometry(5000,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{top:{value:new THREE.Color(0x4f95e0)},hor:{value:new THREE.Color(0xd2e6f3)},nightK:{value:0},tm:{value:0}},
     vertexShader:'varying vec3 vp;void main(){vp=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
-    fragmentShader:'uniform vec3 top;uniform vec3 hor;varying vec3 vp;void main(){float h=clamp(vp.y*2.2,0.0,1.0);gl_FragColor=vec4(mix(hor,top,h),1.0);}'}));scene.add(sky);WORLD.sky=sky;
+    fragmentShader:'uniform vec3 top;uniform vec3 hor;uniform float nightK;uniform float tm;varying vec3 vp;float h2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h2(i),h2(i+vec2(1.,0.)),f.x),mix(h2(i+vec2(0.,1.)),h2(i+vec2(1.,1.)),f.x),f.y);}float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n2(p);p*=2.03;a*=.5;}return v;}void main(){vec3 d=normalize(vp);float h=clamp(d.y*2.2,0.0,1.0);vec3 c=mix(hor,top,pow(h,.8));vec3 sd=normalize(vec3(.5,.75,.44));float s=max(dot(d,sd),0.);c+=vec3(1.,.86,.62)*(pow(s,500.)*1.6+pow(s,10.)*.16)*(1.-nightK);if(d.y>0.){vec2 uv=d.xz/(d.y+.15)*1.4+vec2(tm*.004,tm*.0015);float cl=smoothstep(.55,.8,fbm(uv))*smoothstep(0.,.3,d.y);vec3 cc=mix(vec3(1.),vec3(.22,.27,.42),nightK);c=mix(c,cc*(.88+.12*d.y),cl*.8);}gl_FragColor=vec4(c,1.0);}'}));scene.add(sky);WORLD.sky=sky;
   WORLD.plots=plots;WORLD.trees=trees;WORLD.pines=pines;return plots;
 }
 // ---------- residents → houses ----------
