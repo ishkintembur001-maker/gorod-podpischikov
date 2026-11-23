@@ -69,7 +69,21 @@ const PEOPLE=[
  {n:'viktoriia97117',txt:'10 котиков и баня 🐱',c:32,set:{fl:2,f:['cats','sauna'],an:{cat:10}}},
  {n:'polli_2903',txt:'сакура, бело-розовый, 3 этажа 🌸',c:33,set:{fl:3,wall:'white',roof:'pink',f:['garden']},sakura:1},
  {n:'nurbekovnaii_',txt:'3 этажа и чёрная Тесла',c:34,set:{fl:3,f:[]},tesla:1},
- {n:'susedmichal',txt:'радужная крыша и море цветов 🌈',c:35,set:{fl:2,roof:'rainbow',f:['flowers','garden']},rainbow:1}];
+ {n:'susedmichal',txt:'радужная крыша и море цветов 🌈',c:35,set:{fl:2,roof:'rainbow',f:['flowers','garden']},rainbow:1},
+ {n:'09kih5',txt:'ждал с третьего видео — вот твой дом! 🔑',c:10,r:4,set:{fl:2,roof:'blue',f:['garden','flowers']}},
+ {n:'abduraxm_vibe',txt:'особняк · огород · бассейн · чёрный CLS',c:11,r:4,set:{fl:3,wall:'white',roof:'black',f:['pool','garden']},carC:'#111111'},
+ {n:'inzhu593774',txt:'1 этаж · красная крыша · мини-бассейн · кошка 🐱',c:12,r:4,set:{fl:1,roof:'red',f:['pool','flowers'],an:{cat:1}}},
+ {n:'boyazid.007',txt:'просил 4 раза: фиолетовая крыша · бассейн · Audi',c:13,r:4,set:{fl:2,roof:'purple',f:['pool']},carC:'#c8ccd2'},
+ {n:'manapov_usman',txt:'«мне сделайте» — сделали! 🏡',c:14,r:4,set:{fl:2,roof:'green',f:['garden']}},
+ {n:'alia636735',txt:'твой дом в нашем городе 🌸',c:24,r:4,set:{fl:2,roof:'pink',f:['flowers','garden']}},
+ {n:'bilal_sigma2017',txt:'2 этажа · флаг Кыргызстана · Bugatti Chiron',c:25,r:4,set:{fl:2,f:['garden']},flag:'kg',carC:'#1a5ad8'},
+ {n:'kimdaniel_15',txt:'3 этажа · Lamborghini · собака · флаг Узбекистана',c:26,r:4,set:{fl:3,f:['dogs','garden'],an:{dog:1}},flag:'uz',carC:'#f2c230'},
+ {n:'ali9857265',txt:'зелёная крыша · BMW M5 · кошка · флаг Кыргызстана',c:27,r:4,set:{fl:2,roof:'green',f:['garden'],an:{cat:1}},flag:'kg',carC:'#1c69d4'},
+ {n:'araz272016',txt:'синяя крыша · флаг Азербайджана',c:28,r:4,set:{fl:2,roof:'blue',f:['garden','flowers']},flag:'az'},
+ {n:'_ailinka_kachkynova_',txt:'особняк · Гелендваген · большая собака',c:29,r:4,set:{fl:3,wall:'white',roof:'gray',f:['pool','dogs'],an:{dog:1}},carC:'#111111'},
+ {n:'xx__lmaga_zzl',txt:'особняк · Крузак 200 · флаг Таджикистана',c:21,r:4,set:{fl:3,wall:'beige',roof:'brown',f:['pool','garden']},flag:'tj',carC:'#f4f4f4'},
+ {n:'3710mukhammad',txt:'большой дом в 3 этажа · флаг Дагестана',c:22,r:4,set:{fl:3,f:['garden']},flag:'dag'},
+ {n:'tursinbaev.baxtiyar',txt:'3 этажа · флаг Узбекистана ❤️',c:23,r:4,set:{fl:3,roof:'orange',f:['garden','flowers']},flag:'uz'}];
 const SHOW=['ramazan__179','temburhan','kamila_vekua','sumaia09072015','baatyr6700','mekenovaanel','viktoriia97117','polli_2903','nurbekovnaii_','susedmichal'].map(n=>PEOPLE.find(p=>p.n===n));SHOW[2].txt='снова с нами! золотая крыша 👑';
 try{const j=await fetch('/api/res').then(r=>r.json());for(const x of (j.res||[]))if(!window.RESIDENTS.find(q=>q.n===x.n))window.RESIDENTS.push({n:x.n,g:'m',fl:1,z:'any',f:[],roof:'',wall:'',friend:'',an:{},cc:''})}catch(e){}
 for(const p of [...P23,...PEOPLE]){const r=window.RESIDENTS.find(q=>q.n===p.n);if(r)Object.assign(r,{an:{}},p.set);else window.RESIDENTS.push({n:p.n,g:'m',roof:'',wall:'',friend:'',an:{},cc:'',z:'any',...p.set})}
