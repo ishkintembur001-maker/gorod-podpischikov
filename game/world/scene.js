@@ -1386,7 +1386,7 @@ const BIRDS=[];{const wM=new THREE.MeshLambertMaterial({color:0xffffff}),gM=new 
  // стайки маленьких птиц — быстро машут крыльями, летят над крышами
  const sc=[0x6b4a2e,0x3a3a44,0xc0502a,0x4a7ab0];for(let f=0;f<3;f++)for(let i=0;i<6;i++){const m=new THREE.MeshLambertMaterial({color:sc[(f+i)%4]});BIRDS.push({m:gull(.45,m,m,kM),kind:'small',f,i,r:28+f*12,h:16+f*3+(i%3)*.8,sp:.22+f*.04,a0:f*2.1,ox:0,oz:0,ph:i})}}
 
-function lifeTick(t,dt){if(BURG)BURG.rotation.y=t*.6;FIRE.forEach((f,i)=>f.scale.set(1,.75+.4*Math.abs(Math.sin(t*9+i*1.7)),1));if(FIRE.deer)FIRE.deer.rotation.y=.6+Math.sin(t*.4)*.5;const px=ME.position.x,pz=ME.position.z;
+function lifeTick(t,dt){{const V=!window.__VIDFOCUS;for(const b of BIRDS)b.m.visible=V;for(const p of PETS)if(p.cat){p.m.visible=V;if(!V&&p.say)p.say.visible=false}const ca=WORLD.animals&&WORLD.animals.cat;if(ca&&ca.im)ca.im.visible=V}if(BURG)BURG.rotation.y=t*.6;FIRE.forEach((f,i)=>f.scale.set(1,.75+.4*Math.abs(Math.sin(t*9+i*1.7)),1));if(FIRE.deer)FIRE.deer.rotation.y=.6+Math.sin(t*.4)*.5;const px=ME.position.x,pz=ME.position.z;
  for(const p of PETS){const m=p.m;if(!p.init||Math.hypot(m.position.x-px,m.position.z-pz)>110){PETS.pick(p,px,pz,true);p.init=1}
   const dx=p.tx-m.position.x,dz=p.tz-m.position.z,d=Math.hypot(dx,dz);
   if(p.wait>0){p.wait-=dt;m.position.y=0;m.rotation.z=0;if(p.wait<=0)PETS.pick(p,px,pz,false)}
