@@ -87,8 +87,9 @@ export function buildHouses(houses){
     const side=[];const fx=h.f;
     if(fx.includes('bigpool')){const [x,z]=X(1.2,4.3);L.pool.push({x,y:0.12,z,ry,sx:10.4,sy:0.12,sz:3.8});L.poolEdge.push({x,y:0.08,z,ry,sx:11.2,sy:0.16,sz:4.6})}else if(fx.includes('pool')){const [x,z]=X(3.6,4.2);L.pool.push({x,y:0.12,z,ry,sx:5.2,sy:0.12,sz:3.4});L.poolEdge.push({x,y:0.08,z,ry,sx:5.9,sy:0.16,sz:4.1})}
     if(fx.includes('cars')){const [x,z]=X(-3.6,4.6);L.car.push({x,y:0,z,ry:ry+Math.PI/2,c:({black:0x222222,white:0xf4f4f4,red:0xd63a2f,blue:0x2d6cdf,gray:0x9aa0a8,green:0x3a8f5a,yellow:0xf2c230})[h.cc]??[0xd63a2f,0x2d6cdf,0xf4f4f4,0x222222][(h.x|0)&3]})}
-    for(const k of ['sauna','greenhouse','farm','bbq','playground'])if(fx.includes(k))side.push(k);
+    for(const k of ['treehouse','sauna','greenhouse','farm','bbq','playground'])if(fx.includes(k))side.push(k);
     side.slice(0,2).forEach((k,i)=>{const [x,z]=X(i?-5.4:5.4,-4.6);
+      if(k==='treehouse'){L.trunk.push({x,y:2.6,z,sx:0.55,sy:5.2,sz:0.55});L.tree.push({x,y:6.6,z,sx:2.6,sy:2.2,sz:2.6});L.sauna.push({x,y:4.9,z,ry,sx:2.2,sy:1.6,sz:2.0});L.saunaRoof.push({x,y:5.7,z,ry,sx:0.26,sy:0.34,sz:0.3,c:0x8a4a22})}
       if(k==='sauna'){L.sauna.push({x,y:1.1,z,ry,sx:2.6,sy:2.2,sz:2.4});L.saunaRoof.push({x,y:2.2,z,ry,sx:0.3,sy:0.42,sz:0.34,c:0x5a3218})}
       if(k==='greenhouse')L.green.push({x,y:1.0,z,ry,sx:2.6,sy:2.0,sz:3});
       if(k==='farm')for(let j=0;j<3;j++)L.beds.push({x:x+(j-1)*0.9*f,y:0.2,z,ry,sx:0.7,sy:0.4,sz:3});
