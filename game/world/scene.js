@@ -97,7 +97,19 @@ const PEOPLE=[
  {n:'sy.imyk99',txt:'просил 3 раза — заселяйся! 🔑',c:28,r:3,set:{fl:2,roof:'green',f:['garden']}},
  {n:'amina572830',txt:'приняли — и вот твой дом 🌸',c:29,r:3,set:{fl:2,roof:'pink',f:['flowers','garden']}},
  {n:'erkhanakylbekovich',txt:'добро пожаловать в город! 🏙',c:30,r:3,set:{fl:2,roof:'purple',f:['garden']}},
- {n:'amirkhan.djum',txt:'ждал шаурмичную — открыли! 🌯',c:31,r:3,set:{fl:2,roof:'orange',f:['garden','bbq']}}];
+ {n:'amirkhan.djum',txt:'ждал шаурмичную — открыли! 🌯',c:31,r:3,set:{fl:2,roof:'orange',f:['garden','bbq']}},
+ {n:'tmrln_16',txt:'подписка ✅ лайк ✅ репост ✅ — держи дом!',c:32,r:3,set:{fl:2,roof:'red',f:['garden','flowers']}},
+ {n:'man_kuty',txt:'3 этажа · BMW M5 · бассейн · алабай · флаг Кыргызстана',c:33,r:3,set:{fl:3,roof:'blue',f:['pool','dogs'],an:{dog:1}},flag:'kg',carC:'#1c69d4'},
+ {n:'nurdin_070__',txt:'особняк · Lexus ES · бассейн · флаг Кыргызстана',c:34,r:3,set:{fl:3,wall:'white',roof:'gray',f:['pool','garden']},flag:'kg',carC:'#f4f4f4'},
+ {n:'meerim41926',txt:'большой особняк и BMW',c:35,r:3,set:{fl:3,wall:'beige',roof:'brown',f:['pool','flowers']},carC:'#111111'},
+ {n:'umida65274',txt:'дом и BMW 🏠',c:0,r:5,set:{fl:2,roof:'green',f:['garden','flowers']},carC:'#1c69d4'},
+ {n:'nuri.moda',txt:'дом с флагом Кыргызстана 🇰🇬',c:1,r:5,set:{fl:2,roof:'red',f:['flowers','garden']},flag:'kg'},
+ {n:'manasovumar089',txt:'дом с флагом Кыргызстана 🇰🇬',c:2,r:5,set:{fl:2,roof:'orange',f:['garden']},flag:'kg'},
+ {n:'kalandaro_va18',txt:'фиолетовый дом-бантик 🎀',c:3,r:5,set:{fl:2,wall:'pink',roof:'purple',f:['flowers','garden']}},
+ {n:'nasyrov._01',txt:'2 этажа · BMW рядом · Гелик в автопарке',c:4,r:5,set:{fl:2,roof:'black',f:['garden']},carC:'#111111'},
+ {n:'likemuhammedtalha',txt:'особняк и Mercedes',c:5,r:5,set:{fl:3,wall:'white',roof:'blue',f:['pool','garden']},carC:'#c8ccd2'},
+ {n:'kerpedal',txt:'чёрная крыша и Mercedes',c:6,r:5,set:{fl:2,roof:'black',f:['garden']},carC:'#111111'},
+ {n:'ondar.59',txt:'дом с флагом Тывы 🔥',c:7,r:5,set:{fl:2,roof:'blue',f:['garden','flowers']},flag:'ty'}];
 const SHOW=['ramazan__179','temburhan','kamila_vekua','sumaia09072015','baatyr6700','mekenovaanel','viktoriia97117','polli_2903','nurbekovnaii_','susedmichal'].map(n=>PEOPLE.find(p=>p.n===n));SHOW[2].txt='снова с нами! золотая крыша 👑';
 try{const j=await fetch('/api/res').then(r=>r.json());for(const x of (j.res||[]))if(!window.RESIDENTS.find(q=>q.n===x.n))window.RESIDENTS.push({n:x.n,g:'m',fl:1,z:'any',f:[],roof:'',wall:'',friend:'',an:{},cc:''})}catch(e){}
 for(const p of [...P23,...PEOPLE]){const r=window.RESIDENTS.find(q=>q.n===p.n);if(r)Object.assign(r,{an:{}},p.set);else window.RESIDENTS.push({n:p.n,g:'m',roof:'',wall:'',friend:'',an:{},cc:'',z:'any',...p.set})}
