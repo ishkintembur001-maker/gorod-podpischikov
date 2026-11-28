@@ -112,7 +112,7 @@ const PEOPLE=[
  {n:'ondar.59',txt:'дом с флагом Тывы 🔥',c:7,r:5,set:{fl:2,roof:'blue',f:['garden','flowers']},flag:'ty'},
  {n:'9092adi1618',txt:'дом Умара 🏠',c:8,r:5,set:{fl:2,roof:'green',f:['garden','flowers']}},
  {n:'markhabat281',txt:'особняк · BMW · бассейн',c:9,r:5,set:{fl:3,wall:'white',roof:'gray',f:['pool','garden']},carC:'#1c69d4'},
- {n:'aikhanum180',txt:'радужный дом 🌈',c:10,r:5,set:{fl:2,wall:'pink',roof:'rainbow',f:['flowers','garden']}},
+ {n:'aikhanum180',txt:'радужный дом 🌈',c:10,r:5,set:{fl:2,wall:'white',roof:'rainbow',f:['flowers','garden']},rainbow:1},
  {n:'_maksim_1107',txt:'двухэтажный дом',c:11,r:5,set:{fl:2,roof:'brown',f:['garden']}},
  {n:'assylym.gymnast',txt:'розовый 3 этажа · флаг Казахстана',c:12,r:5,set:{fl:3,wall:'pink',roof:'pink',f:['flowers','garden']},flag:'kz'},
  {n:'erzhan61308',txt:'2 этажа и машина для Аружан',c:13,r:5,set:{fl:2,roof:'red',f:['flowers']},carC:'#f4f4f4'},
@@ -390,7 +390,7 @@ function nickList(list,t,t0,dt,y0,colW,fsMax){const n=list.length,rows=Math.ceil
 for(const p of PEOPLE){if(!p.carC||!p.h)continue;const h=p.h;const [x,z]=HX(h,-3.6,4.8);const c=new THREE.Mesh(AG.car(p.carC),new THREE.MeshLambertMaterial({vertexColors:true}));c.position.set(x,0,z);c.rotation.y=(h.face>0?0:Math.PI)+Math.PI/2;c.scale.setScalar(1.25);c.castShadow=true;scene.add(c)}
 window.__PEOPLE=PEOPLE;{const p=PEOPLE.find(p=>p.capy);const h=p&&p.h;if(h){const B=MAT(0x9a6a3a),D=MAT(0x6a4426);const g=new THREE.Group();const b=mesh(new THREE.SphereGeometry(1,14,10),B,0,1,0,g);b.scale.set(1.5,.95,1);mesh(new THREE.SphereGeometry(.62,12,10),B,1.35,1.35,0,g).scale.set(1.3,1,1);for(const x of [-.7,.7])for(const z of [-.5,.5])mesh(new THREE.CylinderGeometry(.18,.18,.6,6),D,x,.3,z,g);for(const z of [-.3,.3])mesh(new THREE.SphereGeometry(.12,8,6),MAT(0x111111),1.95,1.5,z,g);const [x,z]=HX(h,3.4,5.2);g.position.set(x,0,z);g.rotation.y=h.face>0?-1:2.1;g.scale.setScalar(1.3);scene.add(g)}}
 {const p=PEOPLE.find(p=>p.tesla);const h=p.h;const [x,z]=HX(h,-3.6,4.8);const c=new THREE.Mesh(AG.car('#151515'),new THREE.MeshLambertMaterial({vertexColors:true}));c.position.set(x,0,z);c.rotation.y=(h.face>0?0:Math.PI)+Math.PI/2;c.scale.setScalar(1.25);c.castShadow=true;scene.add(c)}
-{const p=PEOPLE.find(p=>p.rainbow);const h=p.h;const cols=[0xe8433a,0xf2a03a,0xf2d23a,0x3ab36a,0x3a8fd8,0x8a5cc4];const r=rng(77);for(let i=0;i<46;i++){const [x,z]=HX(h,-6.6+r()*13.2,2.6+r()*4.2);mesh(new THREE.SphereGeometry(0.28,6,5),MAT(cols[i%6]),x,0.35,z)}}
+for(const p of PEOPLE.filter(p=>p.rainbow&&p.h)){const h=p.h;const cols=[0xe8433a,0xf2a03a,0xf2d23a,0x3ab36a,0x3a8fd8,0x8a5cc4];const r=rng(77);for(let i=0;i<46;i++){const [x,z]=HX(h,-6.6+r()*13.2,2.6+r()*4.2);mesh(new THREE.SphereGeometry(0.28,6,5),MAT(cols[i%6]),x,0.35,z)}}
 // park expansion
 const COAST=[];let DROP,FLY;{const g=new THREE.Group();const cx=PK.x+28,cz=PK.z+25;const P_=u=>[cx+22*Math.cos(u),4+2.6*Math.sin(3*u)+1.2*Math.sin(u),cz+8*Math.sin(u)];const tm=MAT(0xe8433a),sm=MAT(0xdcdcdc);
   for(let i=0;i<120;i++){const u=i/120*6.283,[x,y,z]=P_(u),[x2,y2,z2]=P_(u+0.06);const b=mesh(new THREE.BoxGeometry(0.5,0.35,Math.hypot(x2-x,y2-y,z2-z)+0.1),tm,(x+x2)/2,(y+y2)/2,(z+z2)/2,g);b.lookAt(x2,y2,z2);if(i%6===0)mesh(new THREE.CylinderGeometry(0.16,0.16,y,5),sm,x,y/2,z,g)}
