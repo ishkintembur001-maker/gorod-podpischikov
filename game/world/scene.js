@@ -109,7 +109,17 @@ const PEOPLE=[
  {n:'nasyrov._01',txt:'2 этажа · BMW рядом · Гелик в автопарке',c:4,r:5,set:{fl:2,roof:'black',f:['garden']},carC:'#111111'},
  {n:'likemuhammedtalha',txt:'особняк и Mercedes',c:5,r:5,set:{fl:3,wall:'white',roof:'blue',f:['pool','garden']},carC:'#c8ccd2'},
  {n:'kerpedal',txt:'чёрная крыша и Mercedes',c:6,r:5,set:{fl:2,roof:'black',f:['garden']},carC:'#111111'},
- {n:'ondar.59',txt:'дом с флагом Тывы 🔥',c:7,r:5,set:{fl:2,roof:'blue',f:['garden','flowers']},flag:'ty'}];
+ {n:'ondar.59',txt:'дом с флагом Тывы 🔥',c:7,r:5,set:{fl:2,roof:'blue',f:['garden','flowers']},flag:'ty'},
+ {n:'9092adi1618',txt:'дом Умара 🏠',c:8,r:5,set:{fl:2,roof:'green',f:['garden','flowers']}},
+ {n:'markhabat281',txt:'особняк · BMW · бассейн',c:9,r:5,set:{fl:3,wall:'white',roof:'gray',f:['pool','garden']},carC:'#1c69d4'},
+ {n:'aikhanum180',txt:'радужный дом 🌈',c:10,r:5,set:{fl:2,wall:'pink',roof:'rainbow',f:['flowers','garden']}},
+ {n:'_maksim_1107',txt:'двухэтажный дом',c:11,r:5,set:{fl:2,roof:'brown',f:['garden']}},
+ {n:'assylym.gymnast',txt:'розовый 3 этажа · флаг Казахстана',c:12,r:5,set:{fl:3,wall:'pink',roof:'pink',f:['flowers','garden']},flag:'kz'},
+ {n:'erzhan61308',txt:'2 этажа и машина для Аружан',c:13,r:5,set:{fl:2,roof:'red',f:['flowers']},carC:'#f4f4f4'},
+ {n:'damir97209',txt:'особняк и две лошади 🐎',c:14,r:5,set:{fl:3,wall:'beige',roof:'brown',f:['horses','garden'],an:{horse:2}}},
+ {n:'aziza311218',txt:'3 этажа · Mercedes · забор · флаг Казахстана',c:21,r:5,set:{fl:3,roof:'blue',f:['garden','flowers']},flag:'kz',carC:'#c8ccd2'},
+ {n:'toktosunova_saida',txt:'особняк · алабай · бассейн · BMW',c:22,r:5,set:{fl:3,wall:'white',roof:'black',f:['pool','dogs'],an:{dog:1}},carC:'#111111'},
+ {n:'nikita_kokoskeriya',txt:'большой особняк · BMW · бассейн',c:23,r:5,set:{fl:3,wall:'white',roof:'blue',f:['pool','garden']},carC:'#1c69d4'}];
 const SHOW=['ramazan__179','temburhan','kamila_vekua','sumaia09072015','baatyr6700','mekenovaanel','viktoriia97117','polli_2903','nurbekovnaii_','susedmichal'].map(n=>PEOPLE.find(p=>p.n===n));SHOW[2].txt='снова с нами! золотая крыша 👑';
 try{const j=await fetch('/api/res').then(r=>r.json());for(const x of (j.res||[]))if(!window.RESIDENTS.find(q=>q.n===x.n))window.RESIDENTS.push({n:x.n,g:'m',fl:1,z:'any',f:[],roof:'',wall:'',friend:'',an:{},cc:''})}catch(e){}
 for(const p of [...P23,...PEOPLE]){const r=window.RESIDENTS.find(q=>q.n===p.n);if(r)Object.assign(r,{an:{}},p.set);else window.RESIDENTS.push({n:p.n,g:'m',roof:'',wall:'',friend:'',an:{},cc:'',z:'any',...p.set})}
